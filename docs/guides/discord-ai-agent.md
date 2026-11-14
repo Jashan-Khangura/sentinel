@@ -1,24 +1,24 @@
-# Build a Discord AI Agent with nanobot
+# Build a Discord AI Agent with Sentinel
 
-This guide connects nanobot to Discord so a Discord user or server channel can talk to your self-hosted AI agent through the nanobot gateway.
+This guide connects Sentinel to Discord so a Discord user or server channel can talk to your self-hosted AI agent through the Sentinel gateway.
 
 ## What this guide builds
 
 - a Discord bot application
 - Message Content intent enabled
-- the `discord` channel enabled in nanobot
+- the `discord` channel enabled in Sentinel
 - one direct message or mention test
 
 ## Prerequisites
 
-- A normal reply in your existing nanobot WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
+- A normal reply in your existing Sentinel WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
 
 - Access to the Discord Developer Portal.
 - A Discord server where you can invite a bot.
 
 ## Continue from your running instance
 
-If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install nanobot again.
+If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install Sentinel again.
 
 For terminal or server setup, use the manual configuration section below. Reuse the config/home and executable from your working instance. Docker users should use the [container commands](../deployment.md#docker-compose).
 

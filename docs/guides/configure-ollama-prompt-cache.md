@@ -2,20 +2,20 @@
 
 Ollama can reuse work from an earlier prompt when the beginning of the prompt stays the same. Some model templates move or remove tool instructions as a conversation switches between user, assistant, and tool messages, so Ollama must process much of the prompt again. On slower local hardware, this can add tens of seconds to a tool-using turn.
 
-This guide shows how to diagnose that specific pattern and create a derived `llama3.1:8b` tag with a prefix-stable tool template. It does not modify nanobot or overwrite the original Ollama model.
+This guide shows how to diagnose that specific pattern and create a derived `llama3.1:8b` tag with a prefix-stable tool template. It does not modify Sentinel or overwrite the original Ollama model.
 
 ## What you will build
 
 - a repeatable two-turn cache check
 - an optional derived `llama3.1:8b-prefix-stable-v1` Ollama tag
-- a nanobot model preset that uses the derived tag
+- a Sentinel model preset that uses the derived tag
 
 ## When to use this
 
 Use this guide when all of the following are true:
 
 - direct Ollama responses are reasonably fast;
-- nanobot becomes slow after the model calls a tool;
+- Sentinel becomes slow after the model calls a tool;
 - Ollama logs show a long main prompt, a much shorter tool follow-up, and low initial cache reuse on the next main prompt;
 - the model is `llama3.1:8b` with a template that renders concrete tools only for the final user message.
 
@@ -76,9 +76,9 @@ The tested `llama3.1:8b` template conditionally expands the tool definitions ins
 {{- end }}
 ```
 
-The first request ends with a user message, so the tools are rendered there. After nanobot appends an assistant tool call and its result, that user message is no longer last, so the same API request history renders without the concrete tool block. On the next user turn, the tools reappear at a new position.
+The first request ends with a user message, so the tools are rendered there. After Sentinel appends an assistant tool call and its result, that user message is no longer last, so the same API request history renders without the concrete tool block. On the next user turn, the tools reappear at a new position.
 
-This is a model-template behavior. At the API boundary, nanobot continues to append the assistant tool call and tool result and sends the same tool definitions.
+This is a model-template behavior. At the API boundary, Sentinel continues to append the assistant tool call and tool result and sends the same tool definitions.
 
 ## Create a prefix-stable derived model
 
@@ -142,11 +142,11 @@ ollama list
 
 Ollama reuses the existing model layers. The new tag adds a small template and manifest instead of copying the base weights.
 
-## Select the derived model in nanobot
+## Select the derived model in Sentinel
 
 Open **Settings → Models → New preset**, select your Ollama connection, enter the derived model name, and save. Use **Enable preset** if it is disabled, then drag it to the first enabled position, marked **Primary**. This saves the default model used by sessions without their own model selection, including the fresh CLI session below.
 
-Run the CLI commands with the same nanobot home as the WebUI. If the WebUI uses a custom home, add `--home <path>` before each subcommand.
+Run the CLI commands with the same Sentinel home as the WebUI. If the WebUI uses a custom home, add `--home <path>` before each subcommand.
 
 <details>
 <summary>Manual configuration</summary>
@@ -218,7 +218,7 @@ Removing the derived tag does not remove `llama3.1:8b`.
 - A higher cache ratio reduces prompt evaluation, but model generation, tool execution, process startup, and storage can still dominate end-to-end latency.
 - Multiple Ollama slots change cache scheduling and may produce different results.
 
-## Related nanobot docs
+## Related Sentinel docs
 
 - [Provider Cookbook: Ollama Local Model](../provider-cookbook.md#recipe-ollama-local-model)
 - [Providers and Models: Ollama](../providers.md#ollama)

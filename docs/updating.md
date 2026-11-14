@@ -1,4 +1,4 @@
-# Updating nanobot
+# Updating Sentinel
 
 Use the update method that owns your installation. If your version does not include the WebUI updater, first upgrade through the original installer or package manager. This does not convert an existing installation into an installer-managed one.
 
@@ -17,7 +17,7 @@ Keep the original backup and retained JSONL import backups. Do not delete or ove
 
 1. Open the blue update entry in the sidebar or **Settings → About → Update**. Opening the dialog only checks the installation; it does not install or restart anything.
 2. Review the exact version and affected gateways. Active work must finish before shutdown. Gateways that were already stopped are not started by the update.
-3. Choose **Update & restart**. nanobot downloads and verifies the required files, backs up affected profiles, installs the update, and restarts the selected background gateways—not your computer or browser.
+3. Choose **Update & restart**. Sentinel downloads and verifies the required files, backs up affected profiles, installs the update, and restarts the selected background gateways—not your computer or browser.
 4. Wait for **Update complete**, which requires a reconnected gateway running the target version. Choose **Done** to reload the updated interface. If you hide the dialog, reopen it through **Settings → About → View details**.
 
 Inline updates support fresh official-installer environments and compatible POSIX uv 0.11.16 registry tool installations running a background gateway. Other installations show their own update instructions in the dialog; see [Installation owners](#installation-owners). Remote browsers need the gateway's explicit package-install permission.
@@ -30,9 +30,9 @@ Automatic installation requires official release approval and verified package c
 
 **Settings → About → Receive preview updates** is off by default. Enable it to try new features earlier, with a higher risk of bugs. The preference applies to this installation, not just the browser; changing it requires the same local or remote permission as installing packages. It never downloads, installs, or restarts on its own.
 
-Turn it off to receive only stable updates. If your Preview is newer than the latest stable release, nanobot keeps it until a newer stable release is available; it does not downgrade or restore old data. Installing a final release while Preview is enabled keeps Preview enabled for the next development cycle. You can skip intermediate previews.
+Turn it off to receive only stable updates. If your Preview is newer than the latest stable release, Sentinel keeps it until a newer stable release is available; it does not downgrade or restore old data. Installing a final release while Preview is enabled keeps Preview enabled for the next development cycle. You can skip intermediate previews.
 
-Stable fixes can arrive between feature releases. Preview availability depends on verified publication, not a promise of daily updates. Package-manager commands outside nanobot do not read this preference; choose their version or channel explicitly.
+Stable fixes can arrive between feature releases. Preview availability depends on verified publication, not a promise of daily updates. Package-manager commands outside Sentinel do not read this preference; choose their version or channel explicitly.
 
 ## Installation owners
 
@@ -44,7 +44,7 @@ When inline installation is unavailable, the update dialog identifies the instal
 | uv registry tool | Use the supported inline flow above, or `uv tool upgrade nanobot-ai` in its original environment. Keep recorded extras, constraints and additional packages; a pin needs an explicitly reviewed new constraint. |
 | pipx | Use `pipx upgrade nanobot-ai` only for an unconstrained registry install without recorded pip options. Otherwise preserve the original requirement, index/options, suffix and injected packages through the owner's workflow. |
 | Ordinary pip venv | Use that environment's Python with `-m pip install --upgrade 'nanobot-ai[<your existing extras>]'`; omit brackets for the base package. Do not guess optional extras. |
-| Source checkout | Preserve local changes, update the selected ref and environment, and follow the [development instructions](../CONTRIBUTING.md). Source is not the Preview release channel. |
+| Source checkout | Preserve local changes, update the selected ref and environment, and follow the [development instructions](./development.md). Source is not the Preview release channel. |
 | Docker / Compose | Pull or build the selected image and recreate the service with its existing data volumes. Do not pip-install into a running container. |
 | OS package, service manager or Desktop | Use the distributor or deployment's updater and launcher. |
 
@@ -54,11 +54,11 @@ Do not switch package managers to work around an error. Fixed wheel sources, loc
 
 ## Standalone API service removal
 
-`nanobot serve` and its OpenAI-compatible `/v1` endpoints have been removed. This also removes the API server controls in Settings and the `nanobot-api` Compose service. The Gateway, WebUI, Python SDK, and OpenAI-compatible model connections are separate and still supported. The Python SDK embeds nanobot in a Python application; it is not an HTTP-compatible replacement. The `api` install extra is now empty so upgrades can preserve an existing installation's recorded extras. New installations do not need it.
+`nanobot serve` and its OpenAI-compatible `/v1` endpoints have been removed. This also removes the API server controls in Settings and the `nanobot-api` Compose service. The Gateway, WebUI, Python SDK, and OpenAI-compatible model connections are separate and still supported. The Python SDK embeds Sentinel in a Python application; it is not an HTTP-compatible replacement. The `api` install extra is now empty so upgrades can preserve an existing installation's recorded extras. New installations do not need it.
 
 Before updating, stop any existing standalone API process through the launcher that started it. For a process started from Settings, use **Settings → System → Stop** in the old version. For Compose, use `docker compose stop nanobot-api` and `docker compose rm -f nanobot-api` with the old Compose file before switching to the new file. If you already switched, confirm which container belongs to your deployment and stop that old container explicitly; removing a service from the Compose file does not stop an existing container. Keep your bind mounts and volumes.
 
-Back up the configuration and data before updating. The old top-level `api` block is ignored on read and is omitted the next time nanobot saves the configuration. Session data and workspaces are not deleted or moved. If you must roll back, use the previous version and its matching deployment files, and recover the old service settings from your backup if necessary. Do not overwrite current configuration or conversations with a stale backup.
+Back up the configuration and data before updating. The old top-level `api` block is ignored on read and is omitted the next time Sentinel saves the configuration. Session data and workspaces are not deleted or moved. If you must roll back, use the previous version and its matching deployment files, and recover the old service settings from your backup if necessary. Do not overwrite current configuration or conversations with a stale backup.
 
 To read old API conversations after updating, open the same configuration and workspace with [the Python SDK](./python-sdk.md#botsessions). Use `await bot.sessions.list()` to find keys such as `api:default` and `api:<session_id>`, then use `await bot.sessions.get(key)` to read their messages. If the old launcher used a separate API workspace, pass that workspace to `Nanobot.from_config(config_path, workspace=workspace)` instead of using the Gateway's workspace.
 
@@ -76,7 +76,7 @@ If settlement is refused or its response is lost, the saved job remains availabl
 
 ## Automatic service recovery
 
-For installer-owned dedicated environments with supported background gateways, the update confirmation also authorizes bounded recovery of that exact operation. nanobot retains a separate copy of the original program and dependencies before changing packages; insufficient space aborts installation.
+For installer-owned dedicated environments with supported background gateways, the update confirmation also authorizes bounded recovery of that exact operation. Sentinel retains a separate copy of the original program and dependencies before changing packages; insufficient space aborts installation.
 
 If installation fails, recovery tries the already approved target once using saved files. If that also fails before the new gateway is activated, it can restore the original program and restart the reviewed gateways **only if protected user data is unchanged**. The dialog reports **Previous version restored**, not update success. A restored service needs a fresh review before another update.
 
@@ -84,7 +84,7 @@ Recovery never replaces current configuration or conversations with an old backu
 
 ## Standalone recovery
 
-When automatic recovery is unavailable or reports failure, the WebUI can show a repair command containing the saved job ID and exact Python and launcher paths. Copy that command and run it **on the gateway computer, as the original OS user**. It does not require a working nanobot environment, but it does need the original base Python.
+When automatic recovery is unavailable or reports failure, the WebUI can show a repair command containing the saved job ID and exact Python and launcher paths. Copy that command and run it **on the gateway computer, as the original OS user**. It does not require a working Sentinel environment, but it does need the original base Python.
 
 The following examples assume the gateway uses your terminal's normal home directory and a Python 3.11+ command. Prefer the exact paths shown by the WebUI when they differ.
 

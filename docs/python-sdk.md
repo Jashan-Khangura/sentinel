@@ -1,11 +1,11 @@
-# Nanobot Python SDK: Run an AI Agent from Python
+# Sentinel Python SDK: Run an AI Agent from Python
 
-Use nanobot as a Python library. The SDK gives you the same agent runtime used by the CLI, but from code: model routing, tools, workspace access, conversation history, memory, streaming events, and runtime helpers.
+Use Sentinel as a Python library. The SDK gives you the same agent runtime used by the CLI, but from code: model routing, tools, workspace access, conversation history, memory, streaming events, and runtime helpers.
 
 If you have used the OpenAI SDK before, the most important difference is this:
 
 - OpenAI SDK calls a model.
-- nanobot SDK runs an agent around a model.
+- Sentinel SDK runs an agent around a model.
 
 That means one SDK call can read files, call tools, keep session history, use memory, stream progress, and return structured runtime information.
 
@@ -22,7 +22,7 @@ your Python code
 
 ## Before You Start
 
-Install and configure nanobot first. If you have not done that yet, follow the [Quick Start](quick-start.md) and complete the setup wizard. For SDK-only Python environments, install the package with:
+Install and configure Sentinel first. If you have not done that yet, follow the [Quick Start](quick-start.md) and complete the setup wizard. For SDK-only Python environments, install the package with:
 
 ```bash
 python -m pip install nanobot-ai
@@ -185,7 +185,7 @@ This script shows the usual production shape: create one `Nanobot`, choose a sta
 | `session_key` | The conversation history key. Reuse it to continue a thread; change it to isolate a thread. |
 | Workspace | The local directory where file tools and shell tools operate. |
 | Tools | Capabilities the agent may call, such as file access, shell, web, or custom tools from your config. |
-| Memory | Long-term memory files managed by nanobot. |
+| Memory | Long-term memory files managed by Sentinel. |
 | Stream event | A typed event such as `text.delta`, `tool.started`, or `run.completed`. |
 | Model override | A temporary model or model preset used for one SDK instance or one run. |
 
@@ -210,7 +210,7 @@ async with Nanobot.from_config(workspace="/my/project") as bot:
     result = await bot.run("Explain the project structure")
 ```
 
-Use a custom config when you run multiple nanobot instances or test an isolated setup:
+Use a custom config when you run multiple Sentinel instances or test an isolated setup:
 
 ```python
 async with Nanobot.from_config(
@@ -220,7 +220,7 @@ async with Nanobot.from_config(
     result = await bot.run("Hello from bot A")
 ```
 
-The config controls what nanobot may use. The workspace is where nanobot keeps state for that instance. See [multiple-instances.md](multiple-instances.md) for multi-instance CLI and gateway examples.
+The config controls what Sentinel may use. The workspace is where Sentinel keeps state for that instance. See [multiple-instances.md](multiple-instances.md) for multi-instance CLI and gateway examples.
 
 ### Choose a default or per-run model
 
@@ -336,7 +336,7 @@ Always either consume the stream, call `await run.wait()` / `await run.text()`, 
 
 This is useful for evals, benchmark runners, migrations, and tests.
 
-Use `bot.sessions.ingest()` when you already have a transcript and want it to become nanobot session history. Ingesting a transcript does not call the model, execute tools, update memory, or compact automatically.
+Use `bot.sessions.ingest()` when you already have a transcript and want it to become Sentinel session history. Ingesting a transcript does not call the model, execute tools, update memory, or compact automatically.
 
 ```python
 await bot.sessions.ingest(
@@ -386,7 +386,7 @@ For application-owned durable text, `bot.memory.write(text)` writes `memory/MEMO
 
 ### Attach hooks for observability
 
-Hooks are an advanced escape hatch. Use them when you want custom logging, metrics, tracing, or output post-processing without modifying nanobot internals:
+Hooks are an advanced escape hatch. Use them when you want custom logging, metrics, tracing, or output post-processing without modifying Sentinel internals:
 
 ```python
 from nanobot.agent import AgentHook, AgentHookContext
@@ -583,7 +583,7 @@ Both compaction methods serialize with turns for the same session key. Call them
 
 ### Host integration context and persisted-turn callbacks
 
-Host applications can attach external context without copying or modifying the nanobot agent loop. A context provider receives a `RequestContext` before each model turn and may return one or more `RuntimeContextBlock` values. Use `attributes` for caller-owned routing data; nanobot keeps it separate from trusted channel metadata and does not persist it in session messages.
+Host applications can attach external context without copying or modifying the Sentinel agent loop. A context provider receives a `RequestContext` before each model turn and may return one or more `RuntimeContextBlock` values. Use `attributes` for caller-owned routing data; Sentinel keeps it separate from trusted channel metadata and does not persist it in session messages.
 
 `on_session_turn_persisted()` invokes its callback after a non-ephemeral turn has been saved. The callback receives `SessionTurnPersisted` and may read the completed transcript through `bot.sessions`. Callbacks run in registration order, and async callbacks are awaited before the run continues. They are observational: callback exceptions are logged and suppressed so the completed local turn remains successful. Durable external synchronization must catch failures and persist retry work before the callback returns. During SDK runs, callbacks execute while the session is still serialized. Schedule `bot.run()`, `bot.runtime.compact_session()`, or `bot.runtime.compact_idle_session()` for the same session after the callback returns.
 

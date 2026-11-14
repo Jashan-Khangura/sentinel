@@ -1,23 +1,23 @@
-# Build a Slack AI Agent with nanobot
+# Build a Slack AI Agent with Sentinel
 
-This guide connects nanobot to Slack through Socket Mode. No public webhook URL is required for the first working setup.
+This guide connects Sentinel to Slack through Socket Mode. No public webhook URL is required for the first working setup.
 
 ## What this guide builds
 
 - a Slack app with Socket Mode
 - a bot token and app-level token
-- the `slack` channel enabled in nanobot
+- the `slack` channel enabled in Sentinel
 - a DM pairing flow and mention test from an approved Slack user
 
 ## Prerequisites
 
-- A normal reply in your existing nanobot WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
+- A normal reply in your existing Sentinel WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
 
 - Permission to create a Slack app in a workspace.
 
 ## Continue from your running instance
 
-If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install nanobot again.
+If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install Sentinel again.
 
 For terminal or server setup, use the manual configuration section below. Reuse the config/home and executable from your working instance. Docker users should use the [container commands](../deployment.md#docker-compose).
 
@@ -100,7 +100,7 @@ Then DM the bot again, or mention it in a channel:
 ## Troubleshooting
 
 - If Socket Mode fails, confirm the app-level token starts with `xapp-`.
-- If the bot cannot send files, add `files:write`, reinstall the app, and restart nanobot.
+- If the bot cannot send files, add `files:write`, reinstall the app, and restart Sentinel.
 - If a DM responds normally without pairing, check that `dm.policy` is `"allowlist"`.
 - If channel messages are ignored, check event subscriptions and group policy.
 

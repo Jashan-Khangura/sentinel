@@ -1,6 +1,6 @@
-# How to Connect an AI Agent to Chat Apps with nanobot
+# How to Connect an AI Agent to Chat Apps with Sentinel
 
-nanobot can run as a self-hosted chatbot or AI agent in Telegram, Discord, Slack, WeChat, Email, Mattermost, and other chat apps. The gateway receives chat messages, runs the agent, and sends replies back to the same channel.
+Sentinel can run as a self-hosted chatbot or AI agent in Telegram, Discord, Slack, WeChat, Email, Mattermost, and other chat apps. The gateway receives chat messages, runs the agent, and sends replies back to the same channel.
 
 ## What you will build
 
@@ -15,7 +15,7 @@ Use chat apps when the agent should live where users already communicate: privat
 
 ## Before you start
 
-Complete [Quick Start](../quick-start.md) if nanobot is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
+Complete [Quick Start](../quick-start.md) if Sentinel is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
 
 Send `Hello!` in the WebUI before adding a channel. Then choose one platform guide for the bot/account prerequisites:
 
@@ -77,7 +77,7 @@ Use the full [Chat Apps reference](../chat-apps.md) when you manage `config.json
 - If messages do not arrive, inspect the running gateway logs and compare platform credentials, event permissions, and allow lists. Use `--verbose` when restarting that gateway for diagnosis.
 - If group replies are unexpected, review that channel's group policy.
 
-## Related nanobot docs
+## Related Sentinel docs
 
 - [Chat Apps](../chat-apps.md)
 - [Configuration](../configuration.md#channel-settings)

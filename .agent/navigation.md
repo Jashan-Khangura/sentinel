@@ -28,7 +28,7 @@ Start with an existing test that exercises the changed operation and its relevan
 
 | Surface | Focused command | Setup and full checks |
 | --- | --- | --- |
-| Python | From the root: `uv run --no-sync python -m pytest tests/path/test_feature.py` | [Contribution setup](../CONTRIBUTING.md#development-setup), including channel dependencies for strict checking |
+| Python | From the root: `uv run --no-sync python -m pytest tests/path/test_feature.py` | [Development guide](../docs/development.md), including channel dependencies for strict checking |
 | WebUI | From `webui/`: `bun run test src/tests/feature.test.tsx` | [WebUI checks](../webui/README.md#test); channel UI tests are included by the same configuration |
 | Browser | From `webui/`: `bun run test:browser browser/feature.spec.ts` | [WebUI checks](../webui/README.md#test) and the existing fixture for the affected interaction |
 | TUI | From `tui/`: `bun test src/feature/feature.test.ts` | [TUI checks](../tui/README.md); terminal behavior still needs its real terminal path |

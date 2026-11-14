@@ -1,6 +1,6 @@
-# How to Use an AI Agent WebUI with nanobot
+# How to Use an AI Agent WebUI with Sentinel
 
-nanobot includes a browser WebUI for persistent chat sessions, visible agent activity, workspace controls, Apps, MCP presets, Skills, settings, and Automations.
+Sentinel includes a browser WebUI for persistent chat sessions, visible agent activity, workspace controls, Apps, MCP presets, Skills, settings, and Automations.
 
 ## What you will build
 
@@ -15,7 +15,7 @@ Use the WebUI when you want a local AI agent interface that is easier to operate
 
 ## Before you start
 
-Complete [Quick Start](../quick-start.md) if nanobot is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
+Complete [Quick Start](../quick-start.md) if Sentinel is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
 
 The published wheel already includes the WebUI bundle. You only need the `webui/` source directory when changing the frontend.
 
@@ -27,7 +27,7 @@ nanobot webui
 
 The launcher checks setup, enables the local WebSocket channel after confirmation, starts the gateway, and opens the browser.
 
-When nanobot edits a file, the WebUI activity timeline can show the changed line counts, a unified diff, and an **Open file** action for a read-only preview. File previews use the chat's current workspace access mode: restricted access stays inside the selected workspace, while Full Access can preview files outside the workspace when the gateway allows it.
+When Sentinel edits a file, the WebUI activity timeline can show the changed line counts, a unified diff, and an **Open file** action for a read-only preview. File previews use the chat's current workspace access mode: restricted access stays inside the selected workspace, while Full Access can preview files outside the workspace when the gateway allows it.
 
 ## Browser notifications
 
@@ -58,9 +58,9 @@ Keep the page open and connected, and use HTTPS or localhost. On iPhone or iPad,
 - The gateway health endpoint is separate from the browser UI.
 - If the page opens but messages fail, check provider setup with `nanobot agent -m "Hello!"`.
 
-## Related nanobot docs
+## Related Sentinel docs
 
-- [Nanobot WebUI](../webui.md)
+- [Sentinel WebUI](../webui.md)
 - [Quick Start](../quick-start.md)
 - [WebSocket protocol](../websocket.md)
 - [Configuration](../configuration.md)

@@ -1,20 +1,20 @@
-# How to Deploy a Long-Running nanobot AI Agent Gateway
+# How to Deploy a Long-Running Sentinel AI Agent Gateway
 
-The nanobot gateway is the long-running self-hosted AI agent process that keeps WebUI sessions, chat apps, automations, local triggers, heartbeat jobs, Dream, and WebSocket delivery online.
+The Sentinel gateway is the long-running self-hosted AI agent process that keeps WebUI sessions, chat apps, automations, local triggers, heartbeat jobs, Dream, and WebSocket delivery online.
 
 ## What you will build
 
-- a verified nanobot config
+- a verified Sentinel config
 - a gateway process
 - a service or container deployment path with Docker, systemd, or macOS LaunchAgent
 
 ## When to use this
 
-Use this when nanobot should keep running after a single CLI turn. Chat apps, browser sessions, background automations, local triggers, and server-side integrations all depend on a live gateway.
+Use this when Sentinel should keep running after a single CLI turn. Chat apps, browser sessions, background automations, local triggers, and server-side integrations all depend on a live gateway.
 
 ## Start from your current setup
 
-If nanobot already replies in the WebUI, its gateway is already running. To keep it alive after closing the launcher, close the foreground launcher and start the same instance in background mode:
+If Sentinel already replies in the WebUI, its gateway is already running. To keep it alive after closing the launcher, close the foreground launcher and start the same instance in background mode:
 
 ```bash
 nanobot gateway --background
@@ -26,7 +26,7 @@ Run `nanobot webui` when you need to return to the browser; it attaches to the r
 
 For a new host, choose one setup path:
 
-- **Docker:** follow [container initialization and verification](../deployment.md#docker-compose). It creates the config and checks the model inside the container; a host nanobot installation is unnecessary.
+- **Docker:** follow [container initialization and verification](../deployment.md#docker-compose). It creates the config and checks the model inside the container; a host Sentinel installation is unnecessary.
 - **Host installation:** follow the [quick start](../quick-start.md). On a headless machine, use `nanobot onboard --wizard`, then `nanobot agent -m "Hello!"` to check the selected model.
 
 ## Keep the gateway running
@@ -60,7 +60,7 @@ nanobot gateway --verbose
 - Check logs with `docker compose logs`, `journalctl`, LaunchAgent logs, or `nanobot gateway --verbose`.
 - If Docker port publishing does not work, confirm the service is not bound only to container loopback.
 
-## Related nanobot docs
+## Related Sentinel docs
 
 - [Deployment](../deployment.md)
 - [Multiple Instances](../multiple-instances.md)

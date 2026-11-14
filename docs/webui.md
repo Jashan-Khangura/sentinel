@@ -1,6 +1,6 @@
-# Nanobot WebUI: Browser Workbench for Self-Hosted AI Agents
+# Sentinel WebUI: Browser Workbench for Self-Hosted AI Agents
 
-<!-- Meta description: Run nanobot from a browser WebUI with persistent and temporary chats, visible tool activity, workspace controls, Apps, skill discovery, settings, and Automations. -->
+<!-- Meta description: Run Sentinel from a browser WebUI with persistent and temporary chats, visible tool activity, workspace controls, Apps, skill discovery, settings, and Automations. -->
 
 The WebUI shares its gateway and saved sessions with the native terminal client and is included with `nanobot-ai`.
 
@@ -60,7 +60,7 @@ The message rail on wide screens and prompt-summary search in the header jump to
 
 ## Sharing access
 
-The WebUI administers one nanobot instance. Signed-in users share saved topics and administrative controls; there are no per-user roles or private topic ownership boundaries. The [remote installation restriction](#lan-access) limits package installation, not other administrative access.
+The WebUI administers one Sentinel instance. Signed-in users share saved topics and administrative controls; there are no per-user roles or private topic ownership boundaries. The [remote installation restriction](#lan-access) limits package installation, not other administrative access.
 
 Share WebUI access only with people you trust to administer the same agent. To give someone chat access without the administration interface, connect a [chat platform](./chat-apps.md) and configure its access policy. Channel approval still does not create a separate agent or memory store. For separate clients or users whose data must not mix, use [separate instances](./multiple-instances.md).
 
@@ -83,7 +83,7 @@ Share WebUI access only with people you trust to administer the same agent. To g
 
 ## Check for updates
 
-Open **Settings → About** to check for updates automatically. Startup, reconnecting, and normal chatting do not trigger background version checks. Use **Check again** or **Retry** to check manually; changing the update channel also refreshes its status. Checking does not install updates or restart nanobot.
+Open **Settings → About** to check for updates automatically. Startup, reconnecting, and normal chatting do not trigger background version checks. Use **Check again** or **Retry** to check manually; changing the update channel also refreshes its status. Checking does not install updates or restart Sentinel.
 
 ## Topic Workspace
 
@@ -101,11 +101,11 @@ Open a topic's sidebar action menu and choose **Create group** to turn it into a
 
 **Pane layout** controls the arrangement of resizable panes. Selecting a pane directs the shared composer to that topic. Group membership and layout persist across refreshes; grouping does not merge topic histories.
 
-To use work from another topic, mention it with `@` and tell nanobot what you need. See [Composer](#composer) for how to add a topic reference.
+To use work from another topic, mention it with `@` and tell Sentinel what you need. See [Composer](#composer) for how to add a topic reference.
 
 ### Activity and context usage
 
-While nanobot works, **Working for** shows the latest activity beside the timer, or below it on narrow screens. Select the timer to see the full reasoning and tool activity. Set **Settings → Appearance → Activity details** to **Expanded** if you prefer to see the details by default.
+While Sentinel works, **Working for** shows the latest activity beside the timer, or below it on narrow screens. Select the timer to see the full reasoning and tool activity. Set **Settings → Appearance → Activity details** to **Expanded** if you prefer to see the details by default.
 
 Expand the **Worked for** section to inspect the reasoning and tool activity for a completed turn.
 
@@ -147,13 +147,13 @@ After a model request fails and automatic retries stop, the WebUI shows the fail
 
 ### Delegated work
 
-When nanobot delegates work to subagents, **Subtasks** appears above the message input while tasks are queued, running, or stopping. It stays within reach as the conversation scrolls, even after the main reply finishes or you send another message. Open it for live activity; on narrow screens it opens from the bottom. The task list scrolls independently of the conversation.
+When Sentinel delegates work to subagents, **Subtasks** appears above the message input while tasks are queued, running, or stopping. It stays within reach as the conversation scrolls, even after the main reply finishes or you send another message. Open it for live activity; on narrow screens it opens from the bottom. The task list scrolls independently of the conversation.
 
 Finished tasks leave the live list when it is closed. If you are already reading the list, they remain until you close it. When all tasks finish with the list closed, a brief completion or failure summary appears and then disappears; focusing or hovering over it keeps it available.
 
 Saved results appear as compact, expandable records beside their associated requests, and scroll with the conversation. Results for earlier requests appear when their turns are loaded; tasks without a matching request in the displayed history are not shown there. Refreshing or reopening the WebUI restores active work in the fixed entry and finished work in the conversation, without restarting tasks or bringing all old tasks back into the live list. The WebUI retrieves finished tasks only for the loaded turns.
 
-Select a task for its read-only conversation and tool activity. Closing the details leaves it running; its stop button cancels only that task. Give follow-up instructions to nanobot in the main conversation.
+Select a task for its read-only conversation and tool activity. Closing the details leaves it running; its stop button cancels only that task. Give follow-up instructions to Sentinel in the main conversation.
 
 These controls appear when the connected host supports subagent tasks. See [Subagents](./concepts.md#subagents) for cancellation, saved history, and gateway restart behavior.
 
@@ -173,7 +173,7 @@ Project selection and Full Access controls require an owner-authenticated WebUI 
 
 Inputs to the same session with different workspace permissions wait for the active turn to finish, then run with their own permissions. Inputs with the same scope can still join the active turn.
 
-Use the workspace picker to browse folders on the connected nanobot host, enter an absolute path, or return to recent and starred projects; favorites persist across gateway restarts. The host name appears above saved locations. Project paths refer to that machine, not the browser's filesystem.
+Use the workspace picker to browse folders on the connected Sentinel host, enter an absolute path, or return to recent and starred projects; favorites persist across gateway restarts. The host name appears above saved locations. Project paths refer to that machine, not the browser's filesystem.
 
 Choose the project when starting a new topic. Saved topics, including forks, keep their project directory fixed. Start a new topic for another project. You can still change access mode within the same project while the topic is idle.
 
@@ -207,13 +207,13 @@ Images appear as thumbnails above the draft. Hover over a thumbnail for its file
 
 Choose or drop MP4, WebM, or MOV videos into the composer (one per message, up to 20 MiB per upload). You can play them in WebUI; the Agent cannot directly analyze their contents yet.
 
-To attach a file on the connected nanobot host, paste its path on its own. Quoted paths and spaces are supported; relative paths start from the topic's workspace. The topic's access permissions apply. Path references do not upload or copy the file and have no file-size or combined-size limit; supported formats and attachment counts still apply. If attaching fails, the text stays in your draft.
+To attach a file on the connected Sentinel host, paste its path on its own. Quoted paths and spaces are supported; relative paths start from the topic's workspace. The topic's access permissions apply. Path references do not upload or copy the file and have no file-size or combined-size limit; supported formats and attachment counts still apply. If attaching fails, the text stays in your draft.
 
 Files attached by path reflect changes to the original file and become unavailable if it is moved or deleted. Removing an attachment or deleting a topic does not delete the original.
 
 To reference another topic, type or paste its complete handle (such as `@luma`), choose it from the `@` menu, or drag it from the sidebar into the composer. Recognized handles are highlighted; unknown handles remain plain text. You can reference up to eight different topics in one message.
 
-Ask nanobot to find, read, or send messages to other saved topics, including those in other projects. For example, “Summarize @luma” or “Send this update to @luma.” Mentioning a topic alone does not send a message to it.
+Ask Sentinel to find, read, or send messages to other saved topics, including those in other projects. For example, “Summarize @luma” or “Send this update to @luma.” Mentioning a topic alone does not send a message to it.
 
 On touch-primary phones and tablets, **Enter** inserts a newline; tap the send arrow to submit. This also applies when a coarse-pointer tablet has a hardware keyboard attached. On desktop, **Enter** sends and **Shift+Enter** adds a newline. An open slash-command or mention menu takes precedence: Enter selects its item.
 
@@ -236,7 +236,7 @@ Test a new channel with a private DM. When a supported channel sends a pairing c
 **Apps → Ready** lists capabilities available for use:
 
 - **Agent Plugins** are local packages that can bundle skills, MCP servers, or both. A package under `<workspace>/plugins/` is installed but remains inactive until you enable it in Apps.
-- **CLI Apps** are command-line tool adapters on the nanobot host. Install and enable an adapter before attaching it to a turn.
+- **CLI Apps** are command-line tool adapters on the Sentinel host. Install and enable an adapter before attaching it to a turn.
 - **MCP** lists Model Context Protocol servers. Presets provide known configurations, and the **Add MCP server** panel accepts stdio, HTTP, and SSE servers. Custom HTTP/SSE servers can use no authentication, OAuth, or request headers. After saving an OAuth server, choose **Connect** to open its sign-in page. Presets such as Xmind, Notion, and Linear already use OAuth. HTTPS and localhost WebUIs return automatically; a remote plain-HTTP WebUI shows one field for pasting the complete localhost callback URL.
 
 CLI Apps run with a limited environment that excludes provider API keys. On Unix, they inherit `XDG_RUNTIME_DIR` when it is set in the gateway's environment, so desktop CLIs such as Obsidian can locate the running application. Start the gateway in the same desktop session as the app to inherit that runtime directory.
@@ -255,11 +255,11 @@ Open **Skills → Discover** to browse or search skills from skills.sh and Skill
 
 Marketplace skills are third-party instructions and may include executable scripts. Review the source and instructions before installing one, and enable only skills you trust with the same files, tools, and credentials available to your agent.
 
-Discover marks a skill as installed only when its recorded marketplace source matches. A skill with the same name from another source is a name conflict, not another installed copy. Older or manually copied skills without a source record remain usable and show “Installed source unknown.” Review the existing skill in **Installed** before removing it if you want a different source; installation never replaces it automatically. New installs keep a small `.nanobot-origin.json` receipt beside `SKILL.md`. Keep that receipt with the skill when moving or backing up the workspace. Older nanobot versions ignore it; no skill-directory rename or history migration is required.
+Discover marks a skill as installed only when its recorded marketplace source matches. A skill with the same name from another source is a name conflict, not another installed copy. Older or manually copied skills without a source record remain usable and show “Installed source unknown.” Review the existing skill in **Installed** before removing it if you want a different source; installation never replaces it automatically. New installs keep a small `.nanobot-origin.json` receipt beside `SKILL.md`. Keep that receipt with the skill when moving or backing up the workspace. Older Sentinel versions ignore it; no skill-directory rename or history migration is required.
 
 ## Automations
 
-Automations are agent turns that run later in a linked topic. Create them from the topic or channel where they are supposed to run so nanobot keeps the correct target context. When an automation runs, it normally delivers the result back to that topic.
+Automations are agent turns that run later in a linked topic. Create them from the topic or channel where they are supposed to run so Sentinel keeps the correct target context. When an automation runs, it normally delivers the result back to that topic.
 
 For the full automation model, creation flow, trigger CLI usage, and delivery semantics, see [`automations.md`](./automations.md).
 
@@ -274,7 +274,7 @@ The Automations view manages user-created jobs and can run scheduled jobs immedi
 
 Search accepts plain text and field filters such as `name:backup`, `chat:WeChat`, `schedule:09:30`, `cron:"0 23 * * *"`, `trigger`, and `status:paused`.
 
-An automation without a linked topic cannot be enabled or run from the WebUI, because nanobot would not know where to deliver the scheduled turn. Recreate it from the target topic or channel so the automation has complete context.
+An automation without a linked topic cannot be enabled or run from the WebUI, because Sentinel would not know where to deliver the scheduled turn. Recreate it from the target topic or channel so the automation has complete context.
 
 Local triggers do not have a WebUI "Run now" action because each run needs a message. Use the copied `nanobot trigger ...` command and replace `"message"` with the content that should be delivered.
 
@@ -306,7 +306,7 @@ The gateway refuses to start with `host` set to `"0.0.0.0"` unless `token` or `t
 
 Plain HTTP is enough for basic WebUI access, but browsers expose microphone capture only in secure contexts. Voice input works on same-machine localhost; from another device, serve the WebUI over HTTPS with a certificate that device trusts. Configure [`sslCertfile` and `sslKeyfile`](./websocket.md#tlsssl) on the WebSocket channel and open `https://<your-host>:8765`, or terminate HTTPS at a reverse proxy and use that proxy's HTTPS URL.
 
-Remote WebUI clients with a valid token can view and use Apps and installed skills. Actions that install missing nanobot support packages or third-party marketplace skills are blocked by default. To let trusted remote administrators perform those installations through the WebUI, opt in explicitly:
+Remote WebUI clients with a valid token can view and use Apps and installed skills. Actions that install missing Sentinel support packages or third-party marketplace skills are blocked by default. To let trusted remote administrators perform those installations through the WebUI, opt in explicitly:
 
 <details>
 <summary>Manual configuration</summary>

@@ -1,20 +1,20 @@
 # Chat Apps for Self-Hosted AI Agents
 
-Connect nanobot to Telegram, Discord, Slack, WeChat, Email, Mattermost, Linear, and other chat platforms. This page is the full chat-channel reference. If you want a focused setup path for one platform, start with a guide:
+Connect Sentinel to Telegram, Discord, Slack, WeChat, Email, Mattermost, Linear, and other chat platforms. This page is the full chat-channel reference. If you want a focused setup path for one platform, start with a guide:
 
 | Platform | Guide |
 |---|---|
-| Telegram | [Build a Telegram AI Agent with nanobot](./guides/telegram-ai-agent.md) |
-| Discord | [Build a Discord AI Agent with nanobot](./guides/discord-ai-agent.md) |
-| Slack | [Build a Slack AI Agent with nanobot](./guides/slack-ai-agent.md) |
-| Feishu | [Build a Feishu AI Agent with nanobot](./guides/feishu-ai-agent.md) |
-| WhatsApp | [Build a WhatsApp AI Agent with nanobot](./guides/whatsapp-ai-agent.md) |
-| WhatsApp Agent Platform | [Connect nanobot to WhatsApp Agent Platform](./guides/whatsapp-agent-platform.md) |
-| WeChat | [Build a WeChat AI Agent with nanobot](./guides/wechat-ai-agent.md) |
-| QQ | [Build a QQ AI Agent with nanobot](./guides/qq-ai-agent.md) |
-| Email | [Build an Email AI Agent with nanobot](./guides/email-ai-agent.md) |
-| Mattermost | [Build a Mattermost AI Agent with nanobot](./guides/mattermost-ai-agent.md) |
-| Linear | [Use nanobot as a native Linear agent](./guides/linear-agent.md) |
+| Telegram | [Build a Telegram AI Agent with Sentinel](./guides/telegram-ai-agent.md) |
+| Discord | [Build a Discord AI Agent with Sentinel](./guides/discord-ai-agent.md) |
+| Slack | [Build a Slack AI Agent with Sentinel](./guides/slack-ai-agent.md) |
+| Feishu | [Build a Feishu AI Agent with Sentinel](./guides/feishu-ai-agent.md) |
+| WhatsApp | [Build a WhatsApp AI Agent with Sentinel](./guides/whatsapp-ai-agent.md) |
+| WhatsApp Agent Platform | [Connect Sentinel to WhatsApp Agent Platform](./guides/whatsapp-agent-platform.md) |
+| WeChat | [Build a WeChat AI Agent with Sentinel](./guides/wechat-ai-agent.md) |
+| QQ | [Build a QQ AI Agent with Sentinel](./guides/qq-ai-agent.md) |
+| Email | [Build an Email AI Agent with Sentinel](./guides/email-ai-agent.md) |
+| Mattermost | [Build a Mattermost AI Agent with Sentinel](./guides/mattermost-ai-agent.md) |
+| Linear | [Use Sentinel as a native Linear agent](./guides/linear-agent.md) |
 
 Want to build your own channel? See the [Channel Package Guide](./channel-package-guide.md).
 
@@ -34,7 +34,7 @@ For normal local setup, let the WebUI write and validate the channel config:
 2. Open **Channels**.
 3. Search for the platform and open its setup panel.
 4. Follow the credential fields or QR flow. The screen tells you which platform-side token, permission, account, or URL it needs.
-5. Let nanobot install the optional channel support when prompted.
+5. Let Sentinel install the optional channel support when prompted.
 6. Restart from the WebUI if it reports that a restart is required.
 7. Send a private test message. If the channel returns a pairing code, approve the pending request in the WebUI and send the message again.
 
@@ -45,13 +45,13 @@ Optional package installation is available to a same-machine WebUI by default. R
 The sections below explain what each chat platform requires and provide manual config for deployments that manage `config.json` directly.
 
 > [!NOTE]
-> If you are upgrading from a version where chat app SDKs were installed by default, enable the channel in the same Python environment so nanobot installs its manifest-declared dependencies:
+> If you are upgrading from a version where chat app SDKs were installed by default, enable the channel in the same Python environment so Sentinel installs its manifest-declared dependencies:
 >
 > ```bash
-> nanobot plugins enable <channel>
+> Sentinel plugins enable <channel>
 > ```
 >
-> Replace `<channel>` with names such as `telegram`, `slack`, `feishu`, `dingtalk`, `matrix`, `qq`, `napcat`, `weixin`, `wecom`, `msteams`, or `whatsapp_agent`. To turn a channel off later, run `nanobot plugins disable <channel>`. nanobot keeps the saved settings, but stops loading that channel after the next restart.
+> Replace `<channel>` with names such as `telegram`, `slack`, `feishu`, `dingtalk`, `matrix`, `qq`, `napcat`, `weixin`, `wecom`, `msteams`, or `whatsapp_agent`. To turn a channel off later, run `nanobot plugins disable <channel>`. Sentinel keeps the saved settings, but stops loading that channel after the next restart.
 
 ## Manual Setup Pattern
 
@@ -67,7 +67,7 @@ Every chat app uses the same shape:
 3. Merge that platform's JSON snippet into `~/.nanobot/config.json`.
 4. For DM pairing, use the channel-specific policy described above, let the first DM receive a pairing code, then approve it with `/pairing approve <code>`.
 5. For channels without pairing, such as Email, keep access narrow with `allowFrom` or the platform-specific allow list.
-6. Check that nanobot can see the configured channel:
+6. Check that Sentinel can see the configured channel:
 
 ```bash
 nanobot channels status
@@ -81,7 +81,7 @@ nanobot gateway
 
 8. Send a test DM. If the bot returns a pairing code, approve it and send the message again. In group chats, follow that channel's `groupPolicy` behavior: many channels default to mention-only, while Matrix and WhatsApp default to open group replies.
 
-If `nanobot channels status` does not show the channel as enabled, the config snippet is in the wrong place, the channel name is misspelled, or the config file you edited is not the one nanobot is reading. If the channel is enabled but messages do not arrive, run `nanobot gateway --verbose` and compare the platform-side credentials, event permissions, and allow lists.
+If `nanobot channels status` does not show the channel as enabled, the config snippet is in the wrong place, the channel name is misspelled, or the config file you edited is not the one Sentinel is reading. If the channel is enabled but messages do not arrive, run `nanobot gateway --verbose` and compare the platform-side credentials, event permissions, and allow lists.
 
 > `allowFrom: ["*"]` bypasses pairing and allows anyone who can reach that channel to talk to the bot. Use it only when that is intentional, or temporarily while testing in a private sandbox.
 
@@ -110,11 +110,11 @@ If `nanobot channels status` does not show the channel as enabled, the config sn
 <details id="linear">
 <summary><b>Linear</b></summary>
 
-Linear is a native Agent channel rather than a comment bot. A user starts a task by explicitly mentioning the installed nanobot app in an issue. Follow-up prompts inside that Agent Session continue the same nanobot session without another mention. Ordinary issue comments do not invoke nanobot.
+Linear is a native Agent channel rather than a comment bot. A user starts a task by explicitly mentioning the installed Sentinel app in an issue. Follow-up prompts inside that Agent Session continue the same Sentinel session without another mention. Ordinary issue comments do not invoke Sentinel.
 
-The native Agent API is webhook-based. Linear must reach a public HTTPS URL. An HTTPS tunnel can forward requests to nanobot's local listener without a public IP; a publicly reachable server can use a reverse proxy. Use a fixed hostname for ongoing use. Temporary tunnels also work for testing, but a hostname change requires updating nanobot's public URL and the app's callback and webhook URLs.
+The native Agent API is webhook-based. Linear must reach a public HTTPS URL. An HTTPS tunnel can forward requests to Sentinel's local listener without a public IP; a publicly reachable server can use a reverse proxy. Use a fixed hostname for ongoing use. Temporary tunnels also work for testing, but a hostname change requires updating Sentinel's public URL and the app's callback and webhook URLs.
 
-The recommended setup is **Channels → Linear**. Enter the public URL and wait for automatic saving, select **Create prefilled Linear app**, create the app, then copy its Client ID, Client Secret, and Webhook Signing Secret back into nanobot. Leave each secret field to save it. Once the settings are saved, choose **Connect Linear**. OAuth requests only `read`, `write`, and `app:mentionable`; it deliberately does not request `app:assignable` so a new task must begin with an @mention.
+The recommended setup is **Channels → Linear**. Enter the public URL and wait for automatic saving, select **Create prefilled Linear app**, create the app, then copy its Client ID, Client Secret, and Webhook Signing Secret back into Sentinel. Leave each secret field to save it. Once the settings are saved, choose **Connect Linear**. OAuth requests only `read`, `write`, and `app:mentionable`; it deliberately does not request `app:assignable` so a new task must begin with an @mention.
 
 See the [native Linear agent guide](./guides/linear-agent.md) for the complete setup, tunnel examples, security model, and troubleshooting.
 
@@ -130,7 +130,7 @@ See the [native Linear agent guide](./guides/linear-agent.md) for the complete s
 3. Paste the token. If the gateway cannot reach Telegram directly, set the address in **Settings → Advanced → Shared proxy**, then enable **Use proxy** in Telegram's advanced options.
 4. Save and enable Telegram, then send the bot a direct message.
 
-The configuration badge means nanobot found a saved token. The live connection check is separate, so a temporary Telegram or proxy outage does not make an existing configuration disappear. Saved tokens and proxy URLs remain masked.
+The configuration badge means Sentinel found a saved token. The live connection check is separate, so a temporary Telegram or proxy outage does not make an existing configuration disappear. Saved tokens and proxy URLs remain masked.
 
 See the [step-by-step Telegram guide](./guides/telegram-ai-agent.md) for pairing and troubleshooting.
 
@@ -189,7 +189,7 @@ nanobot gateway
 
 **Webhook mode (optional)**
 
-Telegram uses long polling by default. To receive updates through a webhook, expose a public HTTPS URL that forwards to nanobot's local listener and set `mode` to `webhook`:
+Telegram uses long polling by default. To receive updates through a webhook, expose a public HTTPS URL that forwards to Sentinel's local listener and set `mode` to `webhook`:
 
 ```json
 {
@@ -210,9 +210,9 @@ Telegram uses long polling by default. To receive updates through a webhook, exp
 }
 ```
 
-> `webhookSecretToken` is required in webhook mode. Do not expose the local webhook listener directly to the public internet without a reverse proxy or tunnel in front of it. TLS/Host policy is handled by your proxy; nanobot only listens on `webhookListenHost:webhookListenPort` and validates Telegram's webhook secret token. `webhookMaxConnections` defaults to `4`; nanobot still serializes Telegram updates per conversation before forwarding them to the agent.
+> `webhookSecretToken` is required in webhook mode. Do not expose the local webhook listener directly to the public internet without a reverse proxy or tunnel in front of it. TLS/Host policy is handled by your proxy; Sentinel only listens on `webhookListenHost:webhookListenPort` and validates Telegram's webhook secret token. `webhookMaxConnections` defaults to `4`; Sentinel still serializes Telegram updates per conversation before forwarding them to the agent.
 >
-> `webhookUrl` is the public HTTPS URL registered with Telegram. `webhookPath` is the local path nanobot listens on. They often use the same path, but may differ when a reverse proxy or tunnel rewrites the request path.
+> `webhookUrl` is the public HTTPS URL registered with Telegram. `webhookPath` is the local path Sentinel listens on. They often use the same path, but may differ when a reverse proxy or tunnel rewrites the request path.
 
 </details>
 
@@ -229,15 +229,15 @@ nanobot plugins enable mochat
 
 Without these dependencies, Mochat still works through HTTP polling.
 
-**1. Ask nanobot to set up Mochat for you**
+**1. Ask Sentinel to set up Mochat for you**
 
-Simply send this message to nanobot (replace `xxx@xxx` with your real email):
+Simply send this message to Sentinel (replace `xxx@xxx` with your real email):
 
 ```
 Read https://raw.githubusercontent.com/HKUDS/MoChat/refs/heads/main/skills/nanobot/skill.md and register on MoChat. My Email account is xxx@xxx Bind me as your owner and DM me on MoChat.
 ```
 
-nanobot will automatically register, configure `~/.nanobot/config.json`, and connect to Mochat.
+Sentinel will automatically register, configure `~/.nanobot/config.json`, and connect to Mochat.
 
 **2. Restart gateway**
 
@@ -245,7 +245,7 @@ nanobot will automatically register, configure `~/.nanobot/config.json`, and con
 nanobot gateway
 ```
 
-That's it — nanobot handles the rest!
+That's it — Sentinel handles the rest!
 
 <br>
 
@@ -468,7 +468,7 @@ nanobot gateway
 
 **Optional: static LID mappings**
 
-Modern WhatsApp can deliver a sender's LID instead of their phone number. nanobot learns LID to phone mappings at runtime when both identifiers are present, but you can also seed mappings up front so the phone number resolves from the very first message:
+Modern WhatsApp can deliver a sender's LID instead of their phone number. Sentinel learns LID to phone mappings at runtime when both identifiers are present, but you can also seed mappings up front so the phone number resolves from the very first message:
 
 ```json
 {
@@ -487,9 +487,9 @@ Modern WhatsApp can deliver a sender's LID instead of their phone number. nanobo
 <details>
 <summary><b>WhatsApp Agent Platform</b></summary>
 
-Connects nanobot through the **official** WhatsApp Agent Platform API. The agent appears as its own chat in WhatsApp and can only talk to you, its creator. No QR pairing, no linked device, and no optional Python dependencies.
+Connects Sentinel through the **official** WhatsApp Agent Platform API. The agent appears as its own chat in WhatsApp and can only talk to you, its creator. No QR pairing, no linked device, and no optional Python dependencies.
 
-This is a different channel from `whatsapp`. nanobot is an independent third-party project, not a WhatsApp product. See the [WhatsApp Agent Platform guide](./guides/whatsapp-agent-platform.md) for the full comparison and walkthrough.
+This is a different channel from `whatsapp`. Sentinel is an independent third-party project, not a WhatsApp product. See the [WhatsApp Agent Platform guide](./guides/whatsapp-agent-platform.md) for the full comparison and walkthrough.
 
 **1. Create the agent in WhatsApp**
 
@@ -519,7 +519,7 @@ nanobot gateway
 **Notes**
 
 - At most one gateway may poll a given agent token. A second one causes `409` and is logged as a duplicate-poller error.
-- Agent conversations are not end-to-end encrypted. nanobot and your configured model provider process these messages; your other WhatsApp chats are unaffected. Review the [third-party agent terms](https://www.whatsapp.com/legal/third-party-agents-terms) before connecting.
+- Agent conversations are not end-to-end encrypted. Sentinel and your configured model provider process these messages; your other WhatsApp chats are unaffected. Review the [third-party agent terms](https://www.whatsapp.com/legal/third-party-agents-terms) before connecting.
 - Replies are split at 4096 characters. Progress and tool-hint messages are off by default because every send spends the same 12-per-minute budget.
 - Ambiguous send outcomes (HTTP `500`, read timeouts) are not retried by default, because a duplicate is worse than a miss. Set `retryAmbiguousSends: true` to opt in.
 
@@ -538,7 +538,7 @@ nanobot channels login feishu
 # Use --force to create/sign in with a new bot
 ```
 
-Open the printed URL or scan the QR code with Feishu/Lark on your phone. If the optional `qrcode` package is installed, nanobot shows a terminal QR code; otherwise it prints the login URL. nanobot writes `appId`, `appSecret`, `domain`, and `enabled` under `channels.feishu` in the active config file. Use `--config <path>` to update a non-default config.
+Open the printed URL or scan the QR code with Feishu/Lark on your phone. If the optional `qrcode` package is installed, Sentinel shows a terminal QR code; otherwise it prints the login URL. Sentinel writes `appId`, `appSecret`, `domain`, and `enabled` under `channels.feishu` in the active config file. Use `--config <path>` to update a non-default config.
 
 If QR login is unavailable for your account, use manual setup below.
 
@@ -549,10 +549,10 @@ If QR login is unavailable for your account, use manual setup below.
 - Create a new app → Enable **Bot** capability
 - **Permissions**:
   - `im:message` (send messages) and `im:message.p2p_msg:readonly` (receive messages)
-  - **Streaming replies** (default in nanobot): add **`cardkit:card:write`** (often labeled **Create and update cards** in the Feishu developer console). Required for CardKit entities and streamed assistant text. Older apps may not have it yet — open **Permission management**, enable the scope, then **publish** a new app version if the console requires it.
+  - **Streaming replies** (default in Sentinel): add **`cardkit:card:write`** (often labeled **Create and update cards** in the Feishu developer console). Required for CardKit entities and streamed assistant text. Older apps may not have it yet — open **Permission management**, enable the scope, then **publish** a new app version if the console requires it.
   - If you **cannot** add `cardkit:card:write`, set `"streaming": false` under `channels.feishu` (see below). The bot still works; replies use normal interactive cards without token-by-token streaming.
 - **Events**: Add `im.message.receive_v1` (receive messages)
-  - Select **Long Connection** mode (requires running nanobot first to establish connection)
+  - Select **Long Connection** mode (requires running Sentinel first to establish connection)
 - Get **App ID** and **App Secret** from "Credentials & Basic Info"
 - Publish the app
 
@@ -579,7 +579,7 @@ If QR login is unavailable for your account, use manual setup below.
 }
 ```
 
-> `streaming` defaults to `true`. Use `false` if your app does not have **`cardkit:card:write`** (see permissions above). `encryptKey` and `verificationToken` are optional for Long Connection mode. `allowFrom`: Add your open_id (find it in nanobot logs when you message the bot). Use `["*"]` to allow all users. `groupPolicy`: `"mention"` (default — respond only when @mentioned), `"open"` (respond to all group messages). Private chats always respond. `reactEmoji`: Emoji for "processing" status (default: `OnIt`). See [available emojis](https://open.larkoffice.com/document/server-docs/im-v1/message-reaction/emojis-introduce). `doneEmoji`: Optional emoji for "completed" status (e.g., `DONE`, `OK`, `HEART`). When set, bot adds this reaction after removing `reactEmoji`. `toolHintPrefix`: Prefix for inline tool hints in streaming cards (default: `🔧`). `domain`: `"feishu"` (default) for China (open.feishu.cn), `"lark"` for international Lark (open.larksuite.com).
+> `streaming` defaults to `true`. Use `false` if your app does not have **`cardkit:card:write`** (see permissions above). `encryptKey` and `verificationToken` are optional for Long Connection mode. `allowFrom`: Add your open_id (find it in Sentinel logs when you message the bot). Use `["*"]` to allow all users. `groupPolicy`: `"mention"` (default — respond only when @mentioned), `"open"` (respond to all group messages). Private chats always respond. `reactEmoji`: Emoji for "processing" status (default: `OnIt`). See [available emojis](https://open.larkoffice.com/document/server-docs/im-v1/message-reaction/emojis-introduce). `doneEmoji`: Optional emoji for "completed" status (e.g., `DONE`, `OK`, `HEART`). When set, bot adds this reaction after removing `reactEmoji`. `toolHintPrefix`: Prefix for inline tool hints in streaming cards (default: `🔧`). `domain`: `"feishu"` (default) for China (open.feishu.cn), `"lark"` for international Lark (open.larksuite.com).
 
 **3. Run**
 
@@ -623,7 +623,7 @@ nanobot channels login qq
 
 To enter them yourself, copy **AppID** and **AppSecret** from **开发设置 (Developer Settings)** into `channels.qq`:
 
-> - `allowFrom`: Add your openid (find it in nanobot logs when you message the bot). Use `["*"]` for public access.
+> - `allowFrom`: Add your openid (find it in Sentinel logs when you message the bot). Use `["*"]` for public access.
 > - `msgFormat`: Optional. Use `"plain"` (default) for maximum compatibility with legacy QQ clients, or `"markdown"` for richer formatting on newer clients.
 > - For production: submit a review in the bot console and publish. See [QQ Bot Docs](https://bot.q.qq.com/wiki/) for the full publishing flow.
 
@@ -771,9 +771,9 @@ nanobot plugins enable slack
 - **App Home**: Scroll to **Show Tabs** → Enable **Messages Tab** → Check **"Allow users to send Slash commands and messages from the messages tab"**
 - **Install App**: Click **Install to Workspace** → Authorize → copy the **Bot Token** (`xoxb-...`)
 
-> `files:read` is required to read files users send to nanobot. `files:write` is required for nanobot to send images, videos, and other file uploads. If you add either scope later, reinstall the Slack app to the workspace and restart nanobot so it uses the updated bot token.
+> `files:read` is required to read files users send to Sentinel. `files:write` is required for Sentinel to send images, videos, and other file uploads. If you add either scope later, reinstall the Slack app to the workspace and restart Sentinel so it uses the updated bot token.
 
-**3. Configure nanobot**
+**3. Configure Sentinel**
 
 ```json
 {
@@ -811,7 +811,7 @@ The listed Slack user can DM the bot directly. Other DM senders receive a pairin
 <details>
 <summary><b>Email</b></summary>
 
-Give nanobot its own email account. It polls **IMAP** for incoming mail and replies via **SMTP** — like a personal email assistant.
+Give Sentinel its own email account. It polls **IMAP** for incoming mail and replies via **SMTP** — like a personal email assistant.
 
 **1. Get credentials (Gmail example)**
 - Create a dedicated Gmail account for your bot (e.g. `my-nanobot@gmail.com`)
@@ -893,10 +893,10 @@ nanobot plugins enable weixin
 }
 ```
 
-> - `allowFrom`: Add the sender ID you see in nanobot logs for your WeChat account. Use `["*"]` to allow all users.
-> - `token`: Optional. If omitted, log in interactively and nanobot will save the token for you.
-> - `routeTag`: Optional. When your upstream Weixin deployment requires request routing, nanobot will send it as the `SKRouteTag` header.
-> - `stateDir`: Optional. Defaults to nanobot's runtime directory for Weixin state.
+> - `allowFrom`: Add the sender ID you see in Sentinel logs for your WeChat account. Use `["*"]` to allow all users.
+> - `token`: Optional. If omitted, log in interactively and Sentinel will save the token for you.
+> - `routeTag`: Optional. When your upstream Weixin deployment requires request routing, Sentinel will send it as the `SKRouteTag` header.
+> - `stateDir`: Optional. Defaults to Sentinel's runtime directory for Weixin state.
 > - `pollTimeout`: Optional long-poll timeout in seconds.
 
 **3. Login**
@@ -1001,7 +1001,7 @@ Create or reuse a Microsoft Teams / Azure bot app registration. Set the bot mess
 ```
 
 > - `replyInThread: true` replies to the triggering Teams activity when a stored `activity_id` is available.
-> - `mentionOnlyResponse` controls what Nanobot receives when a user sends only a bot mention (`<at>Nanobot</at>`). Set to `""` to ignore mention-only messages.
+> - `mentionOnlyResponse` controls what Sentinel receives when a user sends only a bot mention (`<at>Nanobot</at>`). Set to `""` to ignore mention-only messages.
 > - `validateInboundAuth: true` enables inbound Bot Framework bearer-token validation (signature, issuer, audience, lifetime, `serviceUrl`). This is the safe default for public deployments. Only set it to `false` for local development or tightly controlled testing.
 > - `refTtlDays` (default `30`) controls how old stored conversation refs can be before they are pruned.
 > - `pruneWebChatRefs` (default `true`) drops refs with `webchat.botframework.com` service URLs.

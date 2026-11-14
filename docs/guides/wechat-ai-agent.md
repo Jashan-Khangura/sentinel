@@ -1,23 +1,23 @@
-# Build a WeChat AI Agent with nanobot
+# Build a WeChat AI Agent with Sentinel
 
-This guide connects nanobot to WeChat through the `weixin` channel. The channel uses HTTP long polling with QR-code login through the supported upstream API.
+This guide connects Sentinel to WeChat through the `weixin` channel. The channel uses HTTP long polling with QR-code login through the supported upstream API.
 
 ## What this guide builds
 
-- the `weixin` channel enabled in nanobot
+- the `weixin` channel enabled in Sentinel
 - a QR-code login session
 - one pairing-approved WeChat sender
 - a running gateway for message delivery
 
 ## Prerequisites
 
-- A normal reply in your existing nanobot WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
+- A normal reply in your existing Sentinel WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
 
 - A WeChat account that can complete QR-code login.
 
 ## Continue from your running instance
 
-If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install nanobot again.
+If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install Sentinel again.
 
 For terminal or server setup, use the manual configuration section below. Reuse the config/home and executable from your working instance. Docker users should use the [container commands](../deployment.md#docker-compose).
 
@@ -93,7 +93,7 @@ Send the message again after approval and watch gateway logs for the sender ID a
 
 - If login fails, rerun `nanobot channels login weixin --force`.
 - If a first private message returns a pairing code, that is expected. Approve the code before testing normal agent replies.
-- If messages are denied without a pairing code, check gateway logs for whether WeChat provided the context token required for nanobot to reply.
+- If messages are denied without a pairing code, check gateway logs for whether WeChat provided the context token required for Sentinel to reply.
 - If polling disconnects, restart the gateway and check network reachability to the upstream service.
 
 ## Next: memory, automations, MCP tools

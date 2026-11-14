@@ -1,10 +1,10 @@
-# How to Configure Web Search for a nanobot AI Agent
+# How to Configure Web Search for a Sentinel AI Agent
 
-nanobot includes built-in web search and web fetch tools. Search uses DuckDuckGo by default and can be configured for API-backed or self-hosted providers.
+Sentinel includes built-in web search and web fetch tools. Search uses DuckDuckGo by default and can be configured for API-backed or self-hosted providers.
 
 ## What you will build
 
-- web tools enabled in nanobot
+- web tools enabled in Sentinel
 - one search provider selected in the WebUI or `config.json`
 - optional web fetch settings for page reading
 
@@ -14,7 +14,7 @@ Configure web search when the agent needs current information, public web resear
 
 ## Before you start
 
-Complete [Quick Start](../quick-start.md) if nanobot is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
+Complete [Quick Start](../quick-start.md) if Sentinel is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
 
 Web tools are enabled by default. Configure them only when you want a specific provider, API key, proxy, fetch behavior, or SSRF allowlist.
 
@@ -85,7 +85,7 @@ Ask a question that requires current information and inspect the tool activity i
 - If fetch is blocked, inspect the target URL and SSRF whitelist.
 - If a proxy changes network behavior, verify `NO_PROXY` and proxy settings.
 
-## Related nanobot docs
+## Related Sentinel docs
 
 - [Configuration: Web Tools](../configuration.md#web-tools)
 - [Security](../configuration.md#security)

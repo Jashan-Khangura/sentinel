@@ -1,9 +1,9 @@
-# Build a WhatsApp AI Agent with nanobot
+# Build a WhatsApp AI Agent with Sentinel
 
-This guide connects nanobot to WhatsApp through the `whatsapp` channel. The channel links as a WhatsApp device and uses the same nanobot agent runtime, tools, memory, and workspace as the CLI and WebUI.
+This guide connects Sentinel to WhatsApp through the `whatsapp` channel. The channel links as a WhatsApp device and uses the same Sentinel agent runtime, tools, memory, and workspace as the CLI and WebUI.
 
 > [!NOTE]
-> WhatsApp also offers an official Agent Platform where the agent appears as its own chat and talks only to you. That is a separate channel with different tradeoffs — no group support, no end-to-end encryption, and limited country availability, but an officially supported interface that does not rely on a linked device. See [Connect nanobot to WhatsApp Agent Platform](./whatsapp-agent-platform.md) to compare them.
+> WhatsApp also offers an official Agent Platform where the agent appears as its own chat and talks only to you. That is a separate channel with different tradeoffs — no group support, no end-to-end encryption, and limited country availability, but an officially supported interface that does not rely on a linked device. See [Connect Sentinel to WhatsApp Agent Platform](./whatsapp-agent-platform.md) to compare them.
 
 ## What this guide builds
 
@@ -14,14 +14,14 @@ This guide connects nanobot to WhatsApp through the `whatsapp` channel. The chan
 
 ## Prerequisites
 
-- A normal reply in your existing nanobot WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
+- A normal reply in your existing Sentinel WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
 
 - A WhatsApp account that can link a new device.
 - A machine that can keep `nanobot gateway` running.
 
 ## Continue from your running instance
 
-If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install nanobot again.
+If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install Sentinel again.
 
 For terminal or server setup, use the manual configuration section below. Reuse the config/home and executable from your working instance. Docker users should use the [container commands](../deployment.md#docker-compose).
 
@@ -100,7 +100,7 @@ Send the message again after approval. Confirm that your private chat now receiv
 - If WhatsApp cannot load `libmagic`, install it with `brew install libmagic` on macOS or `sudo apt install libmagic1` on Debian/Ubuntu. On Windows, check the `python-magic-bin` installation and Python architecture.
 - If QR linking fails, rerun `nanobot channels login whatsapp`.
 - If you are migrating from the old bridge, remove `bridgeUrl` and `bridgeToken`, then re-login.
-- If a sender appears as a LID instead of a phone number, let nanobot learn the mapping at runtime or use `lidMappings` in the full reference.
+- If a sender appears as a LID instead of a phone number, let Sentinel learn the mapping at runtime or use `lidMappings` in the full reference.
 - If a first private message returns a pairing code, approve it before testing normal replies.
 
 ## Next: memory, automations, MCP tools

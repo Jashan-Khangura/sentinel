@@ -1,6 +1,6 @@
-# How to Configure an OpenAI-Compatible Provider in nanobot
+# How to Configure an OpenAI-Compatible Provider in Sentinel
 
-nanobot can call OpenAI-compatible model providers by configuring an `apiBase`, optional `apiKey`, and a model preset that references that provider name.
+Sentinel can call OpenAI-compatible model providers by configuring an `apiBase`, optional `apiKey`, and a model preset that references that provider name.
 
 ## What you will build
 
@@ -10,13 +10,13 @@ nanobot can call OpenAI-compatible model providers by configuring an `apiBase`, 
 
 ## When to use this
 
-Use this for local or hosted services that expose OpenAI-compatible endpoints, including internal gateways, local model servers, and provider proxies that are not already named in nanobot.
+Use this for local or hosted services that expose OpenAI-compatible endpoints, including internal gateways, local model servers, and provider proxies that are not already named in Sentinel.
 
 ## Before you start
 
-Complete [Quick Start](../quick-start.md) if nanobot is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
+Complete [Quick Start](../quick-start.md) if Sentinel is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
 
-Verify the endpoint responds before debugging nanobot:
+Verify the endpoint responds before debugging Sentinel:
 
 ```bash
 curl -sS https://api.example.com/v1/models
@@ -75,15 +75,15 @@ Verify in the WebUI with the new preset selected. For the manual snippet above, 
 
 - Keep provider keys in environment variables.
 - Treat internal model gateways as sensitive network services.
-- Do not point nanobot at untrusted proxy endpoints for private workspaces.
+- Do not point Sentinel at untrusted proxy endpoints for private workspaces.
 
 ## Troubleshooting
 
-- If `curl /models` fails, fix the provider endpoint before changing nanobot.
-- If nanobot says the model is unknown, check the model ID expected by the provider.
-- If auth fails, confirm whether the provider wants Bearer auth and whether the key is present in the environment that starts nanobot.
+- If `curl /models` fails, fix the provider endpoint before changing Sentinel.
+- If Sentinel says the model is unknown, check the model ID expected by the provider.
+- If auth fails, confirm whether the provider wants Bearer auth and whether the key is present in the environment that starts Sentinel.
 
-## Related nanobot docs
+## Related Sentinel docs
 
 - [Provider Cookbook: Custom OpenAI-Compatible Provider](../provider-cookbook.md#recipe-custom-openai-compatible-provider)
 - [Providers: Custom OpenAI-Compatible Endpoint](../providers.md#custom-openai-compatible-endpoint)

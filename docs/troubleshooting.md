@@ -1,11 +1,11 @@
 # Troubleshooting
 
-Use the first check that matches what you see, then follow its next step. This avoids investigating the browser or a chat app before confirming nanobot can start and contact its model.
+Use the first check that matches what you see, then follow its next step. This avoids investigating the browser or a chat app before confirming Sentinel can start and contact its model.
 
 ## Fast Diagnosis Order
 
-- **The `nanobot` command is not found, or nanobot will not start:** check [Installation Problems](#installation-problems). Run `nanobot --version` to confirm the command is available.
-- **nanobot starts, but does not answer:** run `nanobot status`. Check that it points to the config and workspace you expect and that the active model is ready. This command does not contact the model; if setup is incomplete, follow its WebUI **Settings → Models** or CLI wizard instructions.
+- **The `nanobot` command is not found, or Sentinel will not start:** check [Installation Problems](#installation-problems). Run `nanobot --version` to confirm the command is available.
+- **Sentinel starts, but does not answer:** run `nanobot status`. Check that it points to the config and workspace you expect and that the active model is ready. This command does not contact the model; if setup is incomplete, follow its WebUI **Settings → Models** or CLI wizard instructions.
 - **Status looks ready, but a test question fails:** run `nanobot agent -m "Hello!"`. If it fails, troubleshoot [Provider and Model Problems](#provider-and-model-problems) before testing the gateway or a chat app.
 - **The test question works, but the browser or chat app does not:** start `nanobot gateway` and follow [Gateway Problems](#gateway-problems), [WebUI Problems](#webui-problems), or [Chat App Problems](#chat-app-problems), depending on what is failing.
 
@@ -75,9 +75,9 @@ Use the same Python command for install checks and module fallback. On macOS/Lin
 | `irm` is not recognized | PowerShell could not run the download helper. Use manual install: `uv tool install nanobot-ai`, `pipx install nanobot-ai`, or `py -m pip install nanobot-ai` inside an environment you control. |
 | Could not download `raw.githubusercontent.com` | Your network, proxy, or firewall blocked the installer script download. Use manual install from PyPI, or configure your proxy and rerun the command. |
 | `nanobot: command not found` | With the recommended installer, reuse its printed full command; with uv/pipx, use `uv tool run --from nanobot-ai nanobot ...` / `pipx run --spec nanobot-ai nanobot ...`. For a pip install, use `<installing-python> -m nanobot ...` from that same environment. A system `python` or `py` may not contain the isolated installation. |
-| `No module named nanobot` | You are running a different Python than the one used for installation. Run `python -m pip show nanobot-ai`, `python3 -m pip show nanobot-ai`, or `py -m pip show nanobot-ai`, matching the command that installed nanobot. |
+| `No module named nanobot` | You are running a different Python than the one used for installation. Run `python -m pip show nanobot-ai`, `python3 -m pip show nanobot-ai`, or `py -m pip show nanobot-ai`, matching the command that installed Sentinel. |
 | `pip is not available` | When the installer uses a virtual environment, it tries `python -m ensurepip --upgrade`. If that fails, install pip for that Python, or use a Python installer/distribution that includes pip. |
-| `externally-managed-environment` | Your system Python blocks global pip installs. Use the one-command installer, `uv tool install nanobot-ai`, `pipx install nanobot-ai`, or create a virtual environment; do not add `--break-system-packages` for nanobot. |
+| `externally-managed-environment` | Your system Python blocks global pip installs. Use the one-command installer, `uv tool install nanobot-ai`, `pipx install nanobot-ai`, or create a virtual environment; do not add `--break-system-packages` for Sentinel. |
 | Installer chose the wrong Python | Set `PYTHON` before running the installer, such as `curl -fsSL https://raw.githubusercontent.com/HKUDS/nanobot/main/scripts/install.sh | PYTHON=python3 sh` or `$env:PYTHON="py"` before the PowerShell command. |
 | Editable source install does not update | From the repo root, run `python -m pip install -e .` again with the Python command used for development, then check `python -m nanobot --version` or `nanobot --version`. |
 | WebUI build tools missing | They are only needed for WebUI development. Packaged installs already include the WebUI bundle. |
@@ -110,8 +110,8 @@ Common config mistakes:
 |---|---|
 | JSON parse error | Validate commas, braces, and quotes. Most docs examples are partial snippets to merge. |
 | Unknown or missing provider | Use provider registry names such as `openrouter`, `anthropic`, `openai`, `ollama`, `vllm`, `lm_studio`, or define a custom OpenAI-compatible provider key under `providers` and reference that exact key from the active preset. |
-| snake_case vs camelCase confusion | Both are accepted, but docs use camelCase because nanobot writes config with aliases such as `apiKey`, `modelPresets`, `intervalS`. |
-| Environment variable error | `${VAR_NAME}` references are resolved at startup. Set the variable before running nanobot. |
+| snake_case vs camelCase confusion | Both are accepted, but docs use camelCase because Sentinel writes config with aliases such as `apiKey`, `modelPresets`, `intervalS`. |
+| Environment variable error | `${VAR_NAME}` references are resolved at startup. Set the variable before running Sentinel. |
 | Edited config but behavior did not change | Restart `nanobot gateway`; long-running processes read config at startup. |
 
 After editing config, check the shortest path to an Agent reply:
@@ -157,11 +157,11 @@ If you need a known-good snippet instead of diagnosis, use [`provider-cookbook.m
 | xAI login runs on a remote/headless machine | In the WebUI, finish sign-in in your local browser; if the loopback redirect cannot reach the server, copy the final URL from the address bar into the WebUI dialog. From the CLI, run `nanobot provider login xai-grok` interactively, open the printed URL elsewhere, and paste the final callback URL or authorization code when prompted. |
 | xAI returns 403 or subscription access denied | Confirm the signed-in account has an eligible X Premium / Grok subscription, then run `nanobot provider login xai-grok` again. This provider does not use an xAI API key or X Developer OAuth. |
 | xAI returns 400 `invalid-argument` | Read the bounded `Response body` appended to the provider error. Hosted `x_search` is sent only when xAI's model catalog advertises `supportsBackendSearch`; the model ID `grok-4.5` itself is valid. |
-| xAI model or X Search stops working after an upstream release | The integration follows Grok Build's public OAuth/proxy client contract. Update nanobot if xAI changes that contract. |
+| xAI model or X Search stops working after an upstream release | The integration follows Grok Build's public OAuth/proxy client contract. Update Sentinel if xAI changes that contract. |
 
 ### Codex certificate verification errors
 
-Codex model requests fail if the server certificate is untrusted, expired, or does not match the hostname. nanobot does not retry these requests with certificate verification disabled. This also applies when WebSocket falls back to HTTP.
+Codex model requests fail if the server certificate is untrusted, expired, or does not match the hostname. Sentinel does not retry these requests with certificate verification disabled. This also applies when WebSocket falls back to HTTP.
 
 Check the gateway machine's clock and the certificate chain used by your network or proxy. If your organization requires a private CA, obtain its trusted PEM bundle from your administrator and set `SSL_CERT_FILE` in the gateway process environment before restarting. `SSL_CERT_DIR` is also supported for an OpenSSL-compatible certificate directory. For model requests, these CA settings work with or without the explicit Codex proxy; they do not change the selected proxy route. Never trust a certificate supplied by an unknown error page or disable certificate verification.
 
@@ -177,8 +177,8 @@ Langfuse tracing is optional and controlled by environment variables.
 
 | Symptom | Check |
 |---|---|
-| `LANGFUSE_SECRET_KEY is set but langfuse is not installed` | Install `langfuse` in the same Python environment that runs nanobot, then restart the process. |
-| No traces appear | Set `LANGFUSE_SECRET_KEY`, `LANGFUSE_PUBLIC_KEY`, and `LANGFUSE_BASE_URL` before starting nanobot. |
+| `LANGFUSE_SECRET_KEY is set but langfuse is not installed` | Install `langfuse` in the same Python environment that runs Sentinel, then restart the process. |
+| No traces appear | Set `LANGFUSE_SECRET_KEY`, `LANGFUSE_PUBLIC_KEY`, and `LANGFUSE_BASE_URL` before starting Sentinel. |
 | Wrong Langfuse project or region | Check that the key pair and `LANGFUSE_BASE_URL` come from the same Langfuse project/region. |
 | Only some providers trace | Langfuse tracing applies to OpenAI-compatible provider calls and the Codex OAuth provider; other native providers may not use either client path. |
 
@@ -212,9 +212,9 @@ nanobot gateway --verbose
 
 ### Slow Optional Channel Dependency Installation
 
-Before loading enabled channels, the gateway checks the dependencies declared by their channel manifests. The CLI and WebUI normally install these dependencies when a channel is enabled. Installation during startup is a recovery path for an enabled config whose Python environment no longer has the required packages, for example after manually editing the config, upgrading nanobot, or recreating an isolated `uv tool`/`pipx` environment. The gateway waits for the install so an enabled channel is not silently skipped; later starts skip the installation once the dependencies are present.
+Before loading enabled channels, the gateway checks the dependencies declared by their channel manifests. The CLI and WebUI normally install these dependencies when a channel is enabled. Installation during startup is a recovery path for an enabled config whose Python environment no longer has the required packages, for example after manually editing the config, upgrading Sentinel, or recreating an isolated `uv tool`/`pipx` environment. The gateway waits for the install so an enabled channel is not silently skipped; later starts skip the installation once the dependencies are present.
 
-If access to PyPI is slow in your region, configure pip to use a trusted package index. The installer honors the standard `PIP_INDEX_URL` environment variable, including when nanobot itself was installed with `uv tool`:
+If access to PyPI is slow in your region, configure pip to use a trusted package index. The installer honors the standard `PIP_INDEX_URL` environment variable, including when Sentinel itself was installed with `uv tool`:
 
 ```bash
 PIP_INDEX_URL=https://your-trusted-mirror.example/simple nanobot gateway
@@ -328,8 +328,8 @@ See [`chat-apps.md`](./chat-apps.md) for channel-specific setup.
 |---|---|
 | Conversation context seems wrong | Confirm the active workspace and session. WebUI chats and chat app threads may use different sessions. |
 | Memory does not update immediately | Dream consolidation is periodic; recent turns still live in session history. |
-| Sessions disappear after changing `--config` | Sessions follow the config directory at `<config-dir>/sessions/<workspace-id>/`; use the original config path or copy that `sessions/` directory into the new config directory while nanobot is stopped. |
-| Sessions disappear after moving a workspace | Keep the workspace's `.nanobot/workspace-id` file with the move or backup. If it was lost, restore that marker from backup before starting nanobot. |
+| Sessions disappear after changing `--config` | Sessions follow the config directory at `<config-dir>/sessions/<workspace-id>/`; use the original config path or copy that `sessions/` directory into the new config directory while Sentinel is stopped. |
+| Sessions disappear after moving a workspace | Keep the workspace's `.nanobot/workspace-id` file with the move or backup. If it was lost, restore that marker from backup before starting Sentinel. |
 
 ## Collect Useful Evidence
 

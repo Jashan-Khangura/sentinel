@@ -1,10 +1,10 @@
-# How to Run a Self-Hosted AI Agent with nanobot
+# How to Run a Self-Hosted AI Agent with Sentinel
 
-This guide sets up nanobot as a self-hosted AI agent runtime on your own machine or server. The result is a gateway process for the WebUI, chat apps, and automations.
+This guide sets up Sentinel as a self-hosted AI agent runtime on your own machine or server. The result is a gateway process for the WebUI, chat apps, and automations.
 
 ## What you will build
 
-- a nanobot config and workspace under your control
+- a Sentinel config and workspace under your control
 - a model provider connected through `config.json`
 - a long-running `nanobot gateway`
 - optional browser and chat app access
@@ -46,7 +46,7 @@ Send a message through the interface you intend to use. Check that it replies, t
 - Run `nanobot gateway --verbose` while debugging channel startup.
 - Check port conflicts if the WebUI or gateway health endpoint fails to bind.
 
-## Related nanobot docs
+## Related Sentinel docs
 
 - [Deployment](../deployment.md)
 - [Multiple Instances](../multiple-instances.md)

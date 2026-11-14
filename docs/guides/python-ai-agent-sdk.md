@@ -1,6 +1,6 @@
-# Nanobot Python SDK: Run an AI Agent from Python
+# Sentinel Python SDK: Run an AI Agent from Python
 
-This guide shows when to use the Nanobot Python SDK instead of calling a model directly. The SDK runs the same agent runtime used by the CLI: model routing, tools, workspace access, session history, memory, streaming events, and runtime helpers.
+This guide shows when to use the Sentinel Python SDK instead of calling a model directly. The SDK runs the same agent runtime used by the CLI: model routing, tools, workspace access, session history, memory, streaming events, and runtime helpers.
 
 ## What you will build
 
@@ -53,8 +53,8 @@ asyncio.run(main())
 - Print `bot.runtime.workspace` and `bot.runtime.model` to confirm the expected config loaded.
 - Use explicit `config_path` and `workspace` when scripts run from services.
 
-## Related nanobot docs
+## Related Sentinel docs
 
-- [Nanobot Python SDK](../python-sdk.md)
+- [Sentinel Python SDK](../python-sdk.md)
 - [Configuration](../configuration.md)
 - [Concepts](../concepts.md)

@@ -1,16 +1,16 @@
 # Automations
 
-<!-- Meta description: Create, run, and manage nanobot scheduled automations, local triggers, and heartbeat-backed background checks. -->
+<!-- Meta description: Create, run, and manage Sentinel scheduled automations, local triggers, and heartbeat-backed background checks. -->
 
-Automations are agent turns that run later in a linked topic. Use them when nanobot should do work without someone actively typing: reminders, recurring checks, nightly summaries, CI follow-ups, local script reports, or webhook-driven events.
+Automations are agent turns that run later in a linked topic. Use them when Sentinel should do work without someone actively typing: reminders, recurring checks, nightly summaries, CI follow-ups, local script reports, or webhook-driven events.
 
-Create automations from the chat channel or WebUI topic where the result should appear. That lets nanobot keep the right session history, workspace, and reply target.
+Create automations from the chat channel or WebUI topic where the result should appear. That lets Sentinel keep the right session history, workspace, and reply target.
 
 ## Choose an Automation Type
 
 | Type | Starts from | Best for | Created with |
 |---|---|---|---|
-| Scheduled automation | Time, interval, or cron expression | Recurring reminders, scheduled summaries, one-time future tasks | Ask nanobot in the target topic to schedule it with the `cron` tool |
+| Scheduled automation | Time, interval, or cron expression | Recurring reminders, scheduled summaries, one-time future tasks | Ask Sentinel in the target topic to schedule it with the `cron` tool |
 | Local trigger | A local `nanobot trigger ...` command | CI jobs, webhooks, shell scripts, generated reports | `/trigger <name>` in the target topic |
 | Heartbeat | Protected system schedule | Quiet recurring checks that should only report useful results | Edit `<workspace>/HEARTBEAT.md` |
 
@@ -20,13 +20,13 @@ The two user-created automation types are scheduled automations and local trigge
 
 Keep the gateway running. Your WebUI or TUI already uses one; you do not need a second gateway. To keep it alive after closing interactive launchers, run `nanobot gateway --background` with the same instance selectors, or use `/detach` in the TUI. The gateway owns background delivery for chat apps, WebUI topics, scheduled automations, local triggers, heartbeat, and Dream jobs.
 
-Use the same workspace and config for the gateway and any process that sends local trigger messages. If you run multiple nanobot instances, pass the matching `--config` or `--workspace` option to `nanobot trigger`.
+Use the same workspace and config for the gateway and any process that sends local trigger messages. If you run multiple Sentinel instances, pass the matching `--config` or `--workspace` option to `nanobot trigger`.
 
-Create each automation from the target topic. An automation without a linked topic cannot be enabled or run from the WebUI because nanobot would not know where to deliver the turn.
+Create each automation from the target topic. An automation without a linked topic cannot be enabled or run from the WebUI because Sentinel would not know where to deliver the turn.
 
 ## Scheduled Automations
 
-Scheduled automations are created by the agent's `cron` tool. In practice, ask nanobot from the target chat or WebUI topic:
+Scheduled automations are created by the agent's `cron` tool. In practice, ask Sentinel from the target chat or WebUI topic:
 
 ```text
 Every weekday at 9am, check open pull requests and summarize blockers here.
@@ -38,17 +38,17 @@ or:
 Tomorrow at 4pm, remind me to send the release notes.
 ```
 
-The cron tool supports interval schedules, cron expressions, and one-time scheduled tasks. Cron expressions can include an IANA timezone such as `America/Vancouver`; otherwise nanobot uses the runtime default timezone.
+The cron tool supports interval schedules, cron expressions, and one-time scheduled tasks. Cron expressions can include an IANA timezone such as `America/Vancouver`; otherwise Sentinel uses the runtime default timezone.
 
 Scheduled automations normally deliver the result back to the session where they were created. Use them for work that should run on a predictable schedule and report each run.
 
-Write what the task should do, such as "Remind me to drink water". nanobot sends the final reply to the task's saved chat. You do not need to put a channel, chat ID, or a `message` tool call in the instructions for that reply.
+Write what the task should do, such as "Remind me to drink water". Sentinel sends the final reply to the task's saved chat. You do not need to put a channel, chat ID, or a `message` tool call in the instructions for that reply.
 
 For separate sends, specify the recipients in the instructions. The agent can still use `message` to send to other chats, send to several recipients, or attach files. Existing tasks that explicitly request this tool remain supported.
 
 Writing "send to WhatsApp" in the instructions does not change the task's saved chat. Its normal reply still returns to that chat. A separate send requires the agent to call `message` with the other destination. For a fixed destination, create the task in that chat or use [Change the Chat for a Scheduled Task](#change-the-chat-for-a-scheduled-task). Keep explicit `message` instructions when you want separate sends or several recipients.
 
-If a result does not arrive, check that the task finished, then check its saved chat and destination. For a separate send, review the run's `message` calls and the gateway's channel send errors. `Turn completed` means the task finished; it does not confirm that the chat service delivered the message. A successful `message` result means nanobot accepted it for sending, not that it arrived. Check the destination before trying again to avoid duplicates.
+If a result does not arrive, check that the task finished, then check its saved chat and destination. For a separate send, review the run's `message` calls and the gateway's channel send errors. `Turn completed` means the task finished; it does not confirm that the chat service delivered the message. A successful `message` result means Sentinel accepted it for sending, not that it arrived. Check the destination before trying again to avoid duplicates.
 
 For background checks that should stay quiet unless there is something useful to report, use heartbeat instead of a user-created scheduled automation.
 
@@ -58,19 +58,19 @@ An upgrade does not overwrite your workspace's `AGENTS.md` or convert existing h
 
 ### Change a Scheduled Task
 
-Ask nanobot, "Move my daily report from 9am to 10am." The agent can use `cron(action="update", job_id="...", cron_expr="0 10 * * *")` without deleting and recreating the task. It can also update `name` or `message` independently. Supply one complete schedule when changing its timing; omitted fields keep their values. Cron edits retain the existing timezone unless another `tz` is supplied with the expression. Naive `at` values use the runtime default timezone.
+Ask Sentinel, "Move my daily report from 9am to 10am." The agent can use `cron(action="update", job_id="...", cron_expr="0 10 * * *")` without deleting and recreating the task. It can also update `name` or `message` independently. Supply one complete schedule when changing its timing; omitted fields keep their values. Cron edits retain the existing timezone unless another `tz` is supplied with the expression. Naive `at` values use the runtime default timezone.
 
 The task keeps its ID, linked chat, execution history, enabled state, and automatic-deletion setting. A paused task stays paused. Changing only the name or instruction preserves the next run time. Existing tasks configured to delete after a one-time run still do so; tasks configured to remain keep that behavior. System-managed tasks remain protected. Invalid updates leave the task unchanged.
 
 ### Pause and Resume a Scheduled Task
 
-Ask nanobot to pause a scheduled task instead of removing it. The agent can use `cron(action="disable", job_id="...")`, then `cron(action="enable", job_id="...")` to resume it with the same ID, schedule, chat, and run history. Use `cron(action="list", include_disabled=True)` to find paused tasks; the default list still shows only enabled jobs.
+Ask Sentinel to pause a scheduled task instead of removing it. The agent can use `cron(action="disable", job_id="...")`, then `cron(action="enable", job_id="...")` to resume it with the same ID, schedule, chat, and run history. Use `cron(action="list", include_disabled=True)` to find paused tasks; the default list still shows only enabled jobs.
 
 Disabling affects future runs. It does not cancel a running task or recall an already queued result. System-managed heartbeat and Dream jobs remain protected; change their configuration instead.
 
 ### Inspect Recent Runs
 
-Ask nanobot, "Show the last five runs of my daily report." The agent can use `cron(action="history", job_id="...", limit=5)` to read the retained execution time, status, duration, and error for that task. Results are newest first, using the task's timezone or the runtime default. The default is five records; `limit` accepts 1–20.
+Ask Sentinel, "Show the last five runs of my daily report." The agent can use `cron(action="history", job_id="...", limit=5)` to read the retained execution time, status, duration, and error for that task. Results are newest first, using the task's timezone or the runtime default. The default is five records; `limit` accepts 1–20.
 
 This also works for disabled tasks and does not change their schedule or state. Only retained execution records are available: deleted jobs and automatically deleted one-time tasks cannot be queried. Run history does not include the generated reply or confirm message delivery.
 
@@ -97,7 +97,7 @@ The queue is stored in `delivery/outbox.sqlite3`, beside the active config file.
 
 ## Local Triggers
 
-Local triggers let a local script or external service send a message into a specific nanobot session later.
+Local triggers let a local script or external service send a message into a specific Sentinel session later.
 
 Create the trigger from the chat or WebUI topic where future messages should arrive:
 
@@ -105,13 +105,13 @@ Create the trigger from the chat or WebUI topic where future messages should arr
 /trigger PR review
 ```
 
-nanobot replies with a trigger ID and a command shaped like:
+Sentinel replies with a trigger ID and a command shaped like:
 
 ```bash
 nanobot trigger trg_8K4P2Q9X "Review PR #4502"
 ```
 
-Replace the quoted text with the message nanobot should receive. For generated or longer content, pipe stdin:
+Replace the quoted text with the message Sentinel should receive. For generated or longer content, pipe stdin:
 
 ```bash
 generate-report | nanobot trigger trg_8K4P2Q9X
@@ -124,7 +124,7 @@ nanobot trigger --config ./bot-a/config.json trg_8K4P2Q9X "Nightly report"
 nanobot trigger --workspace ./bot-a/workspace trg_8K4P2Q9X "Nightly report"
 ```
 
-nanobot does not provide a built-in public webhook receiver for local triggers. If GitHub, CI, or another external system should wake nanobot, run your own small webhook service and have it call `nanobot trigger` after it builds the final message.
+Sentinel does not provide a built-in public webhook receiver for local triggers. If GitHub, CI, or another external system should wake Sentinel, run your own small webhook service and have it call `nanobot trigger` after it builds the final message.
 
 ## Heartbeat
 
@@ -164,17 +164,17 @@ Select **Cancel** before saving to return to the task without changes. After a s
 
 Future runs use the new chat's history and reply there by default. Previous messages stay in their original chat. Previous run results remain available. Changing the chat does not run the task, enable it, or change its schedule.
 
-You can discuss each new result in that same chat. Background task results also return there. If you delete that chat, nanobot asks you to confirm deletion of its scheduled tasks as well. Cancelling the deletion keeps the chat and tasks.
+You can discuss each new result in that same chat. Background task results also return there. If you delete that chat, Sentinel asks you to confirm deletion of its scheduled tasks as well. Cancelling the deletion keeps the chat and tasks.
 
-The list shows chats available on this gateway that use the same workspace and access permissions. A chat-app destination appears only after its channel is running and nanobot has received a message there. If the chat you want is missing, first send nanobot a message in that chat, then confirm its channel is running. You cannot choose a raw recipient ID, a chat on another host, a system job, or a local trigger. Older gateway versions show this list as read-only.
+The list shows chats available on this gateway that use the same workspace and access permissions. A chat-app destination appears only after its channel is running and Sentinel has received a message there. If the chat you want is missing, first send Sentinel a message in that chat, then confirm its channel is running. You cannot choose a raw recipient ID, a chat on another host, a system job, or a local trigger. Older gateway versions show this list as read-only.
 
 If a scheduled turn is running or queued, wait for it to finish before changing the chat. The current scheduler also rejects a change while another scheduled turn is active. If another editor changes the task, reopen the task and review the latest instructions. A rejected save leaves the draft visible.
 
-This changes the whole task chat, not a separate forwarding address. Explicit `message` tool instructions can still send elsewhere. Shared workspace files and memory remain shared; changing the chat does not create a new security boundary. The confirmation screen lets you edit instructions such as "send to the original chat" before you save. nanobot does not silently rewrite those instructions.
+This changes the whole task chat, not a separate forwarding address. Explicit `message` tool instructions can still send elsewhere. Shared workspace files and memory remain shared; changing the chat does not create a new security boundary. The confirmation screen lets you edit instructions such as "send to the original chat" before you save. Sentinel does not silently rewrite those instructions.
 
 ### Back Up Before Downgrading
 
-Chat changes store a binding version and the session used by each previous run. Existing jobs do not need a manual migration when upgrading. Older nanobot versions can discard these new fields when they write the cron store. After a chat change, that can make old run results unavailable in the WebUI and remove protection against stale CLI updates.
+Chat changes store a binding version and the session used by each previous run. Existing jobs do not need a manual migration when upgrading. Older Sentinel versions can discard these new fields when they write the cron store. After a chat change, that can make old run results unavailable in the WebUI and remove protection against stale CLI updates.
 
 Before trying this feature, stop the gateway and other cron writers, then back up the complete `cron/` directory in the configured agent workspace (`~/.nanobot/workspace/cron/` by default), including `jobs.json` and `runs/`. For a downgrade after changing a chat, stop those processes again and restore that coherent pre-change cron backup. This also restores the old schedules and task settings; later changes are not included. Chat messages are not moved or deleted.
 
@@ -187,7 +187,7 @@ Schedules do not replay missed occurrences after a gateway restart:
 | Schedule | Behavior after restart |
 |---|---|
 | One-time (`at`) | A time already in the past has no next run and is not automatically executed. Review the task and run it manually or create a replacement. |
-| Interval (`every`) | If the next run is still in the future and no more than one interval away, nanobot keeps that time. If it has already passed, that run is skipped and the next run is scheduled; missed runs are not replayed. |
+| Interval (`every`) | If the next run is still in the future and no more than one interval away, Sentinel keeps that time. If it has already passed, that run is skipped and the next run is scheduled; missed runs are not replayed. |
 | Cron expression | The next matching time after restart is used; missed matches are not replayed. |
 
 Intervals are also recalculated after a run finishes, so a long-running task can shift its next interval. Use a cron expression for wall-clock scheduling, and keep the host awake and gateway running when timing matters. These rules concern scheduled jobs; queued local trigger messages have the separate recovery behavior below.

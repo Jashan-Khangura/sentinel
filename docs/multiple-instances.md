@@ -1,6 +1,6 @@
 # Multiple Instances
 
-Use a separate home directory for each instance. Place `--home` before the subcommand; without it, nanobot uses `~/.nanobot`.
+Use a separate home directory for each instance. Place `--home` before the subcommand; without it, Sentinel uses `~/.nanobot`.
 
 Use this for separate clients, users, or personal/work agents that need independent configuration and long-term memory. A new topic or a different project folder inside one instance does not provide that separation.
 

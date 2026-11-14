@@ -1,12 +1,12 @@
-# How to Configure Langfuse Observability for nanobot
+# How to Configure Langfuse Observability for Sentinel
 
-nanobot can trace supported OpenAI-compatible provider calls through Langfuse's OpenAI SDK wrapper, and Codex OAuth provider calls through Langfuse's native Python SDK.
+Sentinel can trace supported OpenAI-compatible provider calls through Langfuse's OpenAI SDK wrapper, and Codex OAuth provider calls through Langfuse's native Python SDK.
 
 ## What you will build
 
-- Langfuse installed in the same Python environment as nanobot
+- Langfuse installed in the same Python environment as Sentinel
 - Langfuse environment variables set before startup
-- one traced nanobot model call
+- one traced Sentinel model call
 
 ## When to use this
 
@@ -14,7 +14,7 @@ Use Langfuse when you need observability for model requests, latency, errors, co
 
 ## Install
 
-Complete [Quick Start](../quick-start.md) if nanobot is not installed or cannot reply yet. Continue with the same working instance.
+Complete [Quick Start](../quick-start.md) if Sentinel is not installed or cannot reply yet. Continue with the same working instance.
 
 Install Langfuse:
 
@@ -22,11 +22,11 @@ Install Langfuse:
 nanobot plugins enable langfuse
 ```
 
-nanobot uses Langfuse Python SDK 4.7 or later in the 4.x series. Tracing supports Langfuse Cloud and self-hosted Langfuse 3.63.0 or later. The SDK enables real-time ingestion on Langfuse v4 automatically; see [Langfuse compatibility](https://langfuse.com/docs/compatibility).
+Sentinel uses Langfuse Python SDK 4.7 or later in the 4.x series. Tracing supports Langfuse Cloud and self-hosted Langfuse 3.63.0 or later. The SDK enables real-time ingestion on Langfuse v4 automatically; see [Langfuse compatibility](https://langfuse.com/docs/compatibility).
 
 ## Minimal working example
 
-Set credentials before starting nanobot:
+Set credentials before starting Sentinel:
 
 ```bash
 export LANGFUSE_SECRET_KEY="sk-lf-..."
@@ -63,7 +63,7 @@ nanobot agent -m "Hello!"
 - Confirm the provider path is OpenAI-compatible or the Codex OAuth provider.
 - Run one local `nanobot agent -m "Hello!"` call before debugging service logs.
 
-## Related nanobot docs
+## Related Sentinel docs
 
 - [Configuration: Langfuse Observability](../configuration.md#langfuse-observability)
 - [Provider Cookbook: Langfuse Tracing](../provider-cookbook.md#recipe-langfuse-tracing)

@@ -1,24 +1,24 @@
-# Connect Telegram to nanobot
+# Connect Telegram to Sentinel
 
-This guide connects one Telegram bot to nanobot. Messages sent to that bot use your normal nanobot model, tools, memory, and workspace.
+This guide connects one Telegram bot to Sentinel. Messages sent to that bot use your normal Sentinel model, tools, memory, and workspace.
 
 ## What this guide builds
 
 - a Telegram bot created through BotFather
-- the `telegram` channel enabled in nanobot
-- a running nanobot gateway
+- the `telegram` channel enabled in Sentinel
+- a running Sentinel gateway
 - one pairing-approved Telegram account
 
 ## Prerequisites
 
-- A normal reply in your existing nanobot WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
+- A normal reply in your existing Sentinel WebUI or CLI. If you have not reached that point, complete [Quick Start](../quick-start.md) first.
 
 - A Telegram account.
 - A bot token: open Telegram, find `@BotFather`, send `/newbot`, follow its name/username prompts, and copy the returned token. Keep the token private.
 
 ## Continue from your running instance
 
-If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install nanobot again.
+If you are already chatting in the WebUI, keep it open and continue below. It has already started the gateway. To reopen it later, use the same installation's `nanobot webui` command; there is no need to install Sentinel again.
 
 For terminal or server setup, use the manual configuration section below. Reuse the config/home and executable from your working instance. Docker users should use the [container commands](../deployment.md#docker-compose).
 

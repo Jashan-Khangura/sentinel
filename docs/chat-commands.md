@@ -42,7 +42,7 @@ A path can have the same name as a command. For example, `/new` starts a new con
 
 ## Pairing
 
-When someone sends a DM to the bot and isn't on the allowlist — whether it's a new user or an existing user on a new channel — nanobot automatically replies with a **pairing code** (like `ABCD-EFGH`) that expires in 10 minutes. To grant them access:
+When someone sends a DM to the bot and isn't on the allowlist — whether it's a new user or an existing user on a new channel — Sentinel automatically replies with a **pairing code** (like `ABCD-EFGH`) that expires in 10 minutes. To grant them access:
 
 ```text
 /pairing approve ABCD-EFGH
@@ -86,13 +86,13 @@ Create the trigger from the chat where future messages should arrive:
 /trigger PR review
 ```
 
-nanobot replies with a trigger ID and a command shaped like:
+Sentinel replies with a trigger ID and a command shaped like:
 
 ```bash
 nanobot trigger trg_8K4P2Q9X "Review PR #4502"
 ```
 
-Replace `"Review PR #4502"` with the message you want nanobot to receive. The trigger is bound to the session where it was created, so the message goes back to that same chat. Keep `nanobot gateway` running so trigger messages can be delivered. The trigger message starts an automation turn recorded in that session with the message you passed to the CLI; it is not treated as a normal user message. If that session is already running a turn, the trigger waits until the session is idle instead of being injected into the active turn.
+Replace `"Review PR #4502"` with the message you want Sentinel to receive. The trigger is bound to the session where it was created, so the message goes back to that same chat. Keep `nanobot gateway` running so trigger messages can be delivered. The trigger message starts an automation turn recorded in that session with the message you passed to the CLI; it is not treated as a normal user message. If that session is already running a turn, the trigger waits until the session is idle instead of being injected into the active turn.
 
 Trigger deliveries are stored in the workspace until their linked agent turn finishes successfully. If the gateway exits after claiming a delivery but before the turn completes, the next gateway start requeues that delivery. This is an at-least-once local queue: a delivery may run more than once if the process exits at the wrong time, so external scripts should make repeated trigger messages safe. If the delivery reaches the agent and the agent turn fails, the delivery is marked failed in Automations instead of retrying forever.
 
@@ -102,13 +102,13 @@ For longer or generated content, omit the message argument and pipe stdin:
 printf '%s\n' "Review the latest failed CI job" | nanobot trigger trg_8K4P2Q9X
 ```
 
-If an external webhook should wake nanobot up, run your own small webhook service and have it call the trigger command after it builds the final message:
+If an external webhook should wake Sentinel up, run your own small webhook service and have it call the trigger command after it builds the final message:
 
 ```bash
 nanobot trigger <trigger-id> "<message>"
 ```
 
-If you run multiple nanobot instances, pass the same config or workspace selector used by the gateway:
+If you run multiple Sentinel instances, pass the same config or workspace selector used by the gateway:
 
 ```bash
 nanobot trigger --config ./bot-a/config.json trg_8K4P2Q9X "Nightly report"

@@ -1,6 +1,6 @@
-# How to Configure Model Fallback in nanobot
+# How to Configure Model Fallback in Sentinel
 
-Model fallback lets nanobot try a primary model first, then fall back to one or more named presets when the primary provider fails or rate-limits.
+Model fallback lets Sentinel try a primary model first, then fall back to one or more named presets when the primary provider fails or rate-limits.
 
 ## What you will build
 
@@ -14,7 +14,7 @@ Use fallback when you want better reliability across rate limits, provider outag
 
 ## Before you start
 
-Complete [Quick Start](../quick-start.md) if nanobot is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
+Complete [Quick Start](../quick-start.md) if Sentinel is not installed or cannot reply yet. If you already have a working WebUI or CLI session, continue here using that instance; no reinstall or second gateway is needed.
 
 Verify each provider works before adding it as a fallback.
 
@@ -78,7 +78,7 @@ String entries in `fallbackModels` are preset names, not raw model IDs. Replace 
 - If startup fails, check that each fallback string matches a key under `modelPresets`.
 - If output is truncated after fallback, review `maxTokens` and `contextWindowTokens`.
 
-## Related nanobot docs
+## Related Sentinel docs
 
 - [Providers and Models](../providers.md)
 - [Provider Cookbook: Fallback Presets](../provider-cookbook.md#recipe-fallback-presets)

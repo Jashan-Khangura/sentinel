@@ -1,12 +1,12 @@
 # Development
 
-This page collects contributor-facing notes for extending nanobot. User-facing setup and runtime options live in [`configuration.md`](./configuration.md).
+This page collects contributor-facing notes for extending Sentinel. User-facing setup and runtime options live in [`configuration.md`](./configuration.md).
 
-For source and test entry points by task, start with the [development navigation](../.agent/navigation.md). For browser interface changes, use the [WebUI change map](../webui/README.md#change-a-behavior). For Python setup and contribution checks, see [CONTRIBUTING.md](../CONTRIBUTING.md). The sections below cover provider extensions.
+For source and test entry points by task, start with the [development navigation](../.agent/navigation.md). For browser interface changes, use the [WebUI change map](../webui/README.md#change-a-behavior). The sections below cover provider extensions.
 
 ## Adding an LLM Provider
 
-nanobot uses the provider registry in `nanobot/providers/registry.py` as the source of truth for LLM provider metadata. Most OpenAI-compatible providers need only two changes.
+Sentinel uses the provider registry in `nanobot/providers/registry.py` as the source of truth for LLM provider metadata. Most OpenAI-compatible providers need only two changes.
 
 1. Add a `ProviderSpec` entry to `PROVIDERS`:
 

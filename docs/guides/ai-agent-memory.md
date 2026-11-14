@@ -1,6 +1,6 @@
-# How AI Agent Memory Works in nanobot
+# How AI Agent Memory Works in Sentinel
 
-This guide explains how to use nanobot's long-term AI agent memory: session history, compressed archives, durable memory files, Dream consolidation, and Git-backed memory changes.
+This guide explains how to use Sentinel's long-term AI agent memory: session history, compressed archives, durable memory files, Dream consolidation, and Git-backed memory changes.
 
 ## What you will build
 
@@ -11,7 +11,7 @@ This guide explains how to use nanobot's long-term AI agent memory: session hist
 
 ## When to use this
 
-Use memory when an agent should remember stable preferences, project facts, decisions, and recurring context across sessions. Do not use memory as a dumping ground for every raw transcript; nanobot separates short-term messages from curated durable knowledge.
+Use memory when an agent should remember stable preferences, project facts, decisions, and recurring context across sessions. Do not use memory as a dumping ground for every raw transcript; Sentinel separates short-term messages from curated durable knowledge.
 
 ## Before you start
 
@@ -50,9 +50,9 @@ The files live in the configured agent workspace, normally `~/.nanobot/workspace
 - If memory changed incorrectly, use `/dream-restore` to inspect and restore previous versions.
 - If a new session lacks context, confirm the fact was saved and it uses the same configured agent workspace.
 
-## Related nanobot docs
+## Related Sentinel docs
 
-- [AI Agent Memory in nanobot](../memory.md)
+- [AI Agent Memory in Sentinel](../memory.md)
 - [Concepts](../concepts.md)
 - [Configuration](../configuration.md#auto-compact)
 - [Chat Commands](../chat-commands.md)

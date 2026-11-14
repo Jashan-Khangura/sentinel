@@ -1,10 +1,10 @@
 # Release checklist
 
-Use this checklist with the [Release Packaging Contract](../CONTRIBUTING.md#release-packaging-contract). Preparation does not authorize publication. Pushing tags, publishing GitHub Releases, uploading to PyPI and deploying documentation are separate operations.
+Use this checklist to prepare releases. Preparation does not authorize publication. Pushing tags, publishing GitHub Releases, uploading to PyPI and deploying documentation are separate operations.
 
 ## Release cadence
 
-Stable is the default feed; Preview is opt-in. Both use one update flow and require confirmation before installation. Neither a faster cadence nor a subscription permits stopping tasks or restarting a gateway automatically. See [Updating nanobot](./updating.md) for user instructions.
+Stable is the default feed; Preview is opt-in. Both use one update flow and require confirmation before installation. Neither a faster cadence nor a subscription permits stopping tasks or restarting a gateway automatically. See [Updating Sentinel](./updating.md) for user instructions.
 
 | Release | Trigger | Public destination | Documentation |
 | --- | --- | --- | --- |
@@ -214,7 +214,7 @@ Keep private evidence until review; it can contain program generations/backups a
 
 ## Stable and Preview subscriptions
 
-Use [Updating nanobot](./updating.md) for Settings → About and CLI instructions. Release acceptance must preserve opt-in consent: Preview is off even on development builds; switching saves/checks a feed, not installation approval. Require separate exact-version confirmation and a Preview risk warning. Profiles sharing an environment/account share its subscription; other installations/accounts do not. Environment replacement may require reselection; browser storage is not authoritative.
+Use [Updating Sentinel](./updating.md) for Settings → About and CLI instructions. Release acceptance must preserve opt-in consent: Preview is off even on development builds; switching saves/checks a feed, not installation approval. Require separate exact-version confirmation and a Preview risk warning. Profiles sharing an environment/account share its subscription; other installations/accounts do not. Environment replacement may require reselection; browser storage is not authoritative.
 
 | Current install / requested channel | Required acceptance result |
 | --- | --- |

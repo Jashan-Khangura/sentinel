@@ -1,59 +1,26 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./images/readme-cover-dark.svg">
-  <img alt="nanobot README cover" src="./images/readme-cover-light.svg">
-</picture>
+# Sentinel
 
-<div align="center">
-  <p>
-    <a href="https://nanobot.wiki/docs/latest/getting-started/nanobot-overview">English</a> |
-    <a href="https://nanobot.wiki/cn/docs/latest/getting-started/nanobot-overview">简体中文</a> |
-    <a href="https://nanobot.wiki/zh-Hant/docs/latest/getting-started/nanobot-overview">繁體中文</a> |
-    <a href="https://nanobot.wiki/es/docs/latest/getting-started/nanobot-overview">Español</a> |
-    <a href="https://nanobot.wiki/fr/docs/latest/getting-started/nanobot-overview">Français</a> |
-    <a href="https://nanobot.wiki/id/docs/latest/getting-started/nanobot-overview">Bahasa Indonesia</a> |
-    <a href="https://nanobot.wiki/ja/docs/latest/getting-started/nanobot-overview">日本語</a> |
-    <a href="https://nanobot.wiki/ko/docs/latest/getting-started/nanobot-overview">한국어</a> |
-    <a href="https://nanobot.wiki/ru/docs/latest/getting-started/nanobot-overview">Русский</a> |
-    <a href="https://nanobot.wiki/vi/docs/latest/getting-started/nanobot-overview">Tiếng Việt</a>
-  </p>
-  <p>
-    <a href="https://github.com/HKUDS/nanobot"><img src="https://img.shields.io/github/stars/HKUDS/nanobot?style=flat&logo=github" alt="GitHub stars"></a>
-    <a href="https://pypi.org/project/nanobot-ai/"><img src="https://img.shields.io/pypi/v/nanobot-ai" alt="PyPI version"></a>
-    <a href="https://pepy.tech/project/nanobot-ai"><img src="https://static.pepy.tech/badge/nanobot-ai" alt="PyPI downloads"></a>
-    <a href="https://github.com/HKUDS/nanobot/actions/workflows/ci.yml"><img src="https://github.com/HKUDS/nanobot/actions/workflows/ci.yml/badge.svg?branch=main" alt="Test Suite"></a>
-    <a href="https://pypi.org/project/nanobot-ai/"><img src="https://img.shields.io/badge/python-%3E%3D3.11-blue" alt="Python 3.11 or newer"></a>
-    <a href="./LICENSE"><img src="https://img.shields.io/github/license/HKUDS/nanobot" alt="MIT License"></a>
-    <a href="https://nanobot.wiki/docs/latest/getting-started/nanobot-overview"><img src="https://img.shields.io/badge/docs-nanobot.wiki-blue" alt="nanobot documentation"></a>
-  </p>
-  <p>
-    <a href="https://discord.gg/MnCvHqpUGB">Discord</a> ·
-    <a href="https://x.com/nanobot_project">X</a> ·
-    <a href="./COMMUNICATION.md#wechat">WeChat 微信交流群</a> ·
-    <a href="./COMMUNICATION.md#hkuds-community">Feishu</a>
-  </p>
-</div>
+**Sentinel** is an ultra-lightweight, open-source, self-hosted personal AI agent framework written in Python. Use it in a browser, terminal, or chat app to work with files, remember preferences, and schedule tasks. Connect a supported model provider or local model server to supply the AI.
 
-# nanobot
-
-🐈 **nanobot** is an ultra-lightweight, open-source, self-hosted personal AI agent framework written in Python. Use it in a browser, terminal, or chat app to work with files, remember preferences, and schedule tasks. Connect a supported model provider or local model server to supply the AI.
+This is a documentation and branding rename only: the Python package is still `nanobot-ai`, the command is still `nanobot`, data still defaults to `~/.nanobot`, and installation/release links still point to upstream nanobot. Do not treat those links as Sentinel releases.
 
 ## Start Here
 
 | You want to... | Go to |
 |---|---|
-| Install nanobot with no terminal/config background | [Start Without Technical Background](./docs/start-without-technical-background.md) |
+| Install Sentinel with no terminal/config background | [Start Without Technical Background](./docs/start-without-technical-background.md) |
 | Install quickly and get your first reply | [Install](#-install) and [Quick Start](#-quick-start) |
 | Open the bundled browser UI | [WebUI](#-webui) |
 | Connect Telegram, Discord, WeChat, Slack, Email, Mattermost, Linear, or another channel | [Chat app guide](./docs/guides/chat-app-ai-agent.md) |
 | Configure providers, fallback models, Langfuse, MCP, web tools, or security | [Docs](./docs/README.md) and [Configuration](./docs/configuration.md) |
-| Develop the browser UI | [Install current source](#-install), then [WebUI development](./webui/README.md) and [Contributing](./CONTRIBUTING.md) |
+| Develop the browser UI | [Install current source](#-install), then [WebUI development](./webui/README.md) and [Development](./docs/development.md) |
 | Integrate from Python | [Python SDK](./docs/python-sdk.md) |
-| Understand or extend the internals | [Architecture](./docs/architecture.md), [Contributing](./CONTRIBUTING.md), and [Provider extensions](./docs/development.md) |
-| Deploy to the cloud or keep nanobot running as a service | [Deployment](./docs/deployment.md) |
+| Understand or extend the internals | [Architecture](./docs/architecture.md), [Development](./docs/development.md), and [Provider extensions](./docs/development.md) |
+| Deploy to the cloud or keep Sentinel running as a service | [Deployment](./docs/deployment.md) |
 
-## What can nanobot do?
+## What can Sentinel do?
 
-nanobot can:
+Sentinel can:
 
 - run in a browser WebUI or terminal
 - connect to Telegram, Discord, Slack, WeChat, Email, Mattermost, Linear, and other channels
@@ -64,7 +31,7 @@ nanobot can:
 - embed the agent with the Python SDK
 - deploy as a long-running local or server-side agent gateway
 
-## 💡 Why nanobot
+## 💡 Why Sentinel
 
 - **Persistent workflows**: keep saved conversations, long-term memory, and task results for later work.
 - **Chat-native reach**: WebUI, Telegram, Feishu, Slack, Discord, Teams, email, Mattermost, and Linear.
@@ -74,7 +41,7 @@ nanobot can:
 
 ## 📦 Install
 
-You need **Python 3.11 or newer** and access to a [supported model provider or local model server](./docs/providers.md). Model fees or local hardware requirements depend on the service you choose; nanobot does not supply a model account.
+You need **Python 3.11 or newer** and access to a [supported model provider or local model server](./docs/providers.md). Model fees or local hardware requirements depend on the service you choose; Sentinel does not supply a model account.
 
 Choose the **stable release** for everyday use or **current source** for development and the latest features. This README describes current source; [published documentation](https://nanobot.wiki/docs/latest/getting-started/nanobot-overview) covers the released version.
 
@@ -170,7 +137,7 @@ On Windows, use `py -3 -m venv .venv` instead of `python3`. Activate it with `so
 python -m pip install -e .
 ```
 
-After that, the normal commands are identical to a stable install. `nanobot` runs the TUI from this checkout, and `nanobot webui` prompts to rebuild stale frontend assets, or warns in non-interactive sessions; `--yes` builds automatically. After stopping the old instance, `git pull --ff-only` updates the Python, TUI, and WebUI source together; rerun `python -m pip install -e .` when Python dependencies change, then restart the instance. Contributors should also read [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+After that, the normal commands are identical to a stable install. `nanobot` runs the TUI from this checkout, and `nanobot webui` prompts to rebuild stale frontend assets, or warns in non-interactive sessions; `--yes` builds automatically. After stopping the old instance, `git pull --ff-only` updates the Python, TUI, and WebUI source together; rerun `python -m pip install -e .` when Python dependencies change, then restart the instance. Contributors should also read [Development guide](./docs/development.md).
 
 </details>
 
@@ -184,7 +151,7 @@ Platform wheels include both the WebUI and the native terminal UI: macOS 13+ (Ap
 </details>
 
 <details>
-<summary>Verify the installation or locate the nanobot command</summary>
+<summary>Verify the installation or locate the `nanobot` command</summary>
 
 Verify the install:
 
@@ -200,7 +167,7 @@ After installation, continue with [Quick Start](#-quick-start). Use the exact co
 
 ## 🚀 Quick Start
 
-**Open nanobot in your browser**
+**Open Sentinel in your browser**
 
 If the installer already opened the WebUI, continue there. Otherwise run:
 
@@ -218,12 +185,12 @@ Keep the launcher terminal open while using the browser. It starts or joins the 
 
 A normal reply verifies the provider/model and browser connection. The file task separately checks the selected project and its file permissions. Attaching a file sends it to the conversation; it does not change the selected project folder.
 
-Then describe your next goal in the same chat, for example: "I am already using the WebUI. Help me connect Telegram and allow only my account." An enabled `nanobot-document` skill can consult the documentation bundled with your installation; see [Continue with nanobot](./docs/quick-start.md#continue-with-nanobot) for examples, explicit invocation, and availability.
+Then describe your next goal in the same chat, for example: "I am already using the WebUI. Help me connect Telegram and allow only my account." An enabled `nanobot-document` skill can consult the documentation bundled with your installation; see [Continue with Sentinel](./docs/quick-start.md#continue-with-sentinel) for examples, explicit invocation, and availability.
 
 <details>
 <summary>Open the WebUI on a remote server through SSH</summary>
 
-After installing nanobot on the server, start its WebUI without opening a server-side browser:
+After installing Sentinel on the server, start its WebUI without opening a server-side browser:
 
 ```bash
 nanobot webui --no-open
@@ -265,7 +232,7 @@ The native TUI uses the launch directory as its project workspace and shares sav
 - Type `/` to discover commands, `/sessions` to switch conversations, or `@` to mention an app, MCP server, or saved session.
 - Paste clipboard images with `Ctrl+V` or `Alt+V`, and use `$` to complete skill references.
 - Use `/diff` to inspect file changes, `/context` to inspect session context, or `/branch` to continue from a completed reply in a new session.
-- Press `Enter` to send. While nanobot is working, `Enter` sends now and `Tab` sends after the current response. Press `Shift+Enter` to add a newline (`Ctrl+J` works in terminals that cannot distinguish modified Enter keys).
+- Press `Enter` to send. While Sentinel is working, `Enter` sends now and `Tab` sends after the current response. Press `Shift+Enter` to add a newline (`Ctrl+J` works in terminals that cannot distinguish modified Enter keys).
 - Use `/detach` to promote the gateway to background mode and close the TUI while work continues.
 
 Each launch starts a new session by default. Use `--session` to resume one and `--workspace` to choose another project workspace. See the [CLI reference](./docs/cli-reference.md#agent-cli) for session branching, diffs, history, shortcuts, gateway lifecycle, and compatibility options.
@@ -288,7 +255,7 @@ Use a regular topic for a bounded objective with a clear completion condition, f
 /goal Review this project's tests and list the smallest missing test case.
 ```
 
-An active goal keeps nanobot working beyond the ordinary iteration limit until it records completion, cancellation, or a blocked state. This can use more model tokens; `/stop` interrupts the current work, while asking nanobot to cancel the goal abandons the objective. Execution errors can also stop the work. A scheduled automation instead starts work at specified times. Keep the gateway running for unattended work using the background or service options below.
+An active goal keeps Sentinel working beyond the ordinary iteration limit until it records completion, cancellation, or a blocked state. This can use more model tokens; `/stop` interrupts the current work, while asking Sentinel to cancel the goal abandons the objective. Execution errors can also stop the work. A scheduled automation instead starts work at specified times. Keep the gateway running for unattended work using the background or service options below.
 
 After a gateway restart, reopen the original topic and review saved results before explicitly continuing any interrupted work. Recovery does not blindly replay uncertain tool actions. See the [long-running agent guide](./docs/guides/long-running-ai-agent.md) for starting conditions and related automation options.
 
@@ -345,7 +312,7 @@ It skips guided WebUI setup and browser opening. The WebUI remains available whe
 
 </details>
 
-If nanobot worked for you, a star on GitHub is the simplest way to support the project.
+If Sentinel worked for you, a star on GitHub is the simplest way to support the project.
 
 <a id="deploy-to-render"></a>
 
@@ -353,7 +320,7 @@ If nanobot worked for you, a star on GitHub is the simplest way to support the p
 
 **Render — one click**
 
-Deploy nanobot's gateway and bundled WebUI from the repository's ready-to-use Blueprint:
+Deploy Sentinel's gateway and bundled WebUI from the repository's ready-to-use Blueprint:
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/HKUDS/nanobot)
 
@@ -366,21 +333,6 @@ Prefer your own infrastructure? Follow the [deployment guide](./docs/deployment.
 ## 🌐 WebUI
 
 The WebUI ships **inside the published wheel** with no separate frontend build. It is the browser workbench for persistent topics, temporary chats, visible agent activity, workspace controls, Apps, Skills, Automations, and settings. Start it with `nanobot webui`. WebUI access grants administration of the same agent instance; share it only with trusted operators. See [Sharing access](./docs/webui.md#sharing-access).
-
-The screenshots show example conversations, illustrative token counts, and paused schedules; the interface may change.
-
-<p align="center">
-  <img src="./images/nanobot-workbench.png" alt="Three conversations in one WebUI workbench" width="900">
-</p>
-
-<details>
-<summary>Mobile WebUI · dark theme</summary>
-
-<p align="center">
-  <img src="./images/nanobot-mobile.png" alt="Mobile WebUI in dark theme with a saved conversation, model controls, context usage, and Default Permission" width="390">
-</p>
-
-</details>
 
 Use it to:
 
@@ -403,19 +355,11 @@ Choose a project, access mode, and model for each task. Topics separate conversa
 
 Expand agent activity to see reasoning, tool calls, and file changes. Switch **Settings → Appearance → Edit preview** to **Diff** for inline patches. The composer's context indicator shows the current context size, input tokens by round, and cache reuse when the provider reports it.
 
-<p align="center">
-  <img src="./images/nanobot-context.png" alt="An expanded file-edit diff above the context usage chart, with input tokens and cache reuse shown across four rounds" width="900">
-</p>
-
 Context compaction also appears in the conversation timeline. [Explore activity and context →](./docs/webui.md#activity-and-context-usage)
 
 ### Bring your tools into the conversation
 
 Use Apps to connect MCP servers, enable Agent Plugins, and manage local CLI App adapters. Add a preset or a custom server, then attach an available tool with `@`. Skills provide reusable instructions. **Settings** holds model, voice, image, and web setup; **Channels** handles chat-platform connections.
-
-<p align="center">
-  <img src="./images/nanobot-apps.png" alt="The Apps MCP catalog with searchable integration presets and Connect actions" width="900">
-</p>
 
 [Explore Apps →](./docs/webui.md#apps) · [Discover Skills →](./docs/webui.md#skills) · [Connect chat apps →](./docs/guides/chat-app-ai-agent.md)
 
@@ -425,10 +369,6 @@ Before connecting a personal bot to shared channels, check the platform's DM pai
 
 Ask for an automation from the topic that should receive its results. Use **Tasks** to review and manage schedules, or **Calendar** to scan completed and upcoming runs by date. Local triggers let a script start a saved task on demand.
 
-<p align="center">
-  <img src="./images/nanobot-automations.png" alt="The Automations calendar with example completed runs arranged by date" width="900">
-</p>
-
 Keep the gateway running and the host awake for scheduled delivery. Missed scheduled times are not replayed after a gateway restart. See [delivery and recovery rules](./docs/automations.md#delivery-and-reliability). [Explore Automations →](./docs/automations.md)
 
 For a conversation that should stay out of saved topic history and long-term memory, use [Temporary chat](./docs/webui.md#temporary-chats) from the header. Temporary chats end when the connection closes and use the default workspace with workspace-only permissions. Requests still go to the configured model provider, and files created by tools remain after the chat closes.
@@ -436,10 +376,6 @@ For a conversation that should stay out of saved topic history and long-term mem
 See the [WebUI guide](./docs/webui.md) for LAN access, background operation, workspace controls, and the full feature tour. Working on the frontend itself? Use [`webui/README.md`](./webui/README.md).
 
 ## Architecture
-
-<p align="center">
-  <img src="images/nanobot_arch.png" alt="nanobot architecture" width="800">
-</p>
 
 The Python gateway owns agent execution, sessions, tools, memory, and security policy for the WebUI, TUI, and chat apps. The clients share that runtime; the core agent loop builds context, calls the model, executes requested tools, and returns the result. Memory, skills, channels, and MCP integrations extend that loop.
 
@@ -458,7 +394,7 @@ Browse the [repo docs](./docs/README.md) for current source documentation, or vi
 - Integrate from code: [Python SDK](./docs/python-sdk.md).
 - Look up runtime concepts or exact settings: [Concepts](./docs/concepts.md) and [Configuration](./docs/configuration.md).
 - Diagnose a failure: [Troubleshooting](./docs/troubleshooting.md).
-- Extend the core: [Architecture](./docs/architecture.md) and [contribution workflow](./CONTRIBUTING.md).
+- Extend the core: [Architecture](./docs/architecture.md) and [development guide](./docs/development.md).
 
 ## Releases
 
@@ -466,7 +402,7 @@ Browse the [repo docs](./docs/README.md) for current source documentation, or vi
 
 v0.4.1 improves workspace permissions, sandboxed commands, connection recovery, file-context previews, and navigation. It retains legacy history and proxy migration through 0.4.x.
 
-Back up the stopped instance and upgrade through its original installation method. v0.3.5 can upgrade directly to v0.4.1; in-app automatic installation is not enabled for this release. See [upgrade notes](https://github.com/HKUDS/nanobot/releases/tag/v0.4.1) and [Updating nanobot](./docs/updating.md).
+Back up the stopped instance and upgrade through its original installation method. v0.3.5 can upgrade directly to v0.4.1; in-app automatic installation is not enabled for this release. See [upgrade notes](https://github.com/HKUDS/nanobot/releases/tag/v0.4.1) and [Updating Sentinel](./docs/updating.md).
 
 For other changes, see [GitHub releases](https://github.com/HKUDS/nanobot/releases) and the [release archive](./docs/release-archive.md).
 
@@ -479,7 +415,7 @@ For other changes, see [GitHub releases](https://github.com/HKUDS/nanobot/releas
 
 ## 🤝 Contribute
 
-Everyone is welcome to [open an issue](https://github.com/HKUDS/nanobot/issues) with a bug, reproduction, use case, or suggestion. Discuss the problem first; pull requests are currently limited to repository collaborators. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the contribution process and recognition.
+Everyone is welcome to [open an issue](https://github.com/HKUDS/nanobot/issues) with a bug, reproduction, use case, or suggestion. Discuss the problem first; pull requests are currently limited to repository collaborators. See the [development guide](./docs/development.md) for extension notes.
 
 ## Maintainers
 
@@ -890,6 +826,6 @@ Everyone is welcome to [open an issue](https://github.com/HKUDS/nanobot/issues) 
 <!-- contributors:end -->
 
 <p align="center">
-  <em> Thanks for visiting ✨ nanobot!</em><br><br>
+  <em> Thanks for visiting ✨ Sentinel!</em><br><br>
   <img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.nanobot&style=for-the-badge&color=00d4ff" alt="Views">
 </p>
