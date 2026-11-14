@@ -481,14 +481,11 @@
     "hint": "Choose a target chat, then confirm or edit the task instructions."
   },
   "about": {
-    "title": "About and version views",
-    "description": "Compare version-check states, commit links, update entries and the About page; buttons update the view with sample results.",
-    "options": "AboutSettingsView accepts composed version and support links. VersionCheckRowView displays checking/result and requests checks through onCheck. The feature entry owns actual checks and diagnostic link data.",
-    "error": "Could not get version information. Try again.",
-    "state": "Version state",
+    "title": "About and version",
+    "description": "View the installed version, commit and support links.",
+    "options": "AboutSettingsView shows the installed version and commit link alongside support resources.",
+    "state": "Version display",
     "selectedLink": "GitHub link selected",
-    "preferenceSaved": "Sample preference saved; nothing will be installed or restarted.",
-    "updateRequested": "Update review selected; this preview does not install or restart anything.",
     "dismissed": "Update notice dismissed"
   },
   "appearance": {

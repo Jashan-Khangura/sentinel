@@ -45,11 +45,11 @@ You need **Python 3.11 or newer** and access to a [supported model provider or l
 
 Choose the **stable release** for everyday use or **current source** for development and the latest features. This README describes current source; [published documentation](https://nanobot.wiki/docs/latest/getting-started/nanobot-overview) covers the released version.
 
-New to terminals or model credentials? Follow [Start Without Technical Background](./docs/start-without-technical-background.md). Updating an existing instance? Follow [updates and recovery](./docs/updating.md) for your installation method, backup steps and restart checks.
+New to terminals or model credentials? Follow [Start Without Technical Background](./docs/start-without-technical-background.md). For manual upgrades and data migration notes, see [Manual Updates and Data Migrations](./docs/updating.md).
 
 | Track | Install with | Update with | What runs |
 |---|---|---|---|
-| Stable | installer, `uv`, or pip | [WebUI when supported](./docs/updating.md#update-from-the-webui), otherwise the original package tool | one released Python/WebUI version |
+| Stable | installer, `uv`, or pip | original package tool or deployment workflow; see [manual update guidance](./docs/updating.md#installation-owners) | one released Python/WebUI version |
 | Current source | editable Git checkout | `git pull --ff-only` + editable dependency sync | Python and WebUI from that checkout |
 
 **Stable release: automatic setup (recommended)**

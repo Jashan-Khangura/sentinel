@@ -238,7 +238,7 @@ def test_bundle_uses_current_python_and_never_contains_the_login_url(tmp_path):
     assert len([path for path in tmp_path.rglob("*") if path.is_file()]) == 3
 
 
-async def test_background_presence_waits_for_activation_and_remembers_explicit_requests(monkeypatch, tmp_path):
+async def test_background_presence_tracks_explicit_requests(monkeypatch, tmp_path):
     monkeypatch.setattr(dock, "_desktop_available", lambda: True)
     instance = tmp_path / "run" / "gateway.json"
     entered, closed = threading.Event(), threading.Event()
@@ -256,14 +256,10 @@ async def test_background_presence_waits_for_activation_and_remembers_explicit_r
     dock.request_gateway_icon(instance, enabled=True)
     intent = instance.with_suffix(".dock").read_text()
     assert intent.startswith("show:") and "http" not in intent
-    activated = asyncio.Event()
     watcher = asyncio.create_task(dock.watch_gateway_icon(
-        "http://127.0.0.1:8765/", instance=instance, activated=activated,
+        "http://127.0.0.1:8765/", instance=instance,
     ))
     try:
-        await asyncio.sleep(0)
-        assert not entered.is_set()
-        activated.set()
         assert await asyncio.to_thread(entered.wait, 2)
         dock.request_gateway_icon(instance, enabled=False)
         assert await asyncio.to_thread(closed.wait, 2)
@@ -278,7 +274,7 @@ async def test_background_presence_waits_for_activation_and_remembers_explicit_r
     assert closed.is_set()
     entered.clear()
     watcher = asyncio.create_task(dock.watch_gateway_icon(
-        "http://127.0.0.1:8765/", instance=instance, activated=activated,
+        "http://127.0.0.1:8765/", instance=instance,
     ))
     try:
         assert await asyncio.to_thread(entered.wait, 2)
@@ -304,10 +300,8 @@ async def test_cancelled_gateway_joins_pending_dock_startup_before_releasing_it(
     monkeypatch.setattr(dock, "dock_icon", slow_icon)
     instance = tmp_path / "gateway.json"
     dock.request_gateway_icon(instance, enabled=True)
-    activated = asyncio.Event()
-    activated.set()
     watcher = asyncio.create_task(dock.watch_gateway_icon(
-        "http://127.0.0.1:8765/", instance=instance, activated=activated,
+        "http://127.0.0.1:8765/", instance=instance,
     ))
     try:
         assert await asyncio.to_thread(started.wait, 2)

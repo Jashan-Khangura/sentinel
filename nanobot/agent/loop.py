@@ -1391,8 +1391,8 @@ class AgentLoop:
         """Close task intake only when this runtime's accepted work is finished.
 
         The gateway shares the bus gate with cron and local trigger intake.
-        This does not stop other processes or channel/configuration writes;
-        those must be shut down before an updater takes a data backup.
+        this does not stop other processes or channel/configuration writes;
+        those must be shut down before installation maintenance takes a data backup.
         """
         return self.bus.admission.pause_if_idle(self._has_pending_work)
 

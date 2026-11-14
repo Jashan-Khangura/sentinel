@@ -3310,7 +3310,6 @@ describe("App layout", () => {
   it("opens the settings view from the sidebar footer", async () => {
     mockFetchRoutes({
       "/api/settings": baseSettingsPayload(),
-      "/api/settings/version-check": { updateAvailable: null },
     });
     render(<App />);
     await waitFor(() => expect(connectSpy).toHaveBeenCalled());

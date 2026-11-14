@@ -63,26 +63,19 @@ it("translates a visible inventory failure without retrying or losing search inp
   expect(fetch).toHaveBeenCalledTimes(1);
 });
 
-it("quietly keeps Preview selection and translates update feedback without executing an update", async () => {
-  const source = "webui/src/components/settings/overview/VersionCheckRowView.tsx";
+it("keeps the About version display and its commit link available in Chinese", async () => {
+  const source = "webui/src/components/settings/overview/AboutSettingsView.tsx";
   window.history.replaceState({}, "", `/gallery.html#${new URLSearchParams({ component: source })}`);
   const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => inventory });
   vi.stubGlobal("fetch", fetch);
   render(<Gallery />);
   const preview = within(await screen.findByRole("region", { name: "Component preview" }));
-  await userEvent.click(preview.getByRole("combobox", { name: "Version state" }));
-  await userEvent.click(await screen.findByRole("option", { name: "preview" }));
-  const toggle = preview.getByRole("switch", { name: "Receive preview updates" });
-  await userEvent.click(toggle);
-  expect(toggle).toBeChecked();
-  expect(preview.queryByText("Sample preference saved; nothing will be installed or restarted.")).toBeNull();
-  await userEvent.click(preview.getByRole("button", { name: "Update" }));
-  expect(preview.getByText("Update review selected; this preview does not install or restart anything.")).toBeVisible();
+  await userEvent.click(preview.getByRole("combobox", { name: "Version display" }));
+  await userEvent.click(await screen.findByRole("option", { name: "version-only" }));
 
   await chooseChinese();
 
-  expect(preview.getByText("已选择查看更新；组件预览不会安装或重启。")).toBeVisible();
-  expect(toggle).toBeChecked();
-  expect(preview.getByText("v0.3.7.dev2026101501")).toBeVisible();
+  expect(preview.getByText("v0.3.5")).toBeVisible();
+  expect(preview.queryByRole("link", { name: "abcdef1" })).toBeNull();
   expect(fetch).toHaveBeenCalledTimes(1);
 });

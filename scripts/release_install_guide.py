@@ -22,9 +22,8 @@ PLATFORM_LABELS = {
     "win32-x64": "Windows · x64",
 }
 
-# Uses only Python's standard library, so the first preview can be installed before
-# the user's nanobot has a channel-aware updater. The downloaded file is retained:
-# managers can record its location as the installation source.
+# Verify candidate bytes with only the standard library before invoking the package
+# manager. The downloaded file is retained so managers can record its source.
 VERIFY_AND_INSTALL = '''from pathlib import Path
 import hashlib
 import subprocess

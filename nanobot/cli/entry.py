@@ -56,35 +56,10 @@ def _run_agent(args: list[str], *, prog_name: str) -> None:
     command.main(args=args, prog_name=prog_name)
 
 
-def _command_args(args: list[str]) -> list[str]:
-    position = 0
-    while position < len(args):
-        argument = args[position]
-        if argument == "--home":
-            position += 2
-        elif argument.startswith("--home="):
-            position += 1
-        else:
-            return args[position:]
-    return []
-
-
 def main() -> None:
     """Acquire a runtime lease before loading application code."""
-    args = _command_args(sys.argv[1:])
-    saved_update = args[:1] == ["update"] and any(argument.split("=", 1)[0] == "--job" for argument in args[1:])
-    if args[:1] == ["update"] and not saved_update:
-        # The update entrypoint takes its own exclusive lease only for execution.
-        # Saved pre-mutation recovery instead owns a read lease before imports;
-        # its detached worker can replace files only after this process exits.
-        _dispatch()
-        return
     try:
-        # Keep the repair/stop path usable after an interrupted older updater.
-        # These commands still take a lease and cannot run during a live install.
-        diagnostics = args[:1] in (["--help"], ["-h"], ["--version"], ["-v"])
-        stop_or_inspect = args[:2] in (["gateway", "stop"], ["gateway", "status"], ["gateway", "logs"])
-        with installation_access(allow_incomplete=diagnostics or stop_or_inspect):
+        with installation_access():
             _dispatch()
     except InstallationBusyError as exc:
         print(str(exc), file=sys.stderr)
@@ -104,15 +79,6 @@ def _dispatch() -> None:
     dispatch_args = ["agent", *agent_args] if agent_args is not None else raw_args
     set_cli_process_identity(dispatch_args)
     configure_windows_console()
-    if not shell_completion and raw_args[:1] == ["update"]:
-        import typer
-
-        from nanobot.cli.update import update
-
-        update_app = typer.Typer(add_completion=False)
-        update_app.command()(update)
-        typer.main.get_command(update_app).main(args=raw_args[1:], prog_name="nanobot update")
-        return
     root_agent_alias = bool(raw_args) and agent_args is not None and raw_args[:1] != ["agent"]
     if agent_args is not None and root_agent_alias:
         prog_name = "nanobot" if root_agent_alias else "nanobot agent"

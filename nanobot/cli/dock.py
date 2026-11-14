@@ -208,16 +208,15 @@ def _watch_gateway_icon(url: str, instance: Path, stopped: threading.Event) -> N
         presence.close()
 
 
-async def watch_gateway_icon(url: str, *, instance: Path, activated: asyncio.Event) -> None:
-    """Own optional Dock presence only after ordinary/protected startup is activated.
+async def watch_gateway_icon(url: str, *, instance: Path) -> None:
+    """Own optional Dock presence for the lifetime of a gateway.
 
     The persisted request lets an existing gateway observe a detached launcher and
-    lets the next gateway generation restore it. No updater or data format changes.
+    lets the next gateway generation restore it. No data format changes.
     Quitting the icon is respected until another explicit request or service start.
     """
     if not _desktop_available():
         return
-    await activated.wait()
     stopped = threading.Event()
     watcher = asyncio.create_task(asyncio.to_thread(_watch_gateway_icon, url, instance, stopped))
     try:

@@ -182,4 +182,4 @@ Run:
 nanobot webui
 ```
 
-A fresh official-installer environment starts a background gateway and returns control to the terminal. Closing the browser does not stop it. Manage it with `nanobot gateway status`, `logs`, `restart`, and `stop`; use the exact commands printed for your instance. Other installation methods keep their attached on-demand launch: leave that launcher open, or explicitly use `nanobot webui --detach` after setup. The last attached client stops an on-demand gateway, not a background gateway. See [updates and recovery](./updating.md) for the matching installation method.
+A fresh official-installer environment starts a background gateway and returns control to the terminal. Closing the browser does not stop it. Manage it with `nanobot gateway status`, `logs`, `restart`, and `stop`; use the exact commands printed for your instance. Other installation methods keep their attached on-demand launch: leave that launcher open, or explicitly use `nanobot webui --detach` after setup. The last attached client stops an on-demand gateway, not a background gateway. See the [CLI reference](./cli-reference.md#gateway) for gateway lifecycle commands.

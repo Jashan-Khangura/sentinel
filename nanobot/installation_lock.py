@@ -1,7 +1,7 @@
-"""Coordinate nanobot entrypoints with updates of their shared Python installation.
+"""Coordinate nanobot entrypoints with installation maintenance.
 
-This module uses only the standard library so startup and a detached update worker
-can use the same lock without importing dependencies they are about to replace.
+This module uses only the standard library so startup and a package installer can
+share the same lock without importing dependencies that may be replaced.
 The OS releases leases on process exit, including a crash. Never unlink the lock
 file: replacing its inode would let two processes acquire different locks.
 """
@@ -22,7 +22,7 @@ from nanobot.utils.atomic_file import io_path
 
 
 class InstallationBusyError(RuntimeError):
-    """Another runtime or updater holds an incompatible installation lease."""
+    """Another runtime or installer holds an incompatible installation lease."""
 
 
 @dataclass(frozen=True)
@@ -61,10 +61,6 @@ def installation_state_dir(environment: str | Path | None = None) -> Path:
     return Path.home() / ".nanobot" / "updates" / installation_id(environment)
 
 
-def pending_update_path(environment: str | Path | None = None) -> Path:
-    return Path.home() / ".nanobot" / "run" / f"update-{installation_id(environment)[:16]}.pending"
-
-
 def _lock_windows(handle: BinaryIO, *, exclusive: bool) -> None:
     import ctypes
     import msvcrt
@@ -83,7 +79,7 @@ def _lock_windows(handle: BinaryIO, *, exclusive: bool) -> None:
                      wintypes.DWORD, wintypes.DWORD, ctypes.POINTER(Overlapped)]
     lock.restype = wintypes.BOOL
     overlap = Overlapped()
-    # LOCKFILE_FAIL_IMMEDIATELY, plus LOCKFILE_EXCLUSIVE_LOCK for an updater.
+    # LOCKFILE_FAIL_IMMEDIATELY, plus LOCKFILE_EXCLUSIVE_LOCK for maintenance.
     if not lock(msvcrt.get_osfhandle(handle.fileno()), 1 | (2 if exclusive else 0),
                 0, 1, 0, ctypes.byref(overlap)):
         code = ctypes.get_last_error()
@@ -114,33 +110,22 @@ def file_access(path: Path, *, exclusive: bool) -> Generator[FileLease]:
 
 
 @contextmanager
-def installation_access(*, updating: bool = False, allow_incomplete: bool = False,
+def installation_access(*, updating: bool = False,
                         environment: str | Path | None = None) -> Generator[FileLease]:
-    """Hold a shared runtime lease, or refuse an update until all runtimes exit.
+    """Hold a shared runtime lease, or an exclusive package-maintenance lease.
 
     This protects cooperating entrypoints in this account, not arbitrary Python
-    imports or externally managed deployments. Process-owner shutdown/restart is
-    still required before enabling an in-app installation handoff. Diagnostics and
-    stop commands may allow an incomplete install; they still cannot race a writer.
+    imports or externally managed deployments. Installers must stop processes that
+    own the environment before changing its package files.
     """
-    acquired = False
     try:
         with file_access(installation_state_dir(environment) / "runtime.lock", exclusive=updating) as lease:
-            acquired = True
-            if not updating and not allow_incomplete and io_path(pending_update_path(environment)).exists():
-                raise InstallationBusyError(
-                    "A previous update did not finish. Check its saved update state at "
-                    f"{installation_state_dir(environment)} before repairing this installation. "
-                    "Do not start a different update. No automatic rollback was performed."
-                )
             yield lease
     except BlockingIOError as exc:
-        if not acquired:
-            message = (
-                "This installation is in use. Stop its nanobot gateways and clients before updating; "
-                "no processes were stopped and no package files were changed."
-                if updating else
-                "This installation is being updated. Wait for the update to finish before starting nanobot."
-            )
-            raise InstallationBusyError(message) from exc
-        raise
+        message = (
+            "This installation is in use. Stop its nanobot gateways and clients before installing packages; "
+            "no processes were stopped and no package files were changed."
+            if updating else
+            "This installation is being modified. Wait for package maintenance to finish before starting nanobot."
+        )
+        raise InstallationBusyError(message) from exc

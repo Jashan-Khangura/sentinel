@@ -4,19 +4,19 @@ Use this checklist to prepare releases. Preparation does not authorize publicati
 
 ## Release cadence
 
-Stable is the default feed; Preview is opt-in. Both use one update flow and require confirmation before installation. Neither a faster cadence nor a subscription permits stopping tasks or restarting a gateway automatically. See [Updating Sentinel](./updating.md) for user instructions.
+The application does not check for, download or install releases. Stable and Preview describe publication tracks for maintainers; users update through the package manager or deployment that owns their installation. See [Manual Updates and Data Migrations](./updating.md) for user instructions.
 
 | Release | Trigger | Public destination | Documentation |
 | --- | --- | --- | --- |
-| Stable feature release | Manual, when needed | Final GitHub Release and PyPI; also index its manifest for Preview subscribers | Full version documentation and any planned announcement |
+| Stable feature release | Manual, when needed | Final GitHub Release and PyPI; update the release catalogue | Full version documentation and any planned announcement |
 | Stable patch | Manual, when a reviewed fix is ready; do not wait for a feature milestone | Same stable destinations and checks | Generated change notes and necessary upgrade instructions; update only affected documentation |
 | Preview / dev | Daily workflow, after maintainers enable it | GitHub prerelease and protected `release-index` catalogue; not PyPI | Generated change notes; no new documentation edition for each build |
 
-These are three publication lines, not three build systems. Feature and patch releases both use `channel=stable`; dev uses the existing `preview` channel. A patch does not require a Preview first or a complete wiki and promotional refresh. Preserve necessary tests and release checks, and reuse unaffected evidence under the [verification guidance](../.agent/workflow.md).
+These are three publication lines, not three build systems. Feature and patch releases both use the stable track; dev uses the preview track. A patch does not require a Preview first or a complete wiki and promotional refresh. Preserve necessary tests and release checks, and reuse unaffected evidence under the [verification guidance](../.agent/workflow.md).
 
 Implementation status: **Verify Release Candidate** supports manual preparation and opt-in daily Preview preparation. It generates draft notes and reuses the same five-platform build and acceptance jobs. It does not publish. Automatic prerelease upload, signing handoff and catalogue advancement are not connected yet; PyPI publication requires a separate manual workflow after its trusted publisher is configured. Daily preparation is disabled by default. Do not describe this first step as an available daily public release channel.
 
-Record the requested channel, exact source and candidate identity. Unchanged source, failed checks, missing assets, incomplete acceptance or absent approval leaves the last verified release in place. Scheduled execution can be delayed; there is no promise of a new release every day. Acceptance must cover the supported stable baseline and an earlier Preview, including skipped previews, not just the previous build.
+Record the requested track, exact source and candidate identity. Unchanged source, failed checks, missing assets, incomplete acceptance or absent approval leaves the last verified release in place. Scheduled execution can be delayed; there is no promise of a new release every day.
 
 ### Shared preparation entry
 
@@ -31,26 +31,26 @@ Daily runs retain small reports only, not the optional installable handoff. They
 ### Stable patch procedure
 
 1. Select the supported stable baseline and reviewed fixes. If `main` contains unfinished features, branch from that baseline and backport only the required fixes. Do not relabel an unverified Preview as stable.
-2. Allocate an unused final version, update both version declarations, and follow **Prepare a candidate**. Patches require the same packaging, platform-install, data-preservation and update/recovery gates as feature releases.
+2. Allocate an unused final version, update both version declarations, and follow **Prepare a candidate**. Patches require the same packaging, platform-install and data-preservation gates as feature releases.
 3. Publish approved immutable files in order: GitHub, PyPI, public-download checks, then the catalogue's `stable` pointer. Preserve `preview` and withdrawal history. A stable patch older than an installed Preview must not be offered as a downgrade.
-4. Publish concise fix notes and required operator actions. Users without this updater need their original installation method for the first upgrade; external package/deployment owners retain their route.
+4. Publish concise fix notes and required operator actions. Users install each release through the package manager or deployment that owns their installation.
 
 ### Preview procedure
 
 1. Select an exact reviewed `main` commit with passing required CI; skip it if its source SHA matches the last accepted candidate. Record the next unreleased stable base and an unused increasing Preview sequence.
-2. Use **Verify Release Candidate** for that ref and base, manually or through enabled daily preparation. It prepares a version-only candidate, builds the WebUI and five platform wheels once, and runs macOS arm64/x64, Linux arm64/x64 and Windows x64 clean-install and packaged update/recovery acceptance against the exact manifest-bound wheels without publication. Ordinary PR CI keeps its Linux x64/Windows x64 matrix; candidate preparation uses all five runners. Require the **Candidate required** check to pass; build-only reports are insufficient.
-3. Select `retain_installable` and preserve the accepted `installable-candidate` handoff before expiry. Temporary `candidate-native` inputs and `prepared-candidate` artifacts are not accepted handoffs. Complete real historical-baseline and interactive acceptance against those exact bytes; the automated fault-injection fixtures do not establish compatibility with a previously published version or interactive desktop behavior. Keep candidate SHA, manifest hash, coverage, known issues and source-offer approval together; CI reports alone are neither installable artifacts nor publication consent.
+2. Use **Verify Release Candidate** for that ref and base, manually or through enabled daily preparation. It prepares a version-only candidate, builds the WebUI and five platform wheels once, and runs macOS arm64/x64, Linux arm64/x64 and Windows x64 clean-install acceptance against the exact manifest-bound wheels without publication. Ordinary PR CI keeps its Linux x64/Windows x64 matrix; candidate preparation uses all five runners. Require the **Candidate required** check to pass; build-only reports are insufficient.
+3. Select `retain_installable` and preserve the accepted `installable-candidate` handoff before expiry. Temporary `candidate-native` inputs and `prepared-candidate` artifacts are not accepted handoffs. Complete native installation and runtime checks against those exact bytes; automated fixtures do not establish interactive desktop behavior. Keep candidate SHA, manifest hash, coverage and known issues together; CI reports alone are neither installable artifacts nor publication consent.
 4. With separate approval, publish immutable `v<version>` at the **candidate** commit and a GitHub prerelease, never the latest stable release. Upload the complete verified set, manifest and notes; make the pinned installer source publicly reachable.
-5. Verify all public sizes/hashes and clean public install/update acceptance before advancing `preview` with a new catalogue generation. Validate against the latest catalogue, preserve `stable` and withdrawals, and serialize stable, Preview and withdrawal writes. A stale publisher must reread and revalidate.
+5. Verify all public sizes/hashes and clean public installation acceptance before advancing `preview` with a new catalogue generation. Validate against the latest catalogue, preserve `stable` and withdrawals, and serialize stable, Preview and withdrawal writes. A stale publisher must reread and revalidate.
 6. After partial upload, leave the feed unchanged and resume only from the original verified files. Lost or changed bytes require a new version and repeated acceptance. Withdraw unsafe candidates with a reason and offer a newer fix; never rewind the feed or restore user data.
 
 Use Python version ordering: `0.3.6.dev42 < 0.3.6.dev43 < 0.3.6 < 0.3.7.dev1` (illustrative versions). Once a final base ships, previews need a later base; allocate it after accounting for stable patches. The workflow uses `github.run_number` for `N` in `X.Y.Z.devN`; do not reset the sequence without checking published versions. Reruns cannot replace published bytes. Rebuild and test final releases under their final identity; never rename `.devN` wheels.
 
 ### Launch gates and automation boundary
 
-Before offering public Preview, obtain approval for index ownership/protection, publication credentials, source retention and exact packaged/public-download acceptance. Candidate preparation does not activate a public channel, schedule, protected publisher or PyPI upload. Preserve approved release bytes and source outside expiring CI storage for their required lifetime.
+Before publishing Preview, obtain approval for index ownership/protection, publication credentials, source retention and exact packaged/public-download acceptance. Candidate preparation does not activate a public channel, schedule, protected publisher or PyPI upload. Preserve approved release bytes and source outside expiring CI storage for their required lifetime.
 
-Stable releases remain manual. Daily Preview preparation requires the explicit opt-in above; automatic publication needs a separate reviewed implementation and activation. Keep builds read-only and publication permissions in the protected stage. Keep one serialized catalogue writer. Announce Preview availability only after verifying its public feed. Any discovery hint must be dismissible; do not show an update badge for an unavailable channel or enroll users merely because they check.
+Stable releases remain manual. Daily Preview preparation requires the explicit opt-in above; automatic publication needs a separate reviewed implementation and activation. Keep builds read-only and publication permissions in the protected stage. Keep one serialized catalogue writer.
 
 ## Prepare a candidate
 
@@ -63,12 +63,6 @@ Stable releases remain manual. Daily Preview preparation requires the explicit o
 7. For feature releases, prepare the version documentation in `Re-bin/nanobot-web` under its `MAINTAINING.md`. For patches, update only affected instructions and translations; do not require a new complete manual or promotional page when the existing documentation still applies. Preserve existing URLs and previous versions, and verify affected site routes. Pin source references where applicable and never advertise an unpublished package. Preview notes cover development changes without creating a documentation edition each day.
 8. Build the Python distributions, check them with `twine check`, validate wheel RECORDs/tags/permissions, and test installation on all five supported platforms.
 9. Merge release preparation only after current checks/reviews pass. Compare the merged source tree with the tested candidate; rebuild/recheck changes. Reconcile changelog and documentation links, then tag the verified commit, not an unchecked later `main` tip.
-
-### Protected updater handoff compatibility
-
-Restart-capable packages include `nanobot/update_contract.json`: schema version 1, with `handoff_protocols` listing positive integer protocol IDs. Protocol 1's request, protected startup and activation requirements are defined in the [update protocol](./update-protocol.md), independently of package and WebUI versions.
-
-Before advertising protocol 1, run preparation, frozen-worker and actual-gateway restart tests against packaged code; verify the declaration is in both sdist and wheel. Retain an ID only while its entire contract is supported; incompatible request, startup or activation behavior needs a new ID. Older updaters may install a future package only if protocols overlap. Missing, malformed or non-overlapping declarations must be refused before shutdown and require the installation owner's external update route.
 
 ### Legacy history and proxy compatibility window
 
@@ -97,13 +91,13 @@ PyPI receives **five platform wheels and one sdist**. Record source commit, vers
 
 Final releases also require `release-manifest.json` for `stable`. Run `scripts.release_candidate assemble` from the clean final-version checkout, using that final commit as `--source-commit` without Preview preparation. GitHub receives the same wheels/sdist and manifest; PyPI receives only wheels/sdist. Verify final source and public bytes before catalogue advancement.
 
-For same-build candidate acceptance on all five native targets, run **Verify Release Candidate** at the exact final-version ref with `channel=stable`, `next_stable` equal to that declared version and `retain_installable=true`. Stable preparation copies the exact commit without changing version declarations or creating a Preview commit; it rejects mismatched versions and existing stable tags. The default `channel=preview` retains the version-only Preview preparation. Both modes are read-only preparation, require **Candidate required** and retain accepted files for one day; neither publishes a tag, release, PyPI package or feed. Download and independently preserve the accepted handoff before expiry, then complete remaining interactive and real historical-owner acceptance against that same manifest.
+For same-build candidate acceptance on all five native targets, run **Verify Release Candidate** at the exact final-version ref with `channel=stable`, `next_stable` equal to that declared version and `retain_installable=true`. Stable preparation copies the exact commit without changing version declarations or creating a Preview commit; it rejects mismatched versions and existing stable tags. The default `channel=preview` retains the version-only Preview preparation. Both modes are read-only preparation, require **Candidate required** and retain accepted files for one day; neither publishes a tag, release, PyPI package or feed. Download and independently preserve the accepted handoff before expiry, then complete manual installation checks against that same manifest.
 
 ## Publish, with maintainer approval
 
 ### Release approval proof
 
-Both Stable and Preview automatic installs require `release-manifest.json.sigstore.json` beside the manifest on the exact GitHub release. Clients verify Sigstore's production certificate chain/transparency proof and accept only `HKUDS/nanobot`'s manual `release-approve.yml` on `main`. The signed manifest must match version, wheel size/digest and, for Preview, catalogue commit/manifest binding. Verification runs before download and before shutdown, with no unsigned fallback. Unsigned historical releases remain discoverable but cannot be automatically installed; existing installations keep running.
+The official installer's exact-version handoff requires `release-manifest.json.sigstore.json` beside the manifest on the exact GitHub release. The installer verifies Sigstore's production certificate chain/transparency proof and accepts only `HKUDS/nanobot`'s manual `release-approve.yml` on `main`. The signed manifest must match version, wheel size/digest and, for Preview, catalogue commit/manifest binding. Verification runs before package installation. The application does not discover releases or update running gateways; unsigned releases cannot use this verified installer handoff.
 
 Before setting the repository variable `NANOBOT_RELEASE_SIGNING_ENABLED=true`, an administrator must protect `main` and the `release-approval` environment: require independent review, prevent self-review, allow deployment only from `main`, and restrict bypass and changes to the workflow/signing requirements. Signing is disabled without that variable. No long-lived signing key or Apple Developer ID is required.
 
@@ -117,7 +111,7 @@ uv pip compile .github/release-signing-requirements.in --python-version 3.11 \
   --output-file .github/release-signing-requirements.txt
 ```
 
-Review resolved dependencies; hashes are not malware review. Before the first release, prove a supported real old updater can install the signed candidate and that the candidate can install the next signed version. Private packaged recovery fixtures substitute publication authority and are not signature evidence.
+Review resolved dependencies; hashes are not malware review. Before the first release, verify a clean signed installation with the official installer and an owner-managed package upgrade. Private fixtures are not signature evidence.
 
 The proof authenticates release approval, not reproducible builds or harmless code. Compromised authorized workflows/reviewers, malicious source that passes review and compromised runtime dependencies remain risks. The signing lock does not lock runtime resolution, which retains the installation owner's policy. A reviewed runtime dependency inventory, public signed upgrade continuity and verified repository protection settings remain security-release gates; do not claim comprehensive supply-chain protection without them. The first installer and checksum source also need a trusted distribution channel.
 
@@ -125,15 +119,15 @@ The proof authenticates release approval, not reproducible builds or harmless co
 2. Create the matching GitHub Release as a draft. A tag push alone does not publish the package to PyPI.
 3. Attach the five platform wheels, sdist, `release-manifest.json` and its approval proof. Confirm tag sources match the manifest and uploaded hashes match preflight.
 4. Click **Publish release** only after the complete signed artifact set is attached. A final `vX.Y.Z` release starts **Validate published release for PyPI**; its successful completion triggers the protected **Publish approved release to PyPI** workflow on `main`. A prerelease or tag push does not start publication.
-5. A different maintainer must approve the `pypi` environment; check both Actions runs for success. The publisher verifies the signed manifest, tag identity and all public release files, then uploads only the matching sdist and five wheels. It does not build packages. If the trigger did not run, including when a release was created using `GITHUB_TOKEN`, or the release actor was a bot, a human maintainer must manually run **Publish approved release to PyPI** from `main` with the version and `pypi` destination. Until signing is enabled, an authorized maintainer can use the existing manual upload route for the same checked files; unsigned releases cannot be offered through the automatic updater.
-6. Verify clean PyPI installation and the bundled WebUI. After all public GitHub/PyPI files pass, advance `stable`, preserving Preview and withdrawals; check discovery for both subscriptions. Only then merge the wiki PR: its `main` deploys automatically. Confirm all localized `/docs/latest/` routes select the new version and old-version links still work.
+5. A different maintainer must approve the `pypi` environment; check both Actions runs for success. The publisher verifies the signed manifest, tag identity and all public release files, then uploads only the matching sdist and five wheels. It does not build packages. If the trigger did not run, including when a release was created using `GITHUB_TOKEN`, or the release actor was a bot, a human maintainer must manually run **Publish approved release to PyPI** from `main` with the version and `pypi` destination. Until signing is enabled, an authorized maintainer can use the existing manual upload route for the same checked files; unsigned releases cannot use the verified installer handoff.
+6. Verify clean PyPI installation and the bundled WebUI. After all public GitHub/PyPI files pass, advance the stable catalogue entry and preserve Preview/withdrawal history. The application does not notify users about new releases; they update through their installation owner. Only then merge the wiki PR: its `main` deploys automatically. Confirm all localized `/docs/latest/` routes select the new version and old-version links still work.
 7. Add the dated [Release Archive](./release-archive.md) entry and record publication links/status. Feature releases can include a separate announcement; ordinary patches can use the generated notes with necessary additions. Complete any coordinated advisory and reporter notifications separately.
 
 ### Configure trusted publishing
 
 An administrator must protect the `pypi` GitHub environment so only `main` can deploy. Require a second maintainer, prevent self-review, and disable administrator bypass. Protect changes to `main` and both publication workflows. Keep independent review on the separate release-approval workflow. The publisher checks the original Release actor from GitHub's workflow event; an approval by that actor is rejected. In the `nanobot-ai` PyPI project's **Publishing** settings, add a GitHub trusted publisher for owner `HKUDS`, repository `nanobot`, workflow `publish-pypi.yml` and environment `pypi`. These names must match exactly. No long-lived PyPI token is needed by the workflow. Before using the production workflow, test the default `testpypi` destination with a separately registered `nanobot-ai` TestPyPI project and its own trusted publisher using environment `testpypi`; protect that environment in GitHub too. TestPyPI registration does not grant production access. The test still requires a complete signed public release of an unused TestPyPI version.
 
-If an upload only partially succeeds, preserve the original approved bytes. Choose **Run workflow** from `main` with the same version and destination to start a new run. Do not use **Re-run jobs**: GitHub can reuse outputs from an earlier attempt, and review history is scoped to the whole run. The new run compares existing index files with the signed release and uploads only missing files. A production run that uploads files needs a new independent approval. A mismatch, yanked file, unexpected file or unavailable index stops the run for investigation. Published versions cannot be replaced; do not rebuild or upload a different file under the same version. The approval proof and verification cannot establish historical upgrade or interactive acceptance, which remain separate release gates.
+If an upload only partially succeeds, preserve the original approved bytes. Choose **Run workflow** from `main` with the same version and destination to start a new run. Do not use **Re-run jobs**: GitHub can reuse outputs from an earlier attempt, and review history is scoped to the whole run. The new run compares existing index files with the signed release and uploads only missing files. A production run that uploads files needs a new independent approval. A mismatch, yanked file, unexpected file or unavailable index stops the run for investigation. Published versions cannot be replaced; do not rebuild or upload a different file under the same version. The approval proof and verification cannot establish manual installation or interactive acceptance, which remain separate release gates.
 
 ## If a gate fails
 
@@ -141,9 +135,9 @@ Do not publish to PyPI with missing artifacts or verification. Keep public docum
 
 ## Installer identity checks
 
-Fresh base-package installs use the official installer's dedicated venv regardless of optional managers on PATH. `nanobot-install.json` is written before venv/download work so failed first installs retain their owner; it is not readiness proof. Existing venv/uv/pipx installations are not adopted or moved. The receipt records extras for update planning and opts `webui` into persistent background launch; unrecorded installs retain their lifecycle. Include this distinction and the instance-specific stop command in release notes.
+Fresh base-package installs use the official installer's dedicated venv regardless of optional managers on PATH. `nanobot-install.json` is written before venv/download work so failed first installs retain their owner; it is not readiness proof. Existing venv/uv/pipx installations are not adopted or moved. The receipt records extras and opts `webui` into persistent background launch; unrecorded installs retain their lifecycle. Include this distinction and the instance-specific stop command in release notes.
 
-Linux/Windows CI builds a platform wheel and runs the public installer in a private home without Bun/Node/Git on PATH, then checks the managed receipt, installed WebUI and gateway. Python/WebUI changes also require these jobs. CI retains small reports, not candidate binaries. Startup probes and offline installer fixtures do not replace packaged upgrade/recovery or public-download acceptance.
+Linux/Windows CI builds a platform wheel and runs the public installer in a private home without Bun/Node/Git on PATH, then checks the managed receipt, installed WebUI and gateway. Python/WebUI changes also require these jobs. CI retains small reports, not candidate binaries. Startup probes and offline installer fixtures do not replace package-install or public-download acceptance.
 
 Run `pytest tests/test_install_scripts.py` with `uv` and `pipx` available. It uses private homes, offline fixture wheels and real managers, without a gateway or real application install: `install.sh` on Unix and Windows PowerShell with `install.ps1` on Windows. CI provisions pipx outside application dependencies. Verify these owner-preservation requirements:
 
@@ -155,55 +149,7 @@ Verify the exact-handoff options against the pinned installer, not an older scri
 
 Release downloads use official GitHub HTTPS hosts and configured HTTPS proxy; retain wheel sources at their recorded paths, including `~/.nanobot/downloads/releases` or `NANOBOT_RELEASE_CACHE`. Failed partial downloads are removed. Wheel-mode `--dry-run` / `-DryRun` verifies without installation/setup; release-mode dry-run checks only the manifest, creating no wheel/cache/environment/setup and proving neither wheel bytes nor dependency resolution.
 
-These exact-version handoffs do not discover Preview, change subscriptions, stop gateways or back up data. Require stopped writers and backup first. Review extras and recorded options for plain pip, suffixed/custom installs and external owners; see the [user guide](./updating.md) and [update protocol](./update-protocol.md). Installer fixtures alone do not establish live maintenance, backup or restart safety.
-
-### Packaged upgrade and recovery acceptance
-
-Linux/Windows native CI runs `scripts/verify_packaged_update.py` against its wheel; manual candidate preparation tests each of the five assembled platform wheels on a matching native runner. Run macOS acceptance against the candidate's macOS wheel:
-
-```bash
-<build-tools-python> -I scripts/verify_packaged_update.py \
-  --wheel <exact-native-wheel> --commit <candidate-commit> \
-  --output <new-private-acceptance-directory>
-```
-
-Build tools need project Python dependencies. The probe creates disposable venv/account/configuration/workspace and loopback gateways, without maintainer data, models or credentials. It records the unchanged healthy target's SHA-256 and candidate commit; faulted private wheels must never be uploaded.
-
-On a local macOS desktop, add `--dock` to verify the real AppKit helper alongside these journeys. The managed receipt must make `nanobot webui --yes --no-open` detach automatically; each applicable running version must have one helper, preserve desktop intent through upgrade/recovery and a second start, and remove its helper on stop. Historical packages without Dock support gain the icon only after their first healthy upgrade and an explicit WebUI launch. This is process/lifecycle acceptance, not a visual Dock-click test; do not enable it on headless CI or claim native Windows/Linux icon coverage.
-
-Require normal and consecutive upgrades, skipped Preview, import/startup failure, backup failure after shutdown, worker termination, partial metadata loss and interruption between program-restoration renames. Each successful journey must show the expected version in a new gateway run, a retained verified backup, authenticated history reads, continued writes and a second ordinary start. Each recovered service must then update to the healthy target with the same account/conversations. Faults affect the first job; backup failure must survive its automatic retry, while a separately confirmed next update can make a healthy backup. The instrumented intermediate Preview's second hop installs the unchanged final wheel.
-
-Compare configuration, retained legacy-source bytes, canonical SQLite records, WebUI transcripts and pending `delivery/outbox.sqlite3` records separately. Cover canonical-only, display-only and mixed history without inventing canonical records for display-only chats; SQLite checkpoint byte changes alone are not data loss. Retain the protocol-1 parked-gateway regression across old/new protected-store inventories: no outbox initialization, migration or writes outside the old grant before activation. See the [update protocol](./update-protocol.md) for scope and lease requirements.
-
-Default baselines are labelled target-derived fixtures, not historical compatibility evidence. For release acceptance, add `--baseline-wheel <previously-accepted-wheel>` and repeat with supported stable and older Preview packages, including skipped Preview. Baseline feed transport is instrumented; the healthy target is unchanged. Include a retained pre-SQLite updater to check JSONL migration's canonical message bodies separately from display history. If recovery restores JSONL code, mark SQLite checks not applicable, not passed. Packages without this updater need separately recorded installation-owner bootstrap acceptance.
-
-Exercise consecutive updates in the same disposable account with existing conversations through each applicable owner: official installer, uv tool, pipx, ordinary pip venv and source. Check recorded constraints/options before/after, execute the offered command, verify the restarted gateway, append a message and start again. Policy refusal must leave installation unchanged; custom owner-reviewed updates do not prove automatic recovery. Container replacement requires a real engine and retained data volumes, not a mocked marker.
-
-For installer-owned background recovery, verify one exact-target repair, then original-program restoration only before activation and only with unchanged protected data, including restart/health verification without browser or terminal intervention. Data changes, activation, live owners or changed installation ownership must prevent unsafe rollback. Other owners retain their repair route. Never delete jobs/fences or automatically restore old configuration/chat data. Exercise native Windows locks/renames. Loss of both supervisor and worker, permanent storage damage and incompatible data writes are not automatically recoverable; retain these limits in release notes and the operator guide.
-
-Keep private evidence until review; it can contain program generations/backups and is not an upload set. CI retains small reports, including completed cases after a later failure; only all selected journeys passing produces aggregate success. Partial reports or a timeout are not an overall pass. Record actual native OS/CPU coverage separately from installer/startup fixtures: Linux x64, Windows x64 and macOS arm64 do not establish macOS x64 or Linux arm64 coverage. Controlled release transport and fault injection prove neither public downloads nor interactive UI; complete those gates before claiming them.
-
-## Stable and Preview subscriptions
-
-Use [Updating Sentinel](./updating.md) for Settings → About and CLI instructions. Release acceptance must preserve opt-in consent: Preview is off even on development builds; switching saves/checks a feed, not installation approval. Require separate exact-version confirmation and a Preview risk warning. Profiles sharing an environment/account share its subscription; other installations/accounts do not. Environment replacement may require reselection; browser storage is not authoritative.
-
-| Current install / requested channel | Required acceptance result |
-| --- | --- |
-| Stable → Preview, a newer verified preview exists | Offer that exact preview; install only after confirmation. |
-| Preview → Preview | Offer only a higher verified version, including a final release. |
-| Preview → Stable, stable is newer | Offer the final release; keep Stable selected. |
-| Preview → Stable, stable is older | Save Stable and wait for a newer final release; keep running the preview. |
-| Preview subscriber installs a final release | Keep Preview selected for the next development cycle. |
-| Current preview was withdrawn | Warn even without a safe newer replacement; never silently downgrade. |
-| Feed offline, incomplete, missing or incompatible | Return non-success; retain subscription and allow rechecking. |
-
-Stable checking/planning requires complete PyPI wheels/sdist. Preview uses `release-index/catalogue.json` and exact GitHub manifests, never PyPI `--pre` or arbitrary branches. Validate targets against the gateway interpreter/platform, not the browser. Index final releases for Preview subscribers too; advance only after verifying all referenced public assets.
-
-Versions, tags and manifest hashes are immutable. Increment generation; never rewind or clear published pointers, remove withdrawals or reuse bad versions. To stop offering a version, retain its pointer and withdraw it. Serialize writers and validate `ReleaseCatalogue.validate_successor(previous)` against the latest catalogue. Clients reject rewrites relative to their last accepted catalogue; that check is not cryptographic signing.
-
-Acceptance must invalidate reviews on every channel change, including Stable → Preview → Stable; cancel inactive staged work through normal stop checks and retain diagnostics. Active preparation, committed shutdown, admitted installation or failed mutation blocks switching until settled/recovered. Reject stale-tab writes and reread after lost responses, never automatically retry installation. Detailed transaction rules belong in the [update protocol](./update-protocol.md).
-
-Discovery grants no installation authority. Only the official managed venv and supported POSIX uv transactions support the reviewed stop/install/restart flow; pipx, source, container, system-managed, unsupported uv/platform and desktop distributions retain their owner/distributor route. Remote browsers without package-install permission may read status but not change subscription. Older clients must get actionable failures for unrepresentable statuses, never false “up to date.” Verify these boundaries before announcing a public channel.
+These exact-version installer commands do not update a running gateway or back up its data. Stop writers and back up first. Review extras and recorded options for plain pip, suffixed/custom installs and external owners; see the [manual update guide](./updating.md). Installer fixtures alone do not establish live maintenance, backup or restart safety.
 
 ## Non-publishing preview preflight
 
@@ -211,7 +157,7 @@ Discovery grants no installation authority. Only the official managed venv and s
 
 Default retention is small identity/manifest/probe reports and installation guide for **three days**, without installable binaries. `retain_installable` preserves those exact checked artifacts plus a self-contained shallow Git repository for **one day** (about 400 MB). Keep this storage exception off for routine preflight or schedules; assess storage and call it out explicitly in workflow-change PRs before merge. Preserve approved handoffs before expiry; rebuilding expired files cannot reuse their verification. The source contains only candidate/source-parent history, not configuration or untracked files. `handoff.json` is written only after copied artifacts verify; interruption is not an accepted handoff.
 
-After assembly, the workflow transfers all five manifest-bound wheels by immutable artifact ID; each matching runner installs its wheel into a separate venv without Bun/Node/Git on the install PATH. Isolated Python checks version/commit/import identity and all Vite-manifest assets, including lazy chunks, through the installed handler. With `--gateway`, it starts a private foreground CLI gateway with no provider/MCP configuration, disabled heartbeat and two loopback ports, then checks readiness, protected version identity, HTML and process/listener cleanup. Unix shutdown must be graceful; Windows termination is labelled, not graceful-shutdown evidence. No model task or external channel is exercised.
+After assembly, the workflow transfers all five manifest-bound wheels by immutable artifact ID; each matching runner installs its wheel into a separate venv without Bun/Node/Git on the install PATH. Isolated Python checks version/commit/import identity and all Vite-manifest assets, including lazy chunks, through the installed handler. With `--gateway`, it starts a private foreground CLI gateway with no provider/MCP configuration, disabled heartbeat and two loopback ports, then checks readiness, HTML and process/listener cleanup. Unix shutdown must be graceful; Windows termination is labelled, not graceful-shutdown evidence. No model task or external channel is exercised.
 
 On another supported platform, check a disposable native installation without changing its package:
 
@@ -221,7 +167,7 @@ On another supported platform, check a disposable native installation without ch
   --gateway --report <new-report-path>
 ```
 
-Use the candidate commit, not its parent. The probe rejects checkout imports/unisolated invocation and avoids user configuration/credentials. Omit `--gateway` for asset-only checks. Reports identify OS/CPU/probes and are success-only, never overwritten; failure cleans up children and prints a bounded redacted log tail. This is package/startup evidence, not managed restart, migration, public-download or five-platform E2E acceptance.
+Use the candidate commit, not its parent. The probe rejects checkout imports/unisolated invocation and avoids user configuration/credentials. Omit `--gateway` for asset-only checks. Reports identify OS/CPU/probes and are success-only, never overwritten; failure cleans up children and prints a bounded redacted log tail. This is package/startup evidence, not migration, public-download or five-platform E2E acceptance.
 
 For local preparation, use a full source SHA and new output outside the checkout (illustrative base/sequence):
 
@@ -253,9 +199,9 @@ The generator rechecks artifacts/manifest and writes a non-overwriting guide out
 
 The guide records version, source/candidate commits, five hash-bound wheel URLs and separate new/existing base-package commands for uv, pipx and pip venv. Commands verify local size/SHA-256 with the standard library before manager invocation; URL hash fragments alone are insufficient for the tested uv commands. Retain wheel paths recorded by managers. Manual commands move to an advanced section when automatic entry is supported; no new manifest schema or installer executable is introduced.
 
-Before offering the guide, publish/verify exact public files and add release changes, native coverage, migration/recovery instructions and stop/backup prerequisites. Review extras and locked/suffixed/external-owner options; independently verify installed version and restarted gateway. Manager fixtures do not prove restart/migration, and the guide is neither publication approval nor channel selection.
+Before offering the guide, publish/verify exact public files and add release changes, native coverage, migration instructions and stop/backup prerequisites. Review extras and locked/suffixed/external-owner options; independently verify installed version and restarted gateway. Manager fixtures do not prove restart/migration, and the guide is neither publication approval nor channel selection.
 
-The candidate clone borrows source Git objects; preserve its source repository until retained in an approved permanent ref. Partial assembly has no accepted manifest and must not be uploaded. Source-offer commitment, native launch, clean install, upgrade/recovery and publication gates still apply. Missing public assets must be recovered from original verified files, never overwritten by rebuilds.
+The candidate clone borrows source Git objects; preserve its source repository until retained in an approved permanent ref. Partial assembly has no accepted manifest and must not be uploaded. Source-offer commitment, native launch, clean install and publication gates still apply. Missing public assets must be recovered from original verified files, never overwritten by rebuilds.
 
 Retain an exact local handoff outside temporary build storage:
 

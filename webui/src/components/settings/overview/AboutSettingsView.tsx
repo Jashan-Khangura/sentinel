@@ -2,10 +2,10 @@ import type { ReactNode } from "react";
 import { BookOpen, ExternalLink, Github, MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { SettingsGroup } from "@/components/settings/shared/SettingsControls";
+import { SettingsGroup, SettingsRow } from "@/components/settings/shared/SettingsControls";
 
-export function AboutSettingsLayout({ versionCheck, links, starLink }: {
-  versionCheck: ReactNode;
+export function AboutSettingsLayout({ versionInfo, links, starLink }: {
+  versionInfo: ReactNode;
   links: ReactNode;
   starLink: ReactNode;
 }) {
@@ -14,15 +14,16 @@ export function AboutSettingsLayout({ versionCheck, links, starLink }: {
       <img src="/brand/nanobot_mark.svg" alt="" className="h-16 w-16 select-none" draggable={false} />
       <h1><img src="/brand/nanobot_wordmark.svg" alt="nanobot" width={800} height={164} className="h-auto w-40 select-none dark:brightness-150" draggable={false} /></h1>
     </div>
-    {versionCheck}
+    {versionInfo}
     {links}
     <div className="mt-auto pt-8 text-center">{starLink}</div>
   </div>;
 }
 
-export function AboutSettingsView({ reportIssueUrl, versionCheck, starLink }: {
+export function AboutSettingsView({ reportIssueUrl, currentVersion, currentCommit, starLink }: {
   reportIssueUrl: string;
-  versionCheck: ReactNode;
+  currentVersion?: string;
+  currentCommit?: string | null;
   starLink: ReactNode;
 }) {
   const { t } = useTranslation();
@@ -32,7 +33,25 @@ export function AboutSettingsView({ reportIssueUrl, versionCheck, starLink }: {
     { key: "reportIssue", icon: MessageCircle, href: reportIssueUrl },
   ];
   return (
-    <AboutSettingsLayout versionCheck={versionCheck} starLink={starLink} links={
+    <AboutSettingsLayout versionInfo={<SettingsGroup>
+      <SettingsRow title={<>
+        <span>{t("settings.about.version")}</span>
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[13px] font-normal leading-5 tabular-nums text-muted-foreground">
+          <span className="min-w-0 break-all">
+            {currentVersion ? `v${currentVersion}` : "nanobot"}
+            {currentCommit && <>
+              <span aria-hidden> (</span>
+              <a href={`https://github.com/HKUDS/nanobot/commit/${currentCommit}`}
+                target="_blank" rel="noopener noreferrer" title={currentCommit}
+                className="font-mono hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                {currentCommit.slice(0, 7)}
+              </a>
+              <span aria-hidden>)</span>
+            </>}
+          </span>
+        </div>
+      </>} />
+    </SettingsGroup>} starLink={starLink} links={
       <SettingsGroup>
         {links.map(({ key, icon: Icon, href }) => (
           <a key={key} href={href} target="_blank" rel="noopener noreferrer"

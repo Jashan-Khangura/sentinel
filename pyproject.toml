@@ -72,7 +72,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Keep this empty extra so older updaters can preserve recorded installations.
+# Keep this no-op extra valid for existing manual installs that still specify it.
 api = []
 azure = [
     "azure-identity>=1.19.0,<2.0.0",
@@ -139,7 +139,6 @@ allow-direct-references = true
 include = [
     "nanobot/**/*.py",
     "nanobot/cli/assets/*.png",
-    "nanobot/update_contract.json",
     "nanobot/webui/mcp_presets.json",
     "nanobot/templates/**/*.md",
     "nanobot/skills/**/*.md",

@@ -4,7 +4,6 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from zipfile import ZipFile
 
 import pytest
 
@@ -46,18 +45,15 @@ def selected(result):
         ("nanobot/webui/ws_http.py", {"python", "webui", "docker"}),
         ("nanobot/session/session_messages.py", {"python", "webui", "docker"}),
         ("packages/client-events/notifications.ts", {"webui", "docker"}),
-        ("nanobot/update_recovery.py", {"python", "docker"}),
         ("nanobot/release_trust.py", {"python", "docker"}),
         ("nanobot/gateway/runtime.py", {"python", "docker"}),
         ("nanobot/process_runtime.py", {"python", "docker"}),
         ("nanobot/cli/entry.py", {"python", "docker"}),
         ("nanobot/utils/atomic_file.py", {"python", "docker"}),
-        ("tests/test_update_backup.py", {"python"}),
         ("tests/test_install_scripts.py", {"python"}),
         ("tests/providers/test_cached_tokens.py", {"python"}),
         ("scripts/pytest_timing.py", {"python"}),
         ("tests/scripts/test_pytest_timing.py", {"python"}),
-        ("scripts/verify_packaged_update.py", {"python"}),
         ("scripts/check_client_import_boundaries.mjs", {"webui"}),
         (".github/workflows/release-candidate.yml", {"python", "webui"}),
         (".github/workflows/release-approve.yml", {"python", "webui"}),
@@ -213,17 +209,3 @@ def test_cli_emits_only_fixed_boolean_outputs_and_escaped_summary(repo):
     assert "\\npython_required=false" in summary.read_text()
     summary_json = summary.read_text().split("<pre>", 1)[1].removesuffix("</pre>\n")
     assert json.loads(html.unescape(summary_json)) == result
-
-
-def test_every_frozen_worker_source_selects_python_checks(tmp_path):
-    from nanobot.update_jobs import _worker_archive
-
-    archive = tmp_path / "worker.pyz"
-    _worker_archive(archive)
-    with ZipFile(archive) as bundle:
-        sources = ["nanobot/" + name.removeprefix("_nanobot_update/")
-                   for name in bundle.namelist()
-                   if name.startswith("_nanobot_update/") and not name.endswith("__init__.py")]
-    assert sources
-    for path in sources:
-        assert classify_paths([path])["outputs"]["python_required"], path

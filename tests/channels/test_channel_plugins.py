@@ -2231,7 +2231,7 @@ def test_optional_dependency_metadata_for_enable():
     assert "boto3>=1.43.0" not in data["project"]["dependencies"]
     assert deps["bedrock"] == ["boto3>=1.43.0", "botocore>=1.43.0,<2.0.0"]
     assert "aiohttp>=3.14.3,<4.0.0" in required
-    assert deps["api"] == []  # Older updaters preserve this recorded extra.
+    assert deps["api"] == []  # Existing manual installs may still specify this no-op extra.
     for dep_name in (
         "dingtalk-stream",
         "lark-oapi",

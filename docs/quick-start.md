@@ -225,18 +225,9 @@ Replace the provider, endpoint, and model together. Do not pair a credential fro
 
 </details>
 
-## Updating
+## Manual Updates
 
-Open **Settings → About → Update**. Supported installations can update and restart there; others show instructions for their original package manager or deployment. Follow [Updating Sentinel](./updating.md) for Preview selection, backups and recovery. Do not switch installation methods to work around an error.
-
-For an ordinary Python virtual environment, the [CLI updater](./cli-reference.md#updating) is also available:
-
-```bash
-nanobot update --check
-nanobot update
-```
-
-Stop affected processes and back up configuration and data first; restart and verify the running version afterward. Source checkouts should preserve local changes and follow the [development instructions](./development.md).
+Nanobot does not include an in-app package updater. Stop the gateway, back up configuration and data, and update through the tool that owns the installation. Keep the same environment and launcher, then restart and verify the running version. See [Manual Updates and Data Migrations](./updating.md).
 
 ## If the First Reply Fails
 

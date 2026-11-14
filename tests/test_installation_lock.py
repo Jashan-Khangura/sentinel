@@ -9,7 +9,6 @@ import pytest
 from nanobot.installation_lock import (
     InstallationBusyError,
     installation_access,
-    installation_state_dir,
 )
 
 _CHILD = """
@@ -52,7 +51,7 @@ def isolated_installation(tmp_path, monkeypatch):
     return tmp_path
 
 
-def assert_update_lease_released():
+def assert_maintenance_lease_released():
     # LockFileEx documents deferred kernel cleanup after process death/close.
     # Poll the real lock only after the actual owner has exited; never mistake
     # a launcher exiting for an owner exiting or weaken the live-owner checks.
@@ -80,12 +79,12 @@ def test_multiple_runtimes_block_update_until_last_process_exits(isolated_instal
             with pytest.raises(InstallationBusyError):
                 with installation_access(updating=True):
                     pytest.fail("Another live runtime was ignored")
-        assert_update_lease_released()
+        assert_maintenance_lease_released()
 
 
 def test_update_blocks_startup_and_concurrent_update_and_crash_releases_lease(isolated_installation):
     with child_lease(isolated_installation, sys.prefix, updating=True) as worker:
-        with pytest.raises(InstallationBusyError, match="being updated"):
+        with pytest.raises(InstallationBusyError, match="being modified"):
             with installation_access():
                 pytest.fail("Runtime entered an updating installation")
         with pytest.raises(InstallationBusyError):
@@ -93,30 +92,13 @@ def test_update_blocks_startup_and_concurrent_update_and_crash_releases_lease(is
                 pytest.fail("Concurrent updater entered")
         worker.kill()
         worker.wait(timeout=10)
-        assert_update_lease_released()
+        assert_maintenance_lease_released()
 
 
 def test_other_installation_does_not_block_runtime(isolated_installation):
     with child_lease(isolated_installation, sys.prefix + "-other", updating=True):
         with installation_access():
             pass
-
-
-def test_interrupted_installation_refuses_startup_but_allows_repair(isolated_installation):
-    pending = isolated_installation / ".nanobot/run" / f"update-{installation_state_dir().name[:16]}.pending"
-    pending.parent.mkdir(parents=True)
-    pending.write_text("An older updater was interrupted")
-    with pytest.raises(InstallationBusyError, match="previous update did not finish"):
-        with installation_access():
-            pytest.fail("Runtime used partially replaced files")
-    with installation_access(updating=True):
-        pass
-    with installation_access(allow_incomplete=True):
-        pass
-    with child_lease(isolated_installation, sys.prefix, updating=True):
-        with pytest.raises(InstallationBusyError, match="being updated"):
-            with installation_access(allow_incomplete=True):
-                pytest.fail("A diagnostic command raced the active installer")
 
 
 def test_aliases_share_installation_lock(isolated_installation, tmp_path):

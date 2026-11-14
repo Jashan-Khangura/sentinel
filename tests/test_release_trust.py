@@ -4,24 +4,14 @@ from importlib.resources import as_file, files
 from pathlib import Path
 from unittest.mock import Mock
 
-import httpx
 import pytest
 import yaml
-from packaging.tags import Tag
 from sigstore.models import Bundle, TrustedRoot
 from sigstore.verify import Verifier
 from sigstore.verify.policy import Identity
 
-from nanobot import release_feed, release_trust
-from nanobot.release_feed import CATALOGUE_URL, PYPI_URL, ReleaseFeed, ReleaseFeedError
-from nanobot.releases import (
-    RELEASE_DOWNLOAD,
-    ReleaseArtifact,
-    ReleaseCatalogue,
-    ReleaseManifest,
-    ReleasePointer,
-    release_filenames,
-)
+from nanobot import release_trust
+from nanobot.releases import ReleaseArtifact, ReleaseManifest, release_filenames
 from scripts.verify_release_approval import verify_manifest
 
 
@@ -108,66 +98,18 @@ def test_malformed_approval_is_rejected_without_contacting_trust_service(monkeyp
     verifier.assert_not_called()
 
 
-def release(version):
-    return ReleaseManifest(version=version, source_commit="a" * 40, candidate_commit="b" * 40,
-                           requires_python=">=3.11", artifacts=[
-        ReleaseArtifact(filename=name, size=123, sha256="c" * 64) for name in sorted(release_filenames(version))
-    ])
-
-
-@pytest.mark.parametrize("channel", ["stable", "preview"])
-@pytest.mark.parametrize("change", ["valid", "missing", "forged", "wrong_package", "wrong_version"])
-async def test_download_and_handoff_require_approval_before_any_staging(tmp_path, monkeypatch, channel, change):
-    version = "0.3.6" if channel == "stable" else "0.3.7.dev1"
-    manifest = release(version)
-    payload = manifest.model_dump_json().encode()
-    pointer = ReleasePointer(version=version, candidate_commit=manifest.candidate_commit,
-                             manifest_sha256=hashlib.sha256(payload).hexdigest())
-    catalogue = ReleaseCatalogue(generation=1, preview=pointer) if channel == "preview" else None
-    requests = []
-    base = f"{RELEASE_DOWNLOAD}/v{version}/release-manifest.json"
-    def respond(request):
-        url = str(request.url)
-        requests.append(url)
-        if url == CATALOGUE_URL:
-            return httpx.Response(200, content=catalogue.model_dump_json())
-        if url.startswith(PYPI_URL):
-            return httpx.Response(200, json={
-                "info": {"name": "nanobot-ai", "version": version, "requires_python": ">=3.11"},
-                "urls": [{"filename": item.filename, "size": item.size, "yanked": False,
-                          "url": f"https://files.pythonhosted.org/packages/{item.filename}",
-                          "digests": {"sha256": item.sha256}} for item in manifest.artifacts
-                         if item.filename.endswith((".whl", ".tar.gz"))],
-            })
-        if url == base:
-            return httpx.Response(200, content=payload)
-        if url == base + ".sigstore.json":
-            return httpx.Response(404 if change == "missing" else 200, content=b"proof")
-        pytest.fail("Unapproved package download attempted")
-    verifier = Mock(side_effect=ValueError("forged approval") if change == "forged" else None)
-    monkeypatch.setattr(release_feed, "verify_release_approval", verifier)
-    async with ReleaseFeed(tmp_path / "cache", transport=httpx.MockTransport(respond),
-                           supported_tags=[Tag("py3", "none", "win_amd64")]) as feed:
-        target = await feed.latest(channel)
-        if change == "wrong_package":
-            payload = payload.replace(b'"c' + b"c" * 63, b'"d' + b"d" * 63)
-        elif change == "wrong_version":
-            payload = release("0.4.0").model_dump_json().encode()
-        if change == "valid":
-            await feed.revalidate(target)
-            verifier.assert_called_once_with(payload, b"proof")
-            verifier.side_effect = ValueError("approval revoked or replaced")
-            with pytest.raises(ValueError, match="revoked or replaced"):
-                await feed.revalidate(target)
-            assert verifier.call_count == 2
-        else:
-            with pytest.raises((ValueError, httpx.HTTPStatusError, ReleaseFeedError)):
-                await feed.download(target, tmp_path / "staging")
-            assert not (tmp_path / "staging").exists()
-
-
 def test_signing_handoff_requires_independently_approved_identity_and_digest(tmp_path):
-    manifest = release("0.3.7.dev1")
+    version = "0.3.7.dev1"
+    manifest = ReleaseManifest(
+        version=version,
+        source_commit="a" * 40,
+        candidate_commit="b" * 40,
+        requires_python=">=3.11",
+        artifacts=[
+            ReleaseArtifact(filename=name, size=123, sha256="c" * 64)
+            for name in sorted(release_filenames(version))
+        ],
+    )
     path = tmp_path / "release-manifest.json"
     path.write_text(manifest.model_dump_json())
     approved = dict(sha256=hashlib.sha256(path.read_bytes()).hexdigest(), version=manifest.version,

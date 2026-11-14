@@ -482,13 +482,10 @@
   },
   "about": {
     "title": "Acerca de y versión",
-    "description": "Compara estados de versión, enlaces de commits, actualizaciones y la página Acerca de; los botones muestran resultados de ejemplo.",
-    "options": "AboutSettingsView acepta una composición de enlaces de versión y soporte. VersionCheckRowView muestra checking/result y solicita comprobaciones con onCheck. El punto de entrada gestiona las comprobaciones reales y los enlaces de diagnóstico.",
-    "error": "No se pudo obtener la versión. Inténtalo de nuevo.",
-    "state": "Estado de versión",
+    "description": "Consulta la versión instalada, el commit y los enlaces de soporte.",
+    "options": "AboutSettingsView muestra la versión instalada y el enlace al commit junto con los recursos de soporte.",
+    "state": "Visualización de versión",
     "selectedLink": "Enlace de GitHub seleccionado",
-    "preferenceSaved": "Preferencia de ejemplo guardada; no se instalará ni reiniciará nada.",
-    "updateRequested": "Revisión de la actualización seleccionada; esta vista previa no instala ni reinicia nada.",
     "dismissed": "Aviso de actualización ocultado"
   },
   "appearance": {

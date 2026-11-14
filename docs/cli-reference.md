@@ -7,7 +7,6 @@ Use this page when you know what you want to run and need the command shape. For
 | Goal | Command | Notes |
 |---|---|---|
 | Check the install | `nanobot --version` | If this fails, try `python -m nanobot --version` |
-| Update an ordinary Python venv | `nanobot update` | Latest stable PyPI release; use the [installation-specific route](./updating.md#installation-owners) for other methods |
 | Create or refresh config | `nanobot onboard` | Creates `~/.nanobot/config.json` and `~/.nanobot/workspace/` |
 | Refresh config non-interactively | `nanobot onboard --refresh` | Preserves existing values and adds missing default fields without prompting |
 | Use guided setup | `nanobot onboard --wizard` | Best when you prefer prompts over hand-editing JSON |
@@ -46,26 +45,9 @@ Other commands, including `nanobot agent`, config/workspace selectors, help, ver
 
 ## Common Patterns
 
-### Updating
+### Manual Updates
 
-```bash
-nanobot update --check       # Check the latest stable PyPI release; do not install
-nanobot update               # Install it in an ordinary Python venv
-nanobot update --dev         # Update source and prepare its matching WebUI
-nanobot update --plan        # Save an exact review; do not install or restart
-```
-
-The first two commands target stable PyPI releases, not the saved Preview subscription. `--dev` (`--update-dev`) selects source, not Preview. `--plan --channel stable` or `--plan --channel preview` inspects that channel without changing the subscription; `--channel` requires `--plan`. Saved plans are not executed by `nanobot update`.
-
-Before an in-place update, back up configuration, workspace files and chat history, then stop all processes sharing that Python environment. New versions may migrate stored data. Use the original [installation-specific route](./updating.md#installation-owners) for uv, pipx, containers, system packages and Desktop; do not overwrite a manager-owned environment with pip. Already-satisfying dependencies remain installed.
-
-Source updates require Git. Existing editable checkouts fast-forward their current branch to its upstream; resolve local changes, detached HEADs and divergence manually. Updating a package with `--dev` creates an editable checkout under `~/.nanobot/src/` on the official `main` branch. Sentinel downloads its pinned Bun when needed; Node is not required. To return to a release, install it in a separate environment and launch outside the checkout; in-place source-to-release switching is refused.
-
-After installation, restart Sentinel and verify the **running** gateway's version and behavior. The CLI checks the installation, not the live process. Downgrading requires `--allow-downgrade` and compatible data; back up before using it.
-
-In-place CLI updates have no automatic rollback. A failed or interrupted installation leaves an incomplete-update marker under `~/.nanobot/run/`. Stop Sentinel and retry the same update from that environment. On Windows, stop processes holding installation files and retry with that environment's `python -m nanobot update` (add `--dev` for source).
-
-The WebUI's **Settings → About** uses a separate reviewed update-and-restart flow for supported installations and shows owner-specific instructions for others. See [Updating Sentinel](./updating.md) for Preview selection, recovery and permission limits. Source updates remain CLI-only. To inspect a saved WebUI job, use `nanobot update --job <plan-id>`; [explicit handoff retry](./updating.md#explicit-recovery-before-package-mutation) requires additional consent and an intact installation, not a post-install repair.
+Nanobot does not include an in-app package updater. Stop the gateway, back up configuration and data, then update through the tool that owns the installation. Keep the same environment, extras and launcher. See [Manual Updates and Data Migrations](./updating.md#installation-owners) for package, source and deployment guidance.
 
 Most day-to-day commands use the default config and workspace. Advanced or multi-instance runs usually pass both paths explicitly:
 

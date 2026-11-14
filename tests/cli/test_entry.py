@@ -7,7 +7,7 @@ import pytest
 
 from nanobot.cli import entry
 from nanobot.cli.entry import _agent_invocation_args
-from nanobot.installation_lock import InstallationBusyError, installation_access, installation_id
+from nanobot.installation_lock import InstallationBusyError, installation_access
 
 
 def test_root_command_routes_to_agent_without_copying_agent_options() -> None:
@@ -87,7 +87,7 @@ def test_root_alias_dispatches_the_shared_agent_command(monkeypatch) -> None:
     }
 
 
-def test_entry_refuses_dispatch_during_update(tmp_path, monkeypatch, capsys):
+def test_entry_refuses_dispatch_during_package_maintenance(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path))
     monkeypatch.setattr(sys, "prefix", str(tmp_path / "environment"))
     monkeypatch.setattr(sys, "argv", ["nanobot", "gateway"])
@@ -96,58 +96,4 @@ def test_entry_refuses_dispatch_during_update(tmp_path, monkeypatch, capsys):
         with pytest.raises(SystemExit) as result:
             entry.main()
     assert result.value.code == 1
-    assert "being updated" in capsys.readouterr().err
-
-
-@pytest.mark.parametrize("args", [["update"], ["--home", "/test", "update"], ["--home=/test", "update"]])
-def test_update_command_can_reach_its_own_lease_and_recovery(tmp_path, monkeypatch, args):
-    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path))
-    monkeypatch.setattr(sys, "prefix", str(tmp_path / "environment"))
-    monkeypatch.setattr(sys, "argv", ["nanobot", *args])
-    called = []
-    monkeypatch.setattr(entry, "_dispatch", lambda: called.append(True))
-    with installation_access(updating=True):
-        entry.main()
-    assert called == [True]
-
-
-@pytest.mark.parametrize("args", [["update", "--job", "saved-id"],
-                                 ["--home=/test", "update", "--job=saved-id", "--retry-handoff"]])
-def test_saved_update_recovery_owns_runtime_before_application_imports(tmp_path, monkeypatch, args):
-    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path))
-    monkeypatch.setattr(sys, "prefix", str(tmp_path / "environment"))
-    monkeypatch.setattr(sys, "argv", ["nanobot", *args])
-    entered = []
-
-    def dispatch():
-        with pytest.raises(InstallationBusyError):
-            with installation_access(updating=True):
-                pytest.fail("Recovery imported without a runtime lease")
-        entered.append(True)
-
-    monkeypatch.setattr(entry, "_dispatch", dispatch)
-    entry.main()
-    assert entered == [True]
-    with installation_access(updating=True):
-        with pytest.raises(SystemExit):
-            entry.main()
-    assert entered == [True]
-
-
-@pytest.mark.parametrize("action,allowed", [("stop", True), ("status", True), ("logs", True), ("restart", False)])
-def test_interrupted_installation_keeps_stop_commands_usable(tmp_path, monkeypatch, action, allowed):
-    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path))
-    monkeypatch.setattr(sys, "prefix", str(tmp_path / "environment"))
-    pending = tmp_path / ".nanobot/run" / f"update-{installation_id()[:16]}.pending"
-    pending.parent.mkdir(parents=True)
-    pending.write_text("incomplete")
-    monkeypatch.setattr(sys, "argv", ["nanobot", "--home", str(tmp_path / "profile"), "gateway", action])
-    called = []
-    monkeypatch.setattr(entry, "_dispatch", lambda: called.append(True))
-    if allowed:
-        entry.main()
-        assert called == [True]
-    else:
-        with pytest.raises(SystemExit):
-            entry.main()
-        assert not called
+    assert "being modified" in capsys.readouterr().err

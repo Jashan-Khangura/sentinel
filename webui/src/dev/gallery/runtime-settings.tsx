@@ -3,14 +3,12 @@ import { useRef, useState } from "react";
 import { StarLinkView, StarPromptView } from "@/components/StarPromptView";
 import { AboutSettingsView } from "@/components/settings/overview/AboutSettingsView";
 import { AppearanceSettingsView } from "@/components/settings/overview/AppearanceSettingsView";
-import { VersionCheckRowView, type VersionCheckState } from "@/components/settings/overview/VersionCheckRowView";
 import { AutomationChatBindingView } from "@/components/settings/system/AutomationChatBindingView";
 import { AutomationRunDialogView, type AutomationRunResult } from "@/components/settings/system/AutomationRunDialogView";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DEFAULT_LOCAL_PREFS } from "@/lib/local-preferences";
 import type { ThemePreference } from "@/hooks/useTheme";
-import type { UpdateChannel } from "@/lib/api";
 import type { AutomationChatsPayload, SessionAutomationJob } from "@/lib/types";
 import { StatePicker, type ComponentExample } from "./example";
 import { useGalleryTranslation } from "./i18n";
@@ -70,23 +68,12 @@ function ChatBindingPreview() {
 
 function AboutPreview() {
   const { t } = useGalleryTranslation();
-  const [mode, setMode] = useState<"ready" | "checking" | "up-to-date" | "update" | "preview" | "error">("ready");
-  const [notice, setNotice] = useState<"updateRequested" | "selectedLink" | null>(null);
-  const [channel, setChannel] = useState<UpdateChannel>("stable");
-  const result: VersionCheckState = mode === "up-to-date" ? { type: mode }
-    : mode === "update" ? { type: mode, latestVersion: "0.3.6", pypiUrl: "https://pypi.org/project/nanobot-ai/" }
-      : mode === "preview" ? { type: "update", latestVersion: "0.3.7.dev2026101501",
-        releaseUrl: "https://github.com/HKUDS/nanobot/releases" }
-      : mode === "error" ? { type: mode, message: t("controls.about.error") } : null;
-  return <><StatePicker label={t("controls.about.state")} value={mode} options={["ready", "checking", "up-to-date", "update", "preview", "error"]} onChange={setMode} />
+  const [showCommit, setShowCommit] = useState(true);
+  const [notice, setNotice] = useState<"selectedLink" | null>(null);
+  return <><StatePicker label={t("controls.about.state")} value={showCommit ? "version-and-commit" : "version-only"}
+    options={["version-only", "version-and-commit"]} onChange={(value) => setShowCommit(value === "version-and-commit")} />
     <AboutSettingsView reportIssueUrl="https://github.com/HKUDS/nanobot/issues/new?template=bug_report.yml"
-      versionCheck={<VersionCheckRowView currentVersion="0.3.5" currentCommit="abcdef1234567890" checking={mode === "checking"}
-        result={result} onCheck={() => setMode("update")}
-        releaseStatus={{ channel, revision: 0, currentVersion: "0.3.5", state: "current" }}
-        canChangeChannel onChangeChannel={async (value) => {
-          setChannel(value);
-        }}
-        onRequestUpdate={mode === "preview" ? () => setNotice("updateRequested") : undefined} />}
+      currentVersion="0.3.5" currentCommit={showCommit ? "abcdef1234567890" : null}
       starLink={<StarLinkView onActivate={() => setNotice("selectedLink")} />} />
     {notice ? <p role="status" className="mt-4 text-xs text-muted-foreground">{t(`controls.about.${notice}`)}</p> : null}</>;
 }
@@ -121,10 +108,10 @@ export const runtimeSettingsExamples: ComponentExample[] = [
     description: "controls.chatBinding.description",
     options: "controls.chatBinding.options",
     code: '<AutomationChatBindingView job={job} data={chats} loadError={false} showBrandLogos={false} onSave={save} onSaved={updateCurrent} onReload={reload}>{renderDetails}</AutomationChatBindingView>' },
-  { title: "controls.about.title", files: ["webui/src/components/settings/overview/AboutSettingsView.tsx", "webui/src/components/settings/overview/VersionCheckRowView.tsx"], Preview: AboutPreview,
+  { title: "controls.about.title", files: ["webui/src/components/settings/overview/AboutSettingsView.tsx"], Preview: AboutPreview,
     description: "controls.about.description",
     options: "controls.about.options",
-    code: '<AboutSettingsView reportIssueUrl={reportIssueUrl} versionCheck={<VersionCheckRowView currentVersion={version} checking={checking} result={result} onCheck={check} />} starLink={<StarLinkView onActivate={star} />} />' },
+    code: '<AboutSettingsView reportIssueUrl={reportIssueUrl} currentVersion={version} currentCommit={commit} starLink={<StarLinkView onActivate={star} />} />' },
   { title: "controls.appearance.title", files: ["webui/src/components/settings/overview/AppearanceSettingsView.tsx"], Preview: AppearancePreview,
     description: "controls.appearance.description",
     options: "controls.appearance.options",

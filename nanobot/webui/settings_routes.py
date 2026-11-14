@@ -64,7 +64,6 @@ from nanobot.webui.settings_contracts import (
 )
 from nanobot.webui.settings_runtime import runtime_config_payload
 from nanobot.webui.settings_services import WebUISettingsServices
-from nanobot.webui.version_check import check_for_update
 
 _WEBUI_MUTATION_PAYLOAD_ATTR = "_nanobot_webui_mutation_payload"
 _WEBUI_MUTATION_REQUEST_ATTR = "_nanobot_webui_mutation_request"
@@ -143,15 +142,6 @@ _SYSTEM_ROUTES = {
     "/api/settings/pairing/approve": "pairing-approve",
     "/api/settings/pairing/deny": "pairing-deny",
     "/api/settings/mcp-presets": "mcp-list",
-    "/api/settings/version-check": "version-check",
-    "/api/settings/nanobot-update/channel": "update-channel",
-    "/api/settings/nanobot-update/plan": "update-plan-read",
-    "/api/settings/nanobot-update/plan/create": "update-plan-create",
-    "/api/settings/nanobot-update/job": "update-job-read",
-    "/api/settings/nanobot-update/job/prepare": "update-job-prepare",
-    "/api/settings/nanobot-update/job/settle": "update-job-settle",
-    "/api/settings/nanobot-update/job/execute": "update-job-execute",
-    "/api/settings/nanobot-update/job/retry": "update-job-retry",
     **{
         path: f"mcp-{action}"
         for path, action in _MCP_PRESET_ACTIONS_BY_PATH.items()
@@ -160,12 +150,6 @@ _SYSTEM_ROUTES = {
 
 _SETTINGS_MUTATION_PATHS = frozenset({
     "/api/settings/sandbox/check",
-    "/api/settings/nanobot-update/channel",
-    "/api/settings/nanobot-update/plan/create",
-    "/api/settings/nanobot-update/job/prepare",
-    "/api/settings/nanobot-update/job/settle",
-    "/api/settings/nanobot-update/job/execute",
-    "/api/settings/nanobot-update/job/retry",
     "/api/settings/runtime-config/update",
     "/api/settings/update",
     "/api/settings/model-configurations/create",
@@ -316,8 +300,6 @@ class WebUISettingsRouter:
             return await asyncio.to_thread(self._handle_settings_usage, request)
 
         domain, action = route
-        if action.startswith("update-") and self._runtime_surface == "native":
-            return self._error_response(409, "Update this installation through Nanobot Desktop.")
         restart_before = (
             await asyncio.to_thread(self._restart_values, action)
             if action in {"runtime-config-update", "image-update", "web-search-update"}
@@ -332,14 +314,6 @@ class WebUISettingsRouter:
                     "features-enable",
                     "channel-configure",
                     "channel-connect",
-                    "update-channel",
-                    "version-check",
-                    "update-plan-create",
-                    "update-plan-read",
-                    "update-job-prepare",
-                    "update-job-settle",
-                    "update-job-execute",
-                    "update-job-retry",
                 }
             ),
         )
@@ -385,10 +359,6 @@ class WebUISettingsRouter:
                 # Reversible changes are tracked separately from installation and reload failures.
                 result.payload["requires_restart"] = False
         response = self._render_result(result)
-        if action.startswith("update-") or action == "version-check":
-            # A saved review is immutable, but its local validity and permission
-            # are not. Never reuse a cached success after an installation changes.
-            response.headers["Cache-Control"] = "no-store"
         return response
 
     def _restart_values(self, action: str) -> dict[str, Any]:
@@ -569,7 +539,6 @@ class WebUISettingsRouter:
             mcp_presets_action=mcp_presets_settings_action,
             reload_mcp=self._reload_mcp_runtime,
             mcp_runtime_status=self._mcp_runtime_status,
-            check_for_update=check_for_update,
             channel_feature_action=self._channel_feature_action,
             channel_runtime_status=self._channel_runtime_status,
         )

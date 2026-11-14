@@ -1,11 +1,11 @@
 import asyncio
 import signal
 from collections.abc import Awaitable, Callable, Coroutine, Iterable
-from contextlib import ExitStack, suppress
-from dataclasses import asdict, replace
+from contextlib import suppress
+from dataclasses import replace
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
 import typer
 from loguru import logger
@@ -39,9 +39,9 @@ from nanobot.cli.webui_support import (
     _webui_display_url,
     _webui_endpoint_reachable,
 )
-from nanobot.config.paths import get_data_dir, is_default_workspace
+from nanobot.config.paths import is_default_workspace
 from nanobot.config.schema import Config
-from nanobot.gateway.runtime import GatewayHealthIdentity, GatewayInstance, GatewayRuntime
+from nanobot.gateway.runtime import GatewayInstance, GatewayRuntime
 from nanobot.installation_lock import installation_access
 from nanobot.security.network import is_loopback_host
 from nanobot.session.keys import HEARTBEAT_SESSION_KEY
@@ -53,10 +53,6 @@ from nanobot.webui.build import BuildMode
 from nanobot.webui.context_source_hook import create_context_source_hook
 from nanobot.webui.dev import WebUIDevError, WebUIDevServer
 from nanobot.webui.sidebar_state import ensure_webui_session_archives
-
-if TYPE_CHECKING:
-    from nanobot.update_profiles import ProfileReceipt
-    from nanobot.update_restart import GatewayStartup
 
 __all__ = ["_run_gateway"]
 
@@ -406,38 +402,36 @@ def _run_gateway(
     unconfigured_provider_error: str | None = None,
     webui_dev_server: WebUIDevServer | None = None,
     gateway_instance: GatewayInstance | None = None,
-    update_startup: "GatewayStartup | None" = None,
 ) -> None:
+    from nanobot.config.home import get_home_path
     from nanobot.config.loader import get_config_path
-    from nanobot.update_profiles import record_gateway_profile
+    from nanobot.config.paths import get_data_dir
+    from nanobot.data_access import profile_data_access
 
     port = port if port is not None else config.gateway.port
-    instance = gateway_instance or GatewayInstance.resolve(config_path=get_config_path())
+    config_path = get_config_path()
+    instance = gateway_instance or GatewayInstance.resolve(config_path=config_path)
     gateway_runtime = GatewayRuntime(paths=instance.paths)
-    with installation_access(allow_incomplete=update_startup is not None):
-        if update_startup is not None:
-            update_startup.validate_installation()
-        with (
-            gateway_runtime.foreground_instance(instance.start_options(port=port, verbose=verbose)),
-            record_gateway_profile(instance, gateway_runtime, data_dir=get_data_dir(),
-                                   workspace=config.workspace_path, port=port, verbose=verbose,
-                                   grant=update_startup.grant if update_startup else None,
-                                   cooperative_stop=True) as profile,
-        ):
-            if update_startup is not None:
-                update_startup.validate_profile(profile)
-            _run_claimed_gateway(
-                config, port=port, gateway_instance=instance, gateway_runtime=gateway_runtime,
-                health_identity=profile.health_identity, update_startup=update_startup,
-                update_profile=profile,
-                open_browser_url=open_browser_url, open_browser_ready_url=open_browser_ready_url,
-                webui_static_dist=webui_static_dist, webui_bundle_mode=webui_bundle_mode,
-                webui_runtime_surface=webui_runtime_surface,
-                webui_runtime_capabilities=webui_runtime_capabilities,
-                health_server_enabled=health_server_enabled,
-                unconfigured_provider_error=unconfigured_provider_error,
-                webui_dev_server=webui_dev_server,
-            )
+    with (
+        installation_access(),
+        profile_data_access(
+            home=get_home_path(),
+            data_dir=get_data_dir(),
+            config=config_path,
+            workspace=config.workspace_path,
+        ),
+        gateway_runtime.foreground_instance(instance.start_options(port=port, verbose=verbose)),
+    ):
+        _run_claimed_gateway(
+            config, port=port, gateway_instance=instance, gateway_runtime=gateway_runtime,
+            open_browser_url=open_browser_url, open_browser_ready_url=open_browser_ready_url,
+            webui_static_dist=webui_static_dist, webui_bundle_mode=webui_bundle_mode,
+            webui_runtime_surface=webui_runtime_surface,
+            webui_runtime_capabilities=webui_runtime_capabilities,
+            health_server_enabled=health_server_enabled,
+            unconfigured_provider_error=unconfigured_provider_error,
+            webui_dev_server=webui_dev_server,
+        )
 
 
 def _run_claimed_gateway(
@@ -446,7 +440,6 @@ def _run_claimed_gateway(
     port: int,
     gateway_instance: GatewayInstance,
     gateway_runtime: GatewayRuntime,
-    health_identity: GatewayHealthIdentity,
     open_browser_url: str | None,
     open_browser_ready_url: str | None,
     webui_static_dist: bool,
@@ -456,8 +449,6 @@ def _run_claimed_gateway(
     health_server_enabled: bool,
     unconfigured_provider_error: str | None,
     webui_dev_server: WebUIDevServer | None,
-    update_startup: "GatewayStartup | None" = None,
-    update_profile: "ProfileReceipt | None" = None,
 ) -> None:
     from nanobot.agent.model_presets import load_model_preset_catalog
     from nanobot.agent.tools.message import MessageTool
@@ -856,8 +847,6 @@ def _run_claimed_gateway(
 
                     if method == "GET" and path == "/health":
                         ready, payload = _gateway_readiness_payload(channels)
-                        payload["runtime"] = asdict(health_identity)
-                        payload["maintenance"] = bus.admission.paused
                         body = _json.dumps(payload)
                         status = "200 OK" if ready else "503 Service Unavailable"
                         content_type = "application/json"
@@ -961,8 +950,6 @@ def _run_claimed_gateway(
             console.print(f"[yellow]Could not open browser ({e}); visit {display_url}[/yellow]")
 
     async def run() -> None:
-        startup_gate = ExitStack()
-        desktop_activated = asyncio.Event()
         tasks: list[asyncio.Task[Any]] = []
         shutdown_task: asyncio.Task[Any] | None = None
         runtime_tasks: asyncio.Future[list[Any]] | None = None
@@ -982,10 +969,6 @@ def _run_claimed_gateway(
             # accepting new input.  That makes a new user message reliably
             # supersede an old recoverable turn instead of racing its queue.
             await recovery.scan()
-            if update_startup is not None:
-                # Recovery may reconstruct queued work, but no consumer or
-                # external listener has started. Keep that work parked too.
-                startup_gate.enter_context(bus.admission.pause_before_start())
             await cron.start()
             async def _run_agent() -> None:
                 try:
@@ -1031,27 +1014,10 @@ def _run_claimed_gateway(
                     name="nanobot-gateway-client-monitor",
                 ),
             ])
-            if update_startup is not None:
-                async def activate(startup: "GatewayStartup") -> None:
-                    await startup.wait_for_activation(health_identity)
-                    startup_gate.close()
-                    desktop_activated.set()
-
-                tasks.append(asyncio.create_task(activate(update_startup), name="nanobot-update-activation"))
-            else:
-                desktop_activated.set()
             if _webui_channel_enabled(config):
                 tasks.append(asyncio.create_task(
-                    watch_gateway_icon(webui_url, instance=gateway_instance.paths.state_path,
-                                       activated=desktop_activated),
+                    watch_gateway_icon(webui_url, instance=gateway_instance.paths.state_path),
                     name="nanobot-dock",
-                ))
-            if update_profile is not None:
-                from nanobot.update_stop import watch_gateway_stop
-
-                tasks.append(asyncio.create_task(
-                    watch_gateway_stop(update_profile, agent.maintenance, shutdown_event, startup_gate),
-                    name="nanobot-update-stop",
                 ))
             if health_server_enabled:
                 tasks.append(asyncio.create_task(
@@ -1114,9 +1080,6 @@ def _run_claimed_gateway(
                 )
                 await bus.drain()
             finally:
-                # On a failed/aborted startup, keep intake closed until all
-                # runtime consumers have been cancelled and cleanup finished.
-                startup_gate.close()
                 restore_shutdown_handlers()
 
     with webui_turn_coordinator.connected():
