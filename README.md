@@ -1,6 +1,6 @@
 # Sentinel
 
-**Sentinel** is an ultra-lightweight, open-source, self-hosted personal AI agent framework written in Python. Use it in a browser, terminal, or chat app to work with files, remember preferences, and schedule tasks. Connect a supported model provider or local model server to supply the AI.
+**Sentinel** is an ultra-lightweight, open-source, self-hosted personal AI agent framework written in Python. Use it in a browser or Discord to work with files, remember preferences, and schedule tasks. Connect a supported model provider or local model server to supply the AI.
 
 This is a documentation and branding rename only: the Python package is still `nanobot-ai`, the command is still `nanobot`, data still defaults to `~/.nanobot`, and installation/release links still point to upstream nanobot. Do not treat those links as Sentinel releases.
 
@@ -11,7 +11,7 @@ This is a documentation and branding rename only: the Python package is still `n
 | Install Sentinel with no terminal/config background | [Start Without Technical Background](./docs/start-without-technical-background.md) |
 | Install quickly and get your first reply | [Install](#-install) and [Quick Start](#-quick-start) |
 | Open the bundled browser UI | [WebUI](#-webui) |
-| Connect Telegram, Discord, WeChat, Slack, Email, Mattermost, Linear, or another channel | [Chat app guide](./docs/guides/chat-app-ai-agent.md) |
+| Connect Discord | [Discord setup](./docs/guides/discord-ai-agent.md) |
 | Configure providers, fallback models, Langfuse, MCP, web tools, or security | [Docs](./docs/README.md) and [Configuration](./docs/configuration.md) |
 | Develop the browser UI | [Install current source](#-install), then [WebUI development](./webui/README.md) and [Development](./docs/development.md) |
 | Integrate from Python | [Python SDK](./docs/python-sdk.md) |
@@ -22,8 +22,8 @@ This is a documentation and branding rename only: the Python package is still `n
 
 Sentinel can:
 
-- run in a browser WebUI or terminal
-- connect to Telegram, Discord, Slack, WeChat, Email, Mattermost, Linear, and other channels
+- run in a browser WebUI or one-shot CLI mode
+- connect to Discord
 - read images, PDF, Word (`.docx`), Excel (`.xlsx`), and PowerPoint (`.pptx`) files with built-in file tools
 - use shell, web search/fetch, MCP integrations, cron, image generation, and multi-agent delegation
 - keep session history and use [Dream](./docs/memory.md#save-and-check-a-preference) to consolidate long-term memory
@@ -34,7 +34,7 @@ Sentinel can:
 ## 💡 Why Sentinel
 
 - **Persistent workflows**: keep saved conversations, long-term memory, and task results for later work.
-- **Chat-native reach**: WebUI, Telegram, Feishu, Slack, Discord, Teams, email, Mattermost, and Linear.
+- **Chat-native reach**: WebUI and Discord.
 - **Model freedom**: OpenAI-compatible APIs, local LLMs, image generation, search, and fallbacks.
 - **Small core**: readable internals with MCP, memory, deployment, and automation built in.
 - **Own your stack**: inspect, customize, self-host, and extend without a giant platform.
@@ -49,8 +49,8 @@ New to terminals or model credentials? Follow [Start Without Technical Backgroun
 
 | Track | Install with | Update with | What runs |
 |---|---|---|---|
-| Stable | installer, `uv`, or pip | [WebUI when supported](./docs/updating.md#update-from-the-webui), otherwise the original package tool | one released Python/WebUI/TUI version |
-| Current source | editable Git checkout | `git pull --ff-only` + editable dependency sync | Python, WebUI, and TUI from that checkout |
+| Stable | installer, `uv`, or pip | [WebUI when supported](./docs/updating.md#update-from-the-webui), otherwise the original package tool | one released Python/WebUI version |
+| Current source | editable Git checkout | `git pull --ff-only` + editable dependency sync | Python and WebUI from that checkout |
 
 **Stable release: automatic setup (recommended)**
 
@@ -112,7 +112,7 @@ uv tool install nanobot-ai
 python -m pip install nanobot-ai
 ```
 
-Then run `nanobot webui` for browser setup, or `nanobot onboard --wizard` for terminal-only setup. For the [Python SDK](./docs/python-sdk.md), install `nanobot-ai` in your application's virtual environment so the application can import it; a separate `uv tool` environment does not make the SDK importable there.
+Then run `nanobot webui` for browser setup, or `nanobot onboard --wizard` for guided terminal setup. For the [Python SDK](./docs/python-sdk.md), install `nanobot-ai` in your application's virtual environment so the application can import it; a separate `uv tool` environment does not make the SDK importable there.
 
 If pip reports `externally-managed-environment`, use the recommended installer, `uv tool install nanobot-ai`, `pipx install nanobot-ai`, or an activated virtual environment. Upgrade with the same method; for uv use `uv tool upgrade nanobot-ai`, and for pip use `python -m pip install -U nanobot-ai`.
 
@@ -123,7 +123,7 @@ If pip reports `externally-managed-environment`, use the recommended installer, 
 <details>
 <summary>Install current source with Git and Bun</summary>
 
-Clone the repository and install it in editable mode. A source install requires Git and [Bun](https://bun.sh/); Bun runs the matching TUI directly from the checkout instead of downloading an older release binary.
+Clone the repository and install it in editable mode. A source install requires Git and [Bun](https://bun.sh/) to build the WebUI assets.
 
 ```bash
 git clone https://github.com/HKUDS/nanobot.git
@@ -137,16 +137,14 @@ On Windows, use `py -3 -m venv .venv` instead of `python3`. Activate it with `so
 python -m pip install -e .
 ```
 
-After that, the normal commands are identical to a stable install. `nanobot` runs the TUI from this checkout, and `nanobot webui` prompts to rebuild stale frontend assets, or warns in non-interactive sessions; `--yes` builds automatically. After stopping the old instance, `git pull --ff-only` updates the Python, TUI, and WebUI source together; rerun `python -m pip install -e .` when Python dependencies change, then restart the instance. Contributors should also read [Development guide](./docs/development.md).
+After that, `nanobot webui` prompts to rebuild stale frontend assets, or warns in non-interactive sessions; `--yes` builds automatically. `nanobot -m "Hello!"` runs a one-shot check, while operational commands remain available through the CLI. After stopping the old instance, `git pull --ff-only` updates the Python and WebUI source together; rerun `python -m pip install -e .` when Python dependencies change, then restart the instance. Contributors should also read [Development guide](./docs/development.md).
 
 </details>
 
 <details>
-<summary>Supported platforms, bundled UIs, and release tracks</summary>
+<summary>Supported platforms and release tracks</summary>
 
-Published packages include the WebUI, and supported platform wheels also include the native TUI. A source-distribution install can fetch a checksummed, version-matched TUI archive—with its licenses, notices, corresponding application source, source offer, and relinking instructions—on first use.
-
-Platform wheels include both the WebUI and the native terminal UI: macOS 13+ (Apple Silicon and Intel), glibc 2.17+ Linux (ARM64 and x64), and Windows x64. The x64 runtime requires SSE4.2. Pip selects the matching wheel; opening the TUI does not need a separate GitHub download or Bun installation. A source-distribution install on a supported target can use the matching checksummed GitHub release archive. On other platforms, use `nanobot --classic` or the WebUI.
+Published packages include the WebUI. Use the supported Python installation methods described above; source installs build WebUI assets from the checkout.
 
 </details>
 
@@ -185,7 +183,7 @@ Keep the launcher terminal open while using the browser. It starts or joins the 
 
 A normal reply verifies the provider/model and browser connection. The file task separately checks the selected project and its file permissions. Attaching a file sends it to the conversation; it does not change the selected project folder.
 
-Then describe your next goal in the same chat, for example: "I am already using the WebUI. Help me connect Telegram and allow only my account." An enabled `nanobot-document` skill can consult the documentation bundled with your installation; see [Continue with Sentinel](./docs/quick-start.md#continue-with-sentinel) for examples, explicit invocation, and availability.
+Then describe your next goal in the same chat, for example: "I am already using the WebUI. Help me connect Discord and allow only my account." An enabled `nanobot-document` skill can consult the documentation bundled with your installation; see [Continue with Sentinel](./docs/quick-start.md#continue-with-sentinel) for examples, explicit invocation, and availability.
 
 <details>
 <summary>Open the WebUI on a remote server through SSH</summary>
@@ -207,7 +205,7 @@ Replace `user@SERVER` with your SSH login and leave the tunnel open. In your loc
 </details>
 
 <details>
-<summary>Terminal-only setup, one-shot checks, and the TUI</summary>
+<summary>Terminal setup and one-shot checks</summary>
 
 If a model is not configured yet, use the terminal wizard:
 
@@ -221,21 +219,7 @@ Check one reply without opening the browser:
 nanobot -m "Hello!"
 ```
 
-For interactive work, open the terminal client:
-
-```bash
-nanobot
-```
-
-The native TUI uses the launch directory as its project workspace and shares saved conversations and the local gateway with the WebUI. The explicit `nanobot agent` form remains available for compatibility.
-
-- Type `/` to discover commands, `/sessions` to switch conversations, or `@` to mention an app, MCP server, or saved session.
-- Paste clipboard images with `Ctrl+V` or `Alt+V`, and use `$` to complete skill references.
-- Use `/diff` to inspect file changes, `/context` to inspect session context, or `/branch` to continue from a completed reply in a new session.
-- Press `Enter` to send. While Sentinel is working, `Enter` sends now and `Tab` sends after the current response. Press `Shift+Enter` to add a newline (`Ctrl+J` works in terminals that cannot distinguish modified Enter keys).
-- Use `/detach` to promote the gateway to background mode and close the TUI while work continues.
-
-Each launch starts a new session by default. Use `--session` to resume one and `--workspace` to choose another project workspace. See the [CLI reference](./docs/cli-reference.md#agent-cli) for session branching, diffs, history, shortcuts, gateway lifecycle, and compatibility options.
+The CLI supports operational commands and one-shot agent execution; it does not provide an interactive terminal chat client. Use the [CLI reference](./docs/cli-reference.md) for session, workspace, and gateway options.
 
 </details>
 
@@ -272,7 +256,7 @@ nanobot gateway --background
 
 This starts or promotes the shared gateway to persistent background mode. Fresh official-installer environments already use that lifetime when you open `nanobot webui`; other Python installations can explicitly use `nanobot webui --detach`. Channels and automations remain active after local clients exit. Complete first-time model setup in the WebUI, and use the gateway commands below to manage the same instance.
 
-From the TUI, `/detach` does the same before closing that client. Background mode does not configure startup after a machine reboot or restart after a crash; use an [OS-managed service](./docs/deployment.md#switch-an-existing-gateway-to-a-service) for that. Interrupted subagent tasks are not automatically relaunched after a restart, and missed scheduled times are not replayed; see [subagent recovery](./docs/concepts.md#subagents) and [automation delivery](./docs/automations.md#delivery-and-reliability).
+Background mode does not configure startup after a machine reboot or restart after a crash; use an [OS-managed service](./docs/deployment.md#switch-an-existing-gateway-to-a-service) for that. Interrupted subagent tasks are not automatically relaunched after a restart, and missed scheduled times are not replayed; see [subagent recovery](./docs/concepts.md#subagents) and [automation delivery](./docs/automations.md#delivery-and-reliability).
 
 Manage the background gateway with:
 
@@ -305,7 +289,7 @@ It skips guided WebUI setup and browser opening. The WebUI remains available whe
 
 - Model/provider recipes: [Provider Cookbook](./docs/provider-cookbook.md) and [Providers and Models](./docs/providers.md).
 - Local models: [Ollama](./docs/providers.md#ollama), [vLLM or another OpenAI-compatible server](./docs/providers.md#vllm-or-other-local-openai-compatible-server).
-- Chat platforms: [Chat app guide](./docs/guides/chat-app-ai-agent.md), then the [full channel reference](./docs/chat-apps.md).
+- Discord: [setup guide](./docs/guides/discord-ai-agent.md) and [channel reference](./docs/chat-apps.md).
 - Exact settings for web search, MCP, voice, image generation, and security: [Configuration](./docs/configuration.md).
 - Manual JSON and other setup paths: [Install and Quick Start](./docs/quick-start.md).
 - Failures after setup: [Troubleshooting](./docs/troubleshooting.md).
@@ -361,9 +345,9 @@ Context compaction also appears in the conversation timeline. [Explore activity 
 
 Use Apps to connect MCP servers, enable Agent Plugins, and manage local CLI App adapters. Add a preset or a custom server, then attach an available tool with `@`. Skills provide reusable instructions. **Settings** holds model, voice, image, and web setup; **Channels** handles chat-platform connections.
 
-[Explore Apps →](./docs/webui.md#apps) · [Discover Skills →](./docs/webui.md#skills) · [Connect chat apps →](./docs/guides/chat-app-ai-agent.md)
+[Explore Apps →](./docs/webui.md#apps) · [Discover Skills →](./docs/webui.md#skills) · [Connect Discord →](./docs/guides/discord-ai-agent.md)
 
-Before connecting a personal bot to shared channels, check the platform's DM pairing/allowlist and group-access policies separately. Approving a private sender does not restrict group access on every platform; see the [channel reference](./docs/chat-apps.md).
+Before connecting a personal bot to Discord, check its DM pairing/allowlist and group-access policies; see the [channel reference](./docs/chat-apps.md).
 
 ### Let recurring work run on a schedule
 
@@ -377,7 +361,7 @@ See the [WebUI guide](./docs/webui.md) for LAN access, background operation, wor
 
 ## Architecture
 
-The Python gateway owns agent execution, sessions, tools, memory, and security policy for the WebUI, TUI, and chat apps. The clients share that runtime; the core agent loop builds context, calls the model, executes requested tools, and returns the result. Memory, skills, channels, and MCP integrations extend that loop.
+The Python gateway owns agent execution, sessions, tools, memory, and security policy for the WebUI and Discord. The clients share that runtime; the core agent loop builds context, calls the model, executes requested tools, and returns the result. Memory, skills, channels, and MCP integrations extend that loop.
 
 The [Python SDK](./docs/python-sdk.md) embeds the agent runtime in your application process.
 
@@ -389,7 +373,7 @@ Browse the [repo docs](./docs/README.md) for current source documentation, or vi
 
 - Get started: [Beginner walkthrough](./docs/start-without-technical-background.md) or [Install and Quick Start](./docs/quick-start.md).
 - Choose and configure a model: [Providers and Models](./docs/providers.md) and [Provider Cookbook](./docs/provider-cookbook.md).
-- Connect a chat app: [Chat App AI Agent](./docs/guides/chat-app-ai-agent.md) and [channel reference](./docs/chat-apps.md).
+- Connect Discord: [setup guide](./docs/guides/discord-ai-agent.md) and [channel reference](./docs/chat-apps.md).
 - Schedule or deploy work: [Automations](./docs/automations.md) and [Deployment](./docs/deployment.md).
 - Integrate from code: [Python SDK](./docs/python-sdk.md).
 - Look up runtime concepts or exact settings: [Concepts](./docs/concepts.md) and [Configuration](./docs/configuration.md).

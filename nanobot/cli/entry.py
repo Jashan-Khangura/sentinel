@@ -30,19 +30,6 @@ def _agent_invocation_args(args: list[str]) -> list[str] | None:
     return None
 
 
-def _native_tui_candidate(args: list[str]) -> bool:
-    if not args or args[0] != "agent":
-        return False
-    for argument in args[1:]:
-        if argument in {"--classic", "--no-tui", "-m", "--message"}:
-            return False
-        if argument.startswith("--message=") or (
-            argument.startswith("-m") and not argument.startswith("--")
-        ):
-            return False
-    return True
-
-
 def configure_windows_console() -> None:
     """Keep multilingual output usable for CLI and protected gateway startup."""
     if sys.platform != "win32" or sys.stdout.encoding == "utf-8":
@@ -126,18 +113,8 @@ def _dispatch() -> None:
         update_app.command()(update)
         typer.main.get_command(update_app).main(args=raw_args[1:], prog_name="nanobot update")
         return
-    if not shell_completion and not raw_args:
-        from nanobot.cli.desktop_target import dispatch_bare_desktop_target
-
-        desktop_exit = dispatch_bare_desktop_target(raw_args)
-        if desktop_exit is not None:
-            if desktop_exit:
-                raise SystemExit(desktop_exit)
-            return
-    root_agent_alias = agent_args is not None and raw_args[:1] != ["agent"]
-    if agent_args is not None and (
-        root_agent_alias or _native_tui_candidate(dispatch_args)
-    ):
+    root_agent_alias = bool(raw_args) and agent_args is not None and raw_args[:1] != ["agent"]
+    if agent_args is not None and root_agent_alias:
         prog_name = "nanobot" if root_agent_alias else "nanobot agent"
         _run_agent(agent_args, prog_name=prog_name)
         return

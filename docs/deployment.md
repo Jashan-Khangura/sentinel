@@ -103,10 +103,10 @@ The default Compose service runs the gateway and WebUI. If you are updating a de
 
 CLI commands do not trigger Docker service initialization. For terminal setup, run `docker compose run --rm nanobot-cli onboard --wizard`, configure the model, and merge the [Docker bind and authentication settings](#docker) before starting the gateway. Plain `onboard` keeps its original first-run behavior without an extra overwrite prompt. Verify it with `docker compose run --rm nanobot-cli agent -m "Hello!"` before starting the persistent gateway.
 
-The default image preinstalls WhatsApp dependencies. To bake other enabled channels into an image (recommended for deployments without PyPI access), pass a comma-separated `NANOBOT_CHANNELS` build argument:
+The default image preinstalls Discord dependencies. To bake enabled channel dependencies into an image (recommended for deployments without PyPI access), pass a comma-separated `NANOBOT_CHANNELS` build argument:
 
 ```bash
-NANOBOT_CHANNELS=telegram,slack docker compose build
+NANOBOT_CHANNELS=discord docker compose build
 ```
 
 The image keeps Sentinel in a virtual environment owned by its built-in non-root runtime user (UID 1000). If an enabled channel was not preinstalled, gateway startup can therefore install its manifest-declared dependencies. Rebuilding with `NANOBOT_CHANNELS` keeps that installation reproducible instead of relying on the container's writable layer. If you override the container with a different `--user`, bake every enabled channel into the image because that UID is not guaranteed write access to the virtual environment.
@@ -142,7 +142,7 @@ docker build -t nanobot .
 docker build --build-arg NANOBOT_EXTRAS=bedrock -t nanobot .
 
 # Or preinstall dependencies for a specific set of channels
-docker build --build-arg NANOBOT_CHANNELS=telegram,slack -t nanobot .
+docker build --build-arg NANOBOT_CHANNELS=discord -t nanobot .
 
 # Initialize config (first time only)
 docker run -v ~/.nanobot:/home/nanobot/.nanobot --rm nanobot onboard
@@ -154,7 +154,7 @@ vim ~/.nanobot/config.json
 docker run -v ~/.nanobot:/home/nanobot/.nanobot --rm nanobot status
 docker run -v ~/.nanobot:/home/nanobot/.nanobot --rm nanobot agent -m "Hello!"
 
-# Run gateway (connects to enabled channels, e.g. Telegram/Discord/Mochat).
+# Run gateway (connects to Discord when enabled).
 # `-p 8765:8765` exposes the WebSocket channel / WebUI alongside the gateway
 # health endpoint on 18790.
 docker run \
@@ -210,7 +210,7 @@ Set `publicWsUrl` to the browser-facing `wss://` endpoint when the tunnel sends 
 
 ## Switch an Existing Gateway to a Service
 
-Before installing an OS service, finish active work and close WebUI/TUI launchers that could start another gateway. Stop the existing instance: use `nanobot gateway stop` for a recorded background gateway (including one retained by `/detach`), or Ctrl+C in the terminal running a foreground gateway. Pass the same `--config` and `--workspace` selectors to stop, status, and service-install commands for a custom instance.
+Before installing an OS service, finish active work and close the WebUI launcher so it cannot start another gateway. Stop the existing instance: use `nanobot gateway stop` for a recorded background gateway (including one retained by `--detach`), or Ctrl+C in the terminal running a foreground gateway. Pass the same `--config` and `--workspace` selectors to stop, status, and service-install commands for a custom instance.
 
 The service installer does not take over an existing standalone process. Starting both on the same ports makes the new service fail. If an OS service already owns the instance, manage it with its service manager instead of launching another process.
 
@@ -235,9 +235,9 @@ For a custom instance, pass the same config/workspace selector you use to run th
 ```bash
 nanobot gateway install-service \
   --manager systemd \
-  --name nanobot-telegram \
-  --config ~/.nanobot-telegram/config.json \
-  --workspace ~/.nanobot-telegram/workspace
+  --name nanobot-custom \
+  --config ~/.nanobot-custom/config.json \
+  --workspace ~/.nanobot-custom/workspace
 ```
 
 Common operations:
@@ -279,9 +279,9 @@ For a custom instance:
 ```bash
 nanobot gateway install-service \
   --manager launchd \
-  --name nanobot-telegram \
-  --config ~/.nanobot-telegram/config.json \
-  --workspace ~/.nanobot-telegram/workspace
+  --name nanobot-custom \
+  --config ~/.nanobot-custom/config.json \
+  --workspace ~/.nanobot-custom/workspace
 ```
 
 Common operations:

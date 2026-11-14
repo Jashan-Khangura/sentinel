@@ -208,8 +208,8 @@ def test_existing_runtime_and_composition_dependencies_remain_allowed(
         ),
         (
             "nanobot/channels/notification_routes.py",
-            "from nanobot.channels.slack.runtime import SlackChannel",
-            "channel-routing-contracts", "nanobot.channels.slack.runtime.SlackChannel", 1,
+            "from nanobot.channels.discord.runtime import DiscordChannel",
+            "channel-routing-contracts", "nanobot.channels.discord.runtime.DiscordChannel", 1,
         ),
         (
             "nanobot/channels/notification_routes.py",
@@ -230,7 +230,7 @@ def test_existing_runtime_and_composition_dependencies_remain_allowed(
             "tool-config-base", "nanobot.config.schema.Base", 1,
         ),
         (
-            "nanobot/channels/telegram/runtime.py", "from nanobot.config.schema import Base",
+            "nanobot/channels/discord/runtime.py", "from nanobot.config.schema import Base",
             "tool-config-base", "nanobot.config.schema.Base", 1,
         ),
         (

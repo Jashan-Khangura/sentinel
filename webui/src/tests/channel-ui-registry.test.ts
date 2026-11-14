@@ -14,27 +14,19 @@ import {
 } from "@/channel-plugins/registry";
 
 describe("channel UI contributions", () => {
-  it("selects channel-owned UI only through the backend manifest entry", () => {
-    expect(channelUiContribution("feishu", "webui/index.tsx")?.Panel).toBeDefined();
-    expect(channelUiContribution("linear", "webui/index.tsx")?.Panel).toBeDefined();
-    expect(channelUiContribution("weixin", "webui/index.tsx")?.ConnectFlow).toBeDefined();
-    expect(channelUiContribution("feishu", undefined)).toBeUndefined();
-    expect(channelUiContribution("feishu", "webui/missing.tsx")).toBeUndefined();
+  it("registers the Discord UI only through its backend manifest entry", () => {
+    expect(channelUiContribution("discord", "webui/index.ts")?.presentation.displayName).toBe("Discord");
+    expect(channelUiContribution("discord", undefined)).toBeUndefined();
+    expect(channelUiContribution("discord", "webui/missing.tsx")).toBeUndefined();
     expect(channelUiContribution("missing", "webui/index.tsx")).toBeUndefined();
 
     const registrations = registeredChannelUiContributions();
     const channels = registrations.map((entry) => entry.channel);
-    expect(channels).toEqual(expect.arrayContaining(["feishu", "linear", "weixin"]));
+    expect(channels).toEqual(["discord"]);
     expect(new Set(channels).size).toBe(channels.length);
     expect(registrations.every((entry) => /^webui\/index\.tsx?$/.test(entry.webui))).toBe(true);
-    expect(channelUiContribution("slack", "webui/index.ts")?.presentation.displayName).toBe("Slack");
-  });
-
-  it("keeps aliases inside the owning channel contribution", () => {
-    expect(channelUiPresentation("lark")?.displayName).toBe("Lark");
-    expect(channelUiPresentation("wechat")?.displayName).toBe("WeChat");
-    expect(channelUiOwner("lark")).toBe("feishu");
-    expect(channelUiOwner("wechat")).toBe("weixin");
+    expect(channelUiPresentation("discord")?.displayName).toBe("Discord");
+    expect(channelUiOwner("discord")).toBe("discord");
   });
 
   it("includes channel-owned UI in Tailwind's production scan", async () => {
@@ -47,14 +39,13 @@ describe("channel UI contributions", () => {
         && (entry.includes("../nanobot/channels/") || entry.startsWith("!")));
       const result = await postcss([tailwindcss({ ...config, content })]).process("@tailwind utilities;", { from: undefined });
 
-      // Linear's connecting indicator uses a channel-only arbitrary color.
-      let backgroundColor: string | undefined;
-      result.root.walkRules(".bg-\\[\\#5E6AD2\\]", (rule) => {
-        rule.walkDecls("background-color", (declaration) => {
-          backgroundColor = declaration.value;
+      let objectFit: string | undefined;
+      result.root.walkRules(".object-contain", (rule) => {
+        rule.walkDecls("object-fit", (declaration) => {
+          objectFit = declaration.value;
         });
       });
-      expect(backgroundColor?.trim()).toBeTruthy();
+      expect(objectFit).toBe("contain");
     } finally {
       vi.unstubAllEnvs();
     }

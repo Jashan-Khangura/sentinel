@@ -16,13 +16,11 @@ import subprocess
 from fnmatch import fnmatchcase
 from pathlib import Path
 
-JOBS = ("python_required", "webui_required", "tui_required", "docker_required", "native_required")
+JOBS = ("python_required", "webui_required", "docker_required")
 ALL = frozenset(JOBS)
 PYTHON = frozenset({"python_required"})
 DOCKER = frozenset({"docker_required"})
 WEBUI = frozenset({"webui_required"})
-TUI = frozenset({"tui_required"})
-NATIVE = frozenset({"native_required"})
 
 # Ordered first-match rules. Keep Docker README inputs before documentation rules,
 # and embedded channel frontend trees before the Python production catch-all.
@@ -33,8 +31,7 @@ RULES = (
       "scripts/ci_gate.py", "tests/scripts/test_ci_gate.py", "tests/scripts/test_ci_workflows.py"),
      ALL, "CI selector or execution contract"),
     ((".github/workflows/release-candidate.yml", ".github/workflows/release-approve.yml"),
-     PYTHON | NATIVE, "release workflow (including Python parse/collection validation)"),
-    ((".github/workflows/tui-release.yml",), PYTHON | TUI | NATIVE, "native TUI publication workflow"),
+     PYTHON | WEBUI, "release workflow (including Python parse/collection validation)"),
     ((".github/workflows/*",), ALL, "unknown workflow"),
     (("pyproject.toml", "uv.lock", "hatch_build.py", "nanobot/webui/build.py", "scripts/install*",
       "scripts/build*"), ALL, "cross-domain dependency, build or installation contract"),
@@ -49,21 +46,18 @@ RULES = (
      "shared Python and WebUI runtime configuration test contract"),
     (("tests/session/fixtures/sqlite_v1.sql",), PYTHON, "Python session schema migration fixture"),
     (("tests/fixtures/sigstore/bundle_v3.txt", "tests/fixtures/sigstore/bundle_v3.txt.sigstore"),
-     PYTHON | NATIVE, "release trust verification fixtures"),
+     PYTHON, "release trust verification fixtures"),
     (("tests/fixtures/sigstore/README.md", "tests/fixtures/sigstore/LICENSE"),
      frozenset(), "test fixture provenance and license"),
     (("docs/*", ".agent/*", ".github/ISSUE_TEMPLATE/*", "AGENTS.md", "CLAUDE.md",
       "COMMUNICATION.md", "CONTRIBUTING.md", "SECURITY.md", "webui/README.md",
-      "tui/README.md", "images/*"), frozenset(), "documentation only"),
-    (("scripts/check_client_import_boundaries.*",), WEBUI | TUI, "shared client import boundary checker"),
-    (("packages/client-events/*",), WEBUI | TUI | DOCKER, "shared client event protocol"),
+      "images/*"), frozenset(), "documentation only"),
+    (("scripts/check_client_import_boundaries.*",), WEBUI, "WebUI import boundary checker"),
+    (("packages/client-events/*",), WEBUI | DOCKER, "WebUI client event protocol"),
     (("webui/*", "nanobot/channels/*/webui/*", "nanobot/channels/*/tests/webui/*"),
      WEBUI | DOCKER, "WebUI source or embedded channel frontend"),
-    (("tui/scripts/package-release.py", "tui/scripts/release-notices.ts", "tui/scripts/prepare-target.ts",
-      "tui/scripts/build.ts", "tui/package.json", "tui/bun.lock"), TUI | NATIVE, "native TUI packaging or dependencies"),
-    (("tui/*",), TUI, "TUI functionality"),
     (("nanobot/channels/websocket/runtime.py", "nanobot/webui/gateway_endpoint.py"),
-     PYTHON | DOCKER | WEBUI | TUI | NATIVE, "shared gateway lifecycle and client protocol"),
+     PYTHON | DOCKER | WEBUI, "shared gateway lifecycle and client protocol"),
     # These modules own wire events, transport and session representations used
     # by both clients. Other backend WebUI modules need only the WebUI consumer.
     (("nanobot/webui/client_contract.py", "nanobot/webui/outbound_*.py",
@@ -75,8 +69,8 @@ RULES = (
       "nanobot/webui/cli_apps_api.py", "nanobot/webui/mcp_presets_api.py",
       "nanobot/webui/recovery.py", "nanobot/webui/forking.py", "nanobot/session/*", "nanobot/events.py",
       "nanobot/bus/events.py", "nanobot/api/*", "nanobot/channels/websocket/*.py"),
-     PYTHON | DOCKER | WEBUI | TUI, "shared backend client protocol, transport or session representation"),
-    (("nanobot/webui/local_client_assets.py",), PYTHON | DOCKER | WEBUI | NATIVE,
+     PYTHON | DOCKER | WEBUI, "shared backend client protocol, transport or session representation"),
+    (("nanobot/webui/local_client_assets.py",), PYTHON | DOCKER | WEBUI,
      "installed client asset discovery"),
     (("nanobot/webui/*",), PYTHON | DOCKER | WEBUI, "WebUI backend"),
     (("nanobot/update*", "nanobot/release*", "nanobot/installation*", "nanobot/bun.py",
@@ -84,21 +78,21 @@ RULES = (
       "nanobot/nanobot.py", "nanobot/process_runtime.py", "nanobot/runtime_admission.py", "nanobot/data_access.py",
       "nanobot/gateway/*", "nanobot/cli/entry.py", "nanobot/cli/commands.py",
       "nanobot/cli/gateway*.py", "nanobot/cli/update.py", "nanobot/cli/process_identity.py",
-      "nanobot/cli/desktop*.py", "nanobot/cli/tui_launcher.py", "nanobot/cli/dock.py",
+      "nanobot/cli/desktop*.py", "nanobot/cli/dock.py",
       "nanobot/cli/_macos_dock.py", "nanobot/cli/runtime_config.py", "nanobot/cli/webui.py", "nanobot/cli/webui_support.py",
       "nanobot/config/paths.py", "nanobot/utils/rotating_output.py",
       "nanobot/utils/atomic_file.py", "nanobot/utils/file_io.py", "nanobot/utils/runtime.py",
       "nanobot/utils/restart.py"),
-     PYTHON | DOCKER | NATIVE, "installed application lifecycle, update or runtime"),
+     PYTHON | DOCKER, "installed application lifecycle, update or runtime"),
     (("nanobot/*",), PYTHON | DOCKER, "Python production source"),
     (("tests/test_update*", "tests/test_windows_update*", "tests/test_release*",
       "tests/test_install*", "tests/test_packaged_update*", "tests/test_bun.py",
       "tests/test_build_info.py", "tests/gateway/*", "tests/cli/test_entry.py",
       "tests/cli/test_commands.py", "tests/cli/test_gateway*", "tests/cli/test_process_identity.py",
-      "tests/cli/test_desktop*", "tests/cli/test_tui*", "tests/cli/test_restart*",
+      "tests/cli/test_desktop*", "tests/cli/test_restart*",
       "tests/utils/test_atomic*", "tests/utils/test_file_io*", "tests/test_process*",
       "tests/test_runtime*", "scripts/verify_*", "scripts/release_*",
-      ".github/release-signing-requirements.*"), PYTHON | NATIVE, "lifecycle or installed-release verification"),
+      ".github/release-signing-requirements.*"), PYTHON, "lifecycle or installed-release verification"),
     (("tests/*.py", "conftest.py", "scripts/*.py"), PYTHON, "Python tests or tooling"),
 )
 

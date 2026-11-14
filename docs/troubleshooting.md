@@ -287,9 +287,9 @@ If accessing from another device, bind the WebSocket channel to `0.0.0.0` and se
 
 See [`webui.md#lan-access`](./webui.md#lan-access) for LAN setup and [`../webui/README.md`](../webui/README.md) for frontend development.
 
-## Chat App Problems
+## Discord and WebUI Problems
 
-Before debugging a chat app:
+Before debugging, verify that the provider and agent can respond:
 
 ```bash
 nanobot agent -m "Hello!"
@@ -301,16 +301,13 @@ Then check:
 
 | Symptom | Check |
 |---|---|
-| Bot never replies | Gateway is not running, the channel is not enabled, or the bot/app token is wrong. |
-| Unknown sender ignored | Configure `allowFrom`, pairing, or the channel-specific allow list. |
-| Telegram shows a saved configuration but cannot complete a live check | The token is saved. Confirm the gateway can reach `api.telegram.org`, or open **Channels → Telegram → Advanced → Network proxy** and enter an HTTP or SOCKS proxy. |
-| Telegram rejects the token | Copy the current token from BotFather or regenerate it. |
-| Telegram receives no messages | Confirm the channel is enabled, the gateway is running, and the sender is paired or listed in `allowFrom`. |
-| Discord replies missing | Enable Message Content intent and invite the bot with the required permissions. |
-| WhatsApp or WeChat login expired | Re-run `nanobot channels login whatsapp` or `nanobot channels login weixin`. |
-| Chat app works but WebUI does not | The provider and gateway are likely fine; debug the WebSocket channel separately. |
+| Discord bot never replies | Confirm Discord is enabled, the gateway is running, and the bot token is valid. |
+| Discord ignores a sender | Check the configured `allowFrom` list, pairing state, and group-access settings. |
+| Discord replies are missing message content | Enable Message Content intent and invite the bot with the required permissions. |
+| Discord works but WebUI does not | The provider and gateway are likely fine; debug the WebSocket connection separately. |
+| WebUI works but Discord does not | Check the Discord bot token, enabled channel configuration, gateway logs, and required bot permissions. |
 
-See [`chat-apps.md`](./chat-apps.md) for channel-specific setup.
+See [`chat-apps.md`](./chat-apps.md) for Discord setup.
 
 ## Tool and Workspace Problems
 

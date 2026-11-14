@@ -18,7 +18,7 @@ The two user-created automation types are scheduled automations and local trigge
 
 ## Before You Create One
 
-Keep the gateway running. Your WebUI or TUI already uses one; you do not need a second gateway. To keep it alive after closing interactive launchers, run `nanobot gateway --background` with the same instance selectors, or use `/detach` in the TUI. The gateway owns background delivery for chat apps, WebUI topics, scheduled automations, local triggers, heartbeat, and Dream jobs.
+Keep the gateway running. Your WebUI already uses one; you do not need a second gateway. To keep it alive after closing the browser launcher, run `nanobot gateway --background` with the same instance selectors. The gateway owns background delivery for Discord, WebUI topics, scheduled automations, local triggers, heartbeat, and Dream jobs.
 
 Use the same workspace and config for the gateway and any process that sends local trigger messages. If you run multiple Sentinel instances, pass the matching `--config` or `--workspace` option to `nanobot trigger`.
 
@@ -46,7 +46,7 @@ Write what the task should do, such as "Remind me to drink water". Sentinel send
 
 For separate sends, specify the recipients in the instructions. The agent can still use `message` to send to other chats, send to several recipients, or attach files. Existing tasks that explicitly request this tool remain supported.
 
-Writing "send to WhatsApp" in the instructions does not change the task's saved chat. Its normal reply still returns to that chat. A separate send requires the agent to call `message` with the other destination. For a fixed destination, create the task in that chat or use [Change the Chat for a Scheduled Task](#change-the-chat-for-a-scheduled-task). Keep explicit `message` instructions when you want separate sends or several recipients.
+Writing "send to Discord" in the instructions does not change the task's saved chat. Its normal reply still returns to that chat. A separate send requires the agent to call `message` with the other destination. For a fixed destination, create the task in that chat or use [Change the Chat for a Scheduled Task](#change-the-chat-for-a-scheduled-task). Keep explicit `message` instructions when you want separate sends or several recipients.
 
 If a result does not arrive, check that the task finished, then check its saved chat and destination. For a separate send, review the run's `message` calls and the gateway's channel send errors. `Turn completed` means the task finished; it does not confirm that the chat service delivered the message. A successful `message` result means Sentinel accepted it for sending, not that it arrived. Check the destination before trying again to avoid duplicates.
 
@@ -180,7 +180,7 @@ Before trying this feature, stop the gateway and other cron writers, then back u
 
 ## Delivery and Reliability
 
-Automation storage and queue delivery belong to the gateway's configured agent workspace. Scheduled and triggered turns linked to WebUI/TUI chats use the chat's saved project context and access mode; chat-app turns use the gateway's configured workspace. The selected project can differ from the agent workspace that stores jobs, memory, and queues. Starting the TUI inside a project selects that project for the chat but does not by itself create a separate gateway instance. Select the matching configured agent workspace when invoking `nanobot trigger --workspace`, not merely the project directory. See [Multiple Instances](multiple-instances.md) when these need to be separate.
+Automation storage and queue delivery belong to the gateway's configured agent workspace. Scheduled and triggered turns linked to WebUI chats use the chat's saved project context and access mode; Discord turns use the gateway's configured workspace. The selected project can differ from the agent workspace that stores jobs, memory, and queues. Select the matching configured agent workspace when invoking `nanobot trigger --workspace`, not merely the project directory. See [Multiple Instances](multiple-instances.md) when these need to be separate.
 
 Schedules do not replay missed occurrences after a gateway restart:
 

@@ -117,18 +117,3 @@ export const channelExamples: ComponentExample[] = genericRegistrations.map(({ c
   code: `<ChannelSetupSurfaceView feature={channelFeatures.${channel}} setup={setup} {...displayState} {...actions} />`,
   Preview: () => <ChannelEntryPreview name={channel} />,
 }));
-
-export function withChannelEntries(customExamples: ComponentExample[]): ComponentExample[] {
-  const assigned = new Set(customExamples.flatMap((example) => example.files));
-  return customExamples.map((example) => {
-    const entries = registeredChannelUiContributions().filter(({ channel, webui }) => {
-      const entry = `nanobot/channels/${channel}/${webui}`;
-      const ownsMainView = example.files.some((file) => file.startsWith(`nanobot/channels/${channel}/webui/`)
-        && (file.endsWith("PanelView.tsx") || file.endsWith("WhatsAppConnectFlowView.tsx")));
-      if (!ownsMainView || assigned.has(entry)) return false;
-      assigned.add(entry);
-      return true;
-    }).map(({ channel, webui }) => `nanobot/channels/${channel}/${webui}`);
-    return { ...example, files: [...example.files, ...entries] };
-  });
-}

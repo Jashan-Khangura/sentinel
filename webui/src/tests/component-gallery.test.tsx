@@ -22,16 +22,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it("indexes shared component exports and their application and channel consumers", () => {
+it("indexes shared component exports and their application consumers", () => {
   const toggle = inventory.find((item) => item.path === `${foundationPath}toggle-button.tsx`);
   expect(toggle?.exports).toContain("ToggleButton");
-  expect(toggle?.usedBy).toEqual(expect.arrayContaining([
-    "webui/src/components/thread/WorkspaceControls.tsx",
-    "nanobot/channels/linear/webui/LinearMemberAccessView.tsx",
-  ]));
-  expect(inventory.find((item) => item.path === "nanobot/channels/linear/webui/LinearMemberAccess.tsx")?.group)
-    .toBe("Channels / linear");
-  expect(inventory.find((item) => item.path === "nanobot/channels/linear/webui/index.tsx")?.exports).toContain("default");
+  expect(toggle?.usedBy).toContain("webui/src/components/thread/WorkspaceControls.tsx");
   expect(inventory.find((item) => item.path === "webui/src/components/MarkdownTextRenderer.tsx")?.exports).toContain("default");
 });
 
@@ -209,12 +203,12 @@ it("uses the real provider manager and saves a new provider entirely in preview 
 });
 
 it("renders a registered channel's real secret fields and enable action without a gateway", async () => {
-  const source = "nanobot/channels/telegram/webui/index.ts";
+  const source = "nanobot/channels/discord/webui/index.ts";
   window.history.replaceState({}, "", `/gallery.html#${new URLSearchParams({ component: source })}`);
   const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => inventory });
   vi.stubGlobal("fetch", fetch);
   render(<Gallery />);
-  await screen.findByRole("heading", { name: "Telegram · Channel setup" });
+  await screen.findByRole("heading", { name: "Discord · Channel setup" });
   const preview = within(screen.getByRole("region", { name: "Component preview" }));
   const token = preview.getByLabelText("Bot token", { selector: "input" });
   expect(token).toHaveAttribute("type", "password");
@@ -224,35 +218,6 @@ it("renders a registered channel's real secret fields and enable action without 
   await userEvent.type(token, "gallery-example-token");
   await userEvent.click(preview.getByRole("switch", { name: "Enable channel" }));
   expect(preview.getByRole("switch", { name: "Enable channel" })).toBeChecked();
-  await userEvent.click(preview.getByRole("button", { name: "Advanced" }));
-  expect(preview.getByRole("group", { name: "Connection mode" })).toBeVisible();
-  expect(preview.getByRole("radio", { name: "Long polling" })).toBeChecked();
-  expect(fetch).toHaveBeenCalledTimes(1);
-  expect(fetch.mock.calls[0][0]).toBe("/__nanobot_components");
-});
-
-it("previews QQ QR states and retries without connecting to the portal", async () => {
-  const source = "nanobot/channels/qq/webui/index.tsx";
-  window.history.replaceState({}, "", `/gallery.html#${new URLSearchParams({ component: source })}`);
-  const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => inventory });
-  vi.stubGlobal("fetch", fetch);
-  render(<Gallery />);
-  await screen.findByRole("heading", { name: "QQConnectFlowView · QQ QR connection" });
-  const preview = within(screen.getByRole("region", { name: "Component preview" }));
-  expect(await preview.findByRole("img", { name: "QQ binding QR code" })).toBeVisible();
-  await userEvent.click(preview.getByRole("button", { name: "Cancel" }));
-  expect(preview.queryByRole("img", { name: "QQ binding QR code" })).not.toBeInTheDocument();
-  await userEvent.click(preview.getByRole("button", { name: "Bind QQ bot" }));
-  expect(await preview.findByRole("img", { name: "QQ binding QR code" })).toBeVisible();
-  await userEvent.click(preview.getByRole("combobox", { name: "QQ connection state" }));
-  await userEvent.click(screen.getByRole("option", { name: "succeeded" }));
-  expect(preview.getByText("Configured")).toBeVisible();
-  expect(preview.queryByText(/Rebinding may interrupt other apps/)).not.toBeInTheDocument();
-  await userEvent.click(preview.getByRole("button", { name: "Rebind bot" }));
-  const confirmation = screen.getByRole("alertdialog", { name: "Rebind bot" });
-  expect(confirmation).toHaveTextContent("Rebinding may interrupt other apps using this QQ bot. If the App Secret is reset, the old secret becomes invalid and those apps need the new secret.");
-  await userEvent.click(within(confirmation).getByRole("button", { name: "Cancel" }));
-  expect(preview.getByText("Configured")).toBeVisible();
   expect(fetch).toHaveBeenCalledTimes(1);
   expect(fetch.mock.calls[0][0]).toBe("/__nanobot_components");
 });

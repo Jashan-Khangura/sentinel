@@ -32,15 +32,15 @@ def test_stages_only_matching_pypi_distributions(approved_release):
     assert all(path.read_bytes() == (source / path.name).read_bytes() for path in output.iterdir())
 
 
-@pytest.mark.parametrize("failure", ["changed", "missing_archive", "wrong_tag", "invalid_signature", "preview"])
+@pytest.mark.parametrize("failure", ["changed", "missing_artifact", "wrong_tag", "invalid_signature", "preview"])
 def test_refuses_unapproved_or_incomplete_release(approved_release, monkeypatch, failure):
     source, output = approved_release
     version, commit = "1.2.3", "b" * 40
-    archive = next(source.glob("nanobot-tui-*.zip"))
+    archive = source / "nanobot_ai-1.2.3.tar.gz"
     if failure == "changed":
         data = archive.read_bytes()
         archive.write_bytes(b"x" * len(data))
-    elif failure == "missing_archive":
+    elif failure == "missing_artifact":
         archive.unlink()
     elif failure == "wrong_tag":
         commit = "c" * 40

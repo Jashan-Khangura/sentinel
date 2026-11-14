@@ -78,11 +78,11 @@ app = typer.Typer(
     context_settings={"help_option_names": ["-h", "--help"]},
     help=f"{__logo__} nanobot - Personal AI Assistant",
     epilog=(
-        "Run `nanobot` without a subcommand to start the terminal agent. "
-        "Use `nanobot agent --help` for agent options."
+        "Run `nanobot webui` to open the browser assistant. "
+        "Use `nanobot -m MESSAGE` for a one-shot terminal request."
     ),
     invoke_without_command=True,
-    no_args_is_help=False,
+    no_args_is_help=True,
 )
 
 console = Console()
@@ -128,10 +128,6 @@ def main(
         desktop_exit = dispatch_bare_desktop_target(cast(list[str], raw_args))
         if desktop_exit is not None:
             raise typer.Exit(desktop_exit)
-    if command is None:
-        from nanobot.cli.entry import _run_agent
-
-        _run_agent([], prog_name="nanobot")
 
 
 @app.command(

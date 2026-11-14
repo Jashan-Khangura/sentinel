@@ -111,10 +111,8 @@ Instead of storing secrets directly in `config.json`, you can use `${VAR_NAME}` 
 ```json
 {
   "channels": {
-    "telegram": { "token": "${TELEGRAM_TOKEN}" },
-    "email": {
-      "imapPassword": "${IMAP_PASSWORD}",
-      "smtpPassword": "${SMTP_PASSWORD}"
+    "discord": {
+      "token": "${DISCORD_TOKEN}"
     }
   },
   "providers": {
@@ -180,7 +178,7 @@ ExecStart=...
 
 ```bash
 # /home/youruser/nanobot_secrets.env (mode 600, owned by youruser)
-TELEGRAM_TOKEN=your-token-here
+DISCORD_TOKEN=your-token-here
 IMAP_PASSWORD=your-password-here
 ```
 
@@ -196,7 +194,7 @@ docker run --rm --env-file=./nanobot.env \
 
 ```bash
 # .envrc (auto-loaded by direnv)
-export TELEGRAM_TOKEN=your-token-here
+export DISCORD_TOKEN=your-token-here
 export ANTHROPIC_API_KEY=...
 ```
 
@@ -240,7 +238,7 @@ These variables are process-level switches. Set them in the same terminal, servi
 | `NANOBOT_SKIP_WEBUI_BUILD` | unset | Set to `1` to skip bundling the WebUI during package builds. |
 | `NANOBOT_FORCE_WEBUI_BUILD` | unset | Set to `1` to rebuild the bundled WebUI even when `nanobot/web/dist/index.html` already exists. |
 | `NANOBOT_EXTRAS` | unset | Docker build argument containing comma-separated Python extras such as `bedrock`. |
-| `NANOBOT_CHANNELS` | `whatsapp` | Docker build argument containing comma-separated channels whose manifest dependencies are preinstalled. |
+| `NANOBOT_CHANNELS` | `discord` | Docker build argument containing comma-separated channels whose manifest dependencies are preinstalled. |
 | `NANOBOT_API_URL` | `http://127.0.0.1:8765` | Gateway target for the Vite WebUI dev server proxy. |
 
 Internal variables such as `NANOBOT_RESTART_*` and `NANOBOT_PATH_*` are set by Sentinel itself and are not a supported user configuration surface.
@@ -853,10 +851,10 @@ nanobot provider login github-copilot
 nanobot agent -m "Hello!"
 
 # Target a specific workspace/config locally
-nanobot agent -c ~/.nanobot-telegram/config.json -m "Hello!"
+nanobot agent -c ~/.nanobot-discord/config.json -m "Hello!"
 
 # One-off workspace override on top of that config
-nanobot agent -c ~/.nanobot-telegram/config.json -w /tmp/nanobot-telegram-test -m "Hello!"
+nanobot agent -c ~/.nanobot-discord/config.json -w /tmp/nanobot-discord-test -m "Hello!"
 ```
 
 > Docker users: use `docker run -it` for interactive OAuth login.
@@ -1694,7 +1692,7 @@ Global settings apply to all channels and have no graphical controls. Configure 
     "sendProgress": true,
     "sendToolHints": true,
     "sendMaxRetries": 3,
-    "telegram": {
+    "discord": {
       "enabled": false
     }
   }
@@ -1707,8 +1705,8 @@ Global settings apply to all channels and have no graphical controls. Configure 
 |---------|---------|-------------|
 | `sendProgress` | `true` | Stream agent's text progress to the channel |
 | `sendToolHints` | `true` | Stream tool-call hints (e.g. `read_file("…")`) |
-| `showCompactionNotices` | `false` | Post automatic context-compaction lifecycle notices in built-in chat channels. Each channel can override this global default. Does not hide manual `/compact` feedback or WebUI/TUI structured events. |
-| `showReasoning` | `true` | Allow channels to surface model reasoning/thinking content (DeepSeek-R1 `reasoning_content`, Anthropic `thinking_blocks`, inline `<think>` tags). Reasoning flows as a dedicated stream with `_reasoning_delta` / `_reasoning_end` markers — channels override `send_reasoning_delta` / `send_reasoning_end` to render in-place updates. Even with `true`, channels without those overrides stay no-op silently. Currently surfaced on CLI and WebSocket/WebUI (italic shimmer header, auto-collapses after the stream ends); Telegram / Slack / Discord / Feishu / WeChat / Matrix / Mattermost keep the base no-op until their bubble UI is adapted. Independent of `sendProgress`. |
+| `showCompactionNotices` | `false` | Post automatic context-compaction lifecycle notices in Discord. The channel can override this global default. Does not hide manual `/compact` feedback or WebUI structured events. |
+| `showReasoning` | `true` | Allow compatible channel adapters to surface model reasoning/thinking content (provider-specific reasoning blocks). Reasoning flows as a dedicated stream with `_reasoning_delta` / `_reasoning_end` markers. The WebUI renders this stream separately from answer text. Independent of `sendProgress`. |
 | `sendMaxRetries` | `3` | Max delivery attempts per outbound message, including the initial send (0-10 configured, minimum 1 actual attempt) |
 
 Non-image attachments are included in the user message as local path references, without injecting their contents into the model prompt. When file tools are enabled, the agent can inspect supported text, PDF, DOCX, XLSX, and PPTX files on demand with `read_file`, or pass the original path to another tool when exact file bytes are required. The deprecated `channels.extractDocumentText` setting is accepted for compatibility but ignored. Normal tool workspace and media access rules still apply to attachment paths.
@@ -1722,7 +1720,7 @@ Non-image attachments are included in the user message as local path references,
   "channels": {
     "sendProgress": true,
     "sendToolHints": true,
-    "telegram": {
+    "discord": {
       "enabled": true,
       "sendProgress": false,
       "sendToolHints": false
@@ -1735,26 +1733,24 @@ Non-image attachments are included in the user message as local path references,
 }
 ```
 
-Automatic context-compaction notices are quiet by default in the built-in chat channels, including WeCom, Telegram and Discord. Compaction still runs, and WebUI/TUI structured status and history remain available. Manual `/compact` keeps its start and outcome feedback, including failure or cancellation. `sendProgress` remains independent of this policy.
+Automatic context-compaction notices are quiet by default in Discord. Compaction still runs, and WebUI structured status and history remain available. Manual `/compact` keeps its start and outcome feedback, including failure or cancellation. `sendProgress` remains independent of this policy.
 
-Set `channels.showCompactionNotices: true` in `config.json` to enable automatic notices globally ("Compressing context…" / "Context compacted.", including failure and cancellation outcomes). A channel's explicit `true` or `false` overrides the global default; an omitted or `null` value inherits it. Like the global progress settings, this global option is configured in `config.json`. QQ's existing WebUI advanced setting also supports **Default** to inherit the global value; saving unrelated settings preserves inheritance. Restart the gateway after editing `config.json`.
+Set `channels.showCompactionNotices: true` in `config.json` to enable automatic notices globally ("Compressing context…" / "Context compacted.", including failure and cancellation outcomes). A channel's explicit `true` or `false` overrides the global default; an omitted or `null` value inherits it. Like the global progress settings, this global option is configured in `config.json`. Restart the gateway after editing `config.json`.
 
-For example, enable notices globally but keep WeCom quiet:
+For example, enable notices globally but keep Discord quiet:
 
 ```json
 {
   "channels": {
     "showCompactionNotices": true,
-    "wecom": {
+    "discord": {
       "showCompactionNotices": false
     }
   }
 }
 ```
 
-Existing QQ `showCompactionNotices: true` or `false` settings remain explicit overrides. QQ's C2C/group message API has no edit or recall endpoint, so enabled notices land as separate permanent messages. This setting controls only automatic chat notices, not compaction execution, saved history, structured WebUI/TUI status, or manual command feedback. Third-party channel plugins must implement the same rendering policy to honor this option.
-
-Telegram `richMessages` defaults to `false`. Enable it only to opt in to Bot API 10.1 `sendRichMessage` rendering; leave it disabled for Telegram Web clients that show unsupported-message errors for rich messages.
+This setting controls only automatic chat notices, not compaction execution, saved history, structured WebUI status, or manual command feedback. Third-party channel plugins must implement the same rendering policy to honor this option.
 
 ### Retry Behavior
 
@@ -1768,7 +1764,7 @@ When message delivery fails, Sentinel retries. `channels.sendMaxRetries` default
 - **Permanent failures**: Invalid tokens, revoked access, or banned channels will exhaust the retry budget and fail cleanly
 
 > [!NOTE]
-> Some channels make additional retries for specific errors, so the total number of delivery attempts can exceed `channels.sendMaxRetries`. Telegram, for example, also retries timeouts and flood-control errors.
+> A channel adapter may make additional retries for specific errors, so the total number of delivery attempts can exceed `channels.sendMaxRetries`.
 >
 > If a channel is completely unreachable, Sentinel cannot notify the user through that same channel. Watch logs for `Failed to send to {channel} after N attempts` to spot persistent delivery failures.
 
@@ -2335,7 +2331,7 @@ For API keys, tokens, and other secrets, see [Environment Variables for Secrets]
 | `tools.exec.sandboxRwBinds` | `[]` | Extra absolute paths to expose read-write inside the exec sandbox, for trusted tool caches or scratch directories. Use sparingly: paths listed here are intentionally writable by shell commands inside the sandbox. Paths equal to or containing the active workspace are ignored. |
 | `tools.webuiAllowRemotePackageInstall` | `false` | When `false`, the WebUI can install missing optional packages only from a browser opened on the same machine as Sentinel. Set to `true` only when a trusted remote admin is allowed to install Python packages into this Sentinel environment. |
 | `tools.ssrfWhitelist` | `[]` | CIDR ranges exempted from the shared SSRF guard used by web fetches and HTTP/SSE MCP connections. Prefer exact host CIDRs such as `192.168.1.50/32`; broad ranges increase SSRF exposure. |
-| `channels.*.allowFrom` | omitted | For channels using the common sender allowlist, omit to require pairing, set `["*"]` to allow everyone, or list specific user IDs. Slack and Mattermost instead use `dm.policy` / `dm.allowFrom` for DMs and default to open DMs; review their group policy separately. See [Pairing](#pairing). |
+| `channels.*.allowFrom` | omitted | For Discord, omit to require pairing, set `["*"]` to allow everyone, or list specific user IDs. See [Pairing](#pairing). |
 
 Each new user request includes the current project and file-access restriction in model-only context. This uses the same policy resolver as the tools, including restrictions from a configured exec sandbox. It does not grant access or change OS permissions. The context is stored with that request, not rewritten in earlier messages. New requests refresh it after a project switch or context compaction. It is hidden from the chat view. This adds a small amount of input text per user request. Tool continuations and transient retries reuse the stored context; they do not add another copy. Access-mode changes do not rewrite the system prompt, tool definitions, or previous messages. Changing the project or compacting history can change the prompt prefix. Cache hits still depend on the provider.
 
@@ -2386,11 +2382,11 @@ NAS and other custom packages can provide their own launcher, but a file in an a
 
 ## Pairing
 
-Pairing lets users get access to the bot through a simple code exchange — no config editing required. This works for both new users and existing users connecting from a new channel (e.g. someone already approved on Telegram now setting up Discord).
+Pairing lets Discord users get access to the bot through a simple code exchange — no config editing required.
 
 ### How it works
 
-1. A user sends a DM to the bot on a pairing-capable channel where they aren't yet approved. This includes Telegram, Discord, WeChat, and channels such as Slack or Mattermost when their DM policy is set to `allowlist`.
+1. A user sends a DM to the Discord bot before they are approved.
 2. The bot replies with a pairing code (like `ABCD-EFGH`) and tells them to forward it to you.
 3. You approve the code:
 
@@ -2400,11 +2396,11 @@ Pairing lets users get access to the bot through a simple code exchange — no c
 
 4. The user can now chat with the bot normally.
 
-Pairing codes are issued only in **DMs**. Channels using the common sender allowlist, such as Telegram and Discord, also reject unapproved group senders unless a configured allowlist already permits them. Slack and Mattermost authorize groups independently of DM approval: `groupPolicy: "mention"` allows channel members to invoke the bot by mentioning it. Use `groupPolicy: "allowlist"` with an empty `groupAllowFrom` for DM-only access, or list only the intended channel IDs. Approval of one DM user does not restrict those groups to that user.
+Pairing codes are issued only in **DMs**. Discord rejects unapproved group senders unless a configured allowlist already permits them. Keep `groupPolicy` set to `"mention"` and use `allowChannels` to restrict the server channels where the bot can operate.
 
 ### Pairing-only mode
 
-For channels using the common sender allowlist, such as Telegram and Discord, omitting `allowFrom` requires approval and lets an unapproved user request a pairing code by DM. Slack and Mattermost are exceptions: their DMs default to open access, as described below. For Telegram, you can omit `allowFrom` and manage access through pairing:
+Omitting `allowFrom` requires approval and lets an unapproved user request a pairing code by DM:
 
 <details>
 <summary>Manual configuration</summary>
@@ -2412,26 +2408,8 @@ For channels using the common sender allowlist, such as Telegram and Discord, om
 ```json
 {
   "channels": {
-    "telegram": {
+    "discord": {
       "enabled": true
-    }
-  }
-}
-```
-
-</details>
-
-Slack and Mattermost DMs are open by default. To use pairing there, set the channel's `dm.policy` to `"allowlist"` and leave `dm.allowFrom` empty until you approve users:
-
-<details>
-<summary>Manual configuration</summary>
-
-```json
-{
-  "channels": {
-    "slack": {
-      "enabled": true,
-      "dm": { "policy": "allowlist" }
     }
   }
 }
@@ -2447,7 +2425,7 @@ If you prefer to allow everyone without approval:
 ```json
 {
   "channels": {
-    "telegram": {
+    "discord": {
       "enabled": true,
       "allowFrom": ["*"]
     }

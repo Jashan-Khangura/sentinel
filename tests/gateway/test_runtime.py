@@ -557,7 +557,7 @@ def test_client_lease_reader_keeps_snapshot_during_replacement(tmp_path, monkeyp
     from nanobot.utils import atomic_file
 
     runtime = GatewayRuntime(paths=_paths(tmp_path))
-    client = GatewayClientLease(runtime, kind="tui", token="client")
+    client = GatewayClientLease(runtime, kind="webui", token="client")
     client.acquire()
     previous = client._read_state()
     current = {**previous, "auto_stop": True}
@@ -587,14 +587,14 @@ def test_last_interactive_client_stops_an_on_demand_gateway(tmp_path, monkeypatc
         return SimpleNamespace(ok=True, message="gateway_stopped")
 
     monkeypatch.setattr(runtime, "_stop", stop)
-    tui = GatewayClientLease(runtime, kind="tui", pid=os.getpid(), token="tui")
+    first = GatewayClientLease(runtime, kind="webui", pid=os.getpid(), token="first")
     webui = GatewayClientLease(runtime, kind="webui", pid=os.getpid(), token="webui")
 
-    tui.acquire()
-    tui.mark_ephemeral()
+    first.acquire()
+    first.mark_ephemeral()
     webui.acquire()
 
-    assert tui.release() is False
+    assert first.release() is False
     assert stopped == []
     assert webui.release() is True
     assert stopped == [20]
@@ -610,7 +610,7 @@ def test_last_client_can_leave_shutdown_to_the_gateway_monitor(tmp_path, monkeyp
         "_stop",
         lambda **_kwargs: pytest.fail("deferred release must not stop synchronously"),
     )
-    client = GatewayClientLease(runtime, kind="tui", pid=os.getpid(), token="tui")
+    client = GatewayClientLease(runtime, kind="webui", pid=os.getpid(), token="webui")
     client.acquire()
     client.mark_ephemeral()
 
@@ -639,7 +639,7 @@ def test_last_client_shutdown_preserves_a_replacement_lease(tmp_path, monkeypatc
         )
 
     monkeypatch.setattr(runtime, "_stop", stop)
-    original = GatewayClientLease(runtime, kind="tui", token="original")
+    original = GatewayClientLease(runtime, kind="webui", token="original")
     replacement = GatewayClientLease(runtime, kind="webui", token="replacement")
     original.acquire()
     original.mark_ephemeral()
@@ -674,7 +674,7 @@ def test_explicit_stop_clears_leases_before_accepting_a_replacement(
     finish_stop = threading.Event()
     replacement_acquired = threading.Event()
 
-    stale = GatewayClientLease(runtime, kind="tui", token="stale")
+    stale = GatewayClientLease(runtime, kind="webui", token="stale")
     replacement = GatewayClientLease(runtime, kind="webui", token="replacement")
     stale.acquire()
     stale.mark_ephemeral()
@@ -727,7 +727,7 @@ def test_on_demand_lifetime_is_recorded_before_the_gateway_spawns(tmp_path, monk
     )
     monkeypatch.setattr(runtime, "_is_pid_running", lambda _pid: True)
     monkeypatch.setattr(runtime, "_process_identity", lambda _pid: 12345)
-    client = GatewayClientLease(runtime, kind="tui", token="client")
+    client = GatewayClientLease(runtime, kind="webui", token="client")
     client.acquire()
 
     result = client.ensure_on_demand_gateway(GatewayStartOptions(port=18790))
@@ -777,7 +777,7 @@ def test_failed_last_client_shutdown_remains_retryable(tmp_path, monkeypatch):
         "_stop",
         lambda *, timeout_s: SimpleNamespace(ok=False, message="gateway_stop_timeout"),
     )
-    client = GatewayClientLease(runtime, kind="tui", pid=os.getpid())
+    client = GatewayClientLease(runtime, kind="webui", pid=os.getpid())
     client.acquire()
     client.mark_ephemeral()
 
@@ -794,7 +794,7 @@ def test_lease_queries_filter_a_reused_client_pid_without_writing(
     identity = "same-pid:first-process"
     monkeypatch.setattr(runtime, "_is_pid_running", lambda _pid: True)
     monkeypatch.setattr(runtime, "_process_identity", lambda _pid: identity)
-    client = GatewayClientLease(runtime, kind="tui", pid=12345, token="client")
+    client = GatewayClientLease(runtime, kind="webui", pid=12345, token="client")
 
     client.acquire()
     if auto_stop:
@@ -842,7 +842,7 @@ def test_darwin_lease_keeps_old_readers_compatible_and_detects_pid_reuse(
     identity = "darwin:42:1786992348:123456"
     monkeypatch.setattr(runtime, "_is_pid_running", lambda _pid: True)
     monkeypatch.setattr(runtime, "_process_identity", lambda _pid: identity)
-    client = GatewayClientLease(runtime, kind="tui", pid=12345, token="client")
+    client = GatewayClientLease(runtime, kind="webui", pid=12345, token="client")
 
     client.acquire()
     client.mark_ephemeral()
@@ -864,7 +864,7 @@ def test_lease_snapshot_keeps_a_client_when_identity_probe_is_unavailable(
     identity: str | None = "created-at"
     monkeypatch.setattr(runtime, "_is_pid_running", lambda _pid: True)
     monkeypatch.setattr(runtime, "_process_identity", lambda _pid: identity)
-    client = GatewayClientLease(runtime, kind="tui", pid=12345, token="client")
+    client = GatewayClientLease(runtime, kind="webui", pid=12345, token="client")
 
     client.acquire()
     client.mark_ephemeral()
@@ -882,7 +882,7 @@ def test_client_monitor_persists_only_lease_changes(tmp_path, monkeypatch, auto_
     live_pids = {12345, 12346}
     monkeypatch.setattr(runtime, "_is_pid_running", lambda pid: pid in live_pids)
     monkeypatch.setattr(runtime, "_process_identity", lambda pid: pid)
-    first = GatewayClientLease(runtime, kind="tui", pid=12345, token="first")
+    first = GatewayClientLease(runtime, kind="webui", pid=12345, token="first")
     second = GatewayClientLease(runtime, kind="webui", pid=12346, token="second")
     first.acquire()
     second.acquire()
@@ -1110,7 +1110,7 @@ def test_windows_lease_prunes_a_reused_pid_by_creation_time(tmp_path, monkeypatc
         "nanobot.process_runtime._windows_process_identity",
         lambda _pid: identity,
     )
-    client = GatewayClientLease(runtime, kind="tui", pid=12345, token="client")
+    client = GatewayClientLease(runtime, kind="webui", pid=12345, token="client")
 
     client.acquire()
     client.mark_ephemeral()

@@ -472,11 +472,8 @@ def fetch_release(version, manifest_hash, cache, dry_run):
                "win32-x64": "win_amd64"}
     expected = {f"nanobot_ai-{version}-py3-none-{tag}.whl" for tag in targets.values()}
     expected.add(f"nanobot_ai-{version}.tar.gz")
-    for target in targets:
-        name = "nanobot-tui-" + target + (".exe" if target == "win32-x64" else "") + ".zip"
-        expected.update((name, name + ".sha256"))
     artifacts = manifest["artifacts"]
-    if (not isinstance(artifacts, list) or len(artifacts) != 16
+    if (not isinstance(artifacts, list) or len(artifacts) != 6
             or any(not isinstance(item, dict) or set(item) != {"filename", "size", "sha256"}
                    or not isinstance(item["filename"], str) or type(item["size"]) is not int
                    or not 0 < item["size"] <= 2 * 1024**3
@@ -528,7 +525,7 @@ else:
     path = Path(sys.argv[1]).absolute()
 match = re.fullmatch(r"nanobot_ai-(\d+\.\d+\.\d+(?:\.dev\d+|\.post\d+)?)-py3-none-(macosx_13_0_(?:arm64|x86_64)|manylinux_2_17_(?:aarch64|x86_64)|win_amd64)\.whl", path.name)
 if not match or path.is_symlink() or not path.is_file() or not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
-    raise SystemExit("Expected a saved native nanobot wheel and its published SHA-256")
+    raise SystemExit("Expected a saved nanobot wheel and its published SHA-256")
 with path.open("rb") as stream:
     if hashlib.file_digest(stream, "sha256").hexdigest() != expected_hash:
         raise SystemExit("Wheel SHA-256 mismatch; no package manager was started")

@@ -14,24 +14,13 @@ You can ask Sentinel to guide your next task using the built-in `nanobot-documen
 | Run a sustained goal | [Long-running AI agent](./long-running-ai-agent.md) |
 | Add long-term memory | [AI agent memory](./ai-agent-memory.md) |
 
-## Connect a Chat App
+## Connect Discord
 
-Use **Channels** in the WebUI for guided setup. These guides explain the account, bot, token, permission, and test-message steps on each platform.
+Use **Channels** in the WebUI for guided setup, or follow the guide for manual configuration.
 
 | Goal | Guide |
 |---|---|
-| Connect chat apps | [Chat app AI agent](./chat-app-ai-agent.md) |
-| Connect Telegram | [Telegram AI agent](./telegram-ai-agent.md) |
 | Connect Discord | [Discord AI agent](./discord-ai-agent.md) |
-| Connect Slack | [Slack AI agent](./slack-ai-agent.md) |
-| Connect Feishu | [Feishu AI agent](./feishu-ai-agent.md) |
-| Connect WhatsApp | [WhatsApp AI agent](./whatsapp-ai-agent.md) |
-| Connect through WhatsApp Agent Platform | [WhatsApp Agent Platform](./whatsapp-agent-platform.md) |
-| Connect WeChat | [WeChat AI agent](./wechat-ai-agent.md) |
-| Connect QQ | [QQ AI agent](./qq-ai-agent.md) |
-| Connect Email | [Email AI agent](./email-ai-agent.md) |
-| Connect Mattermost | [Mattermost AI agent](./mattermost-ai-agent.md) |
-| Connect Linear | [Native Linear agent](./linear-agent.md) |
 
 ## Integrate from Code
 

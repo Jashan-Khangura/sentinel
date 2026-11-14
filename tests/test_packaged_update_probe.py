@@ -9,7 +9,7 @@ import sys
 import textwrap
 from argparse import Namespace
 from pathlib import Path
-from zipfile import ZipFile, ZipInfo
+from zipfile import ZipFile
 
 import httpx
 import pytest
@@ -84,7 +84,7 @@ def test_display_migration_allows_an_empty_owner_without_masking_context_loss(tm
 
 def wheel(tmp_path, version, *, worker=b"# worker\n", fallback=b"# fallback\n",
           handoff=b"async def _prepare(directory):\n    try:\n        pass\n    except Exception:\n        raise\n"):
-    path = tmp_path / f"nanobot_ai-{version}-py3-none-manylinux_2_17_x86_64.whl"
+    path = tmp_path / f"nanobot_ai-{version}-py3-none-any.whl"
     with ZipFile(path, "w") as archive:
         archive.writestr(f"nanobot_ai-{version}.dist-info/METADATA", f"Name: nanobot-ai\nVersion: {version}\n")
         archive.writestr("nanobot/__init__.py", "# unchanged application\n")
@@ -92,9 +92,7 @@ def wheel(tmp_path, version, *, worker=b"# worker\n", fallback=b"# fallback\n",
         archive.writestr("nanobot/update_worker.py", worker)
         archive.writestr("nanobot/update_handoff.py", handoff)
         archive.writestr("nanobot/update_fallback.py", fallback)
-        binary = ZipInfo("nanobot/tui/bin/nanobot-tui")
-        binary.external_attr = 0o100755 << 16
-        archive.writestr(binary, b"native executable fixture")
+        archive.writestr("nanobot/_build_commit.txt", "a" * 40 + "\n")
     return path
 
 
@@ -106,7 +104,6 @@ def test_baseline_instrumentation_does_not_modify_the_target(tmp_path):
     with ZipFile(source) as original, ZipFile(baseline) as copied:
         assert copied.read("nanobot/__init__.py") == original.read("nanobot/__init__.py")
         assert "nanobot/_acceptance_feed.py" not in original.namelist()
-        assert copied.getinfo("nanobot/tui/bin/nanobot-tui").external_attr == original.getinfo("nanobot/tui/bin/nanobot-tui").external_attr
         records = csv.reader(io.StringIO(copied.read("nanobot_ai-0.3.5.dist-info/RECORD").decode()))
         for name, checksum, size in records:
             if checksum:
@@ -132,7 +129,7 @@ def test_local_feed_uses_the_real_resolver_and_exact_target_hash(tmp_path, monke
 
     async def check():
         async with ReleaseFeed(tmp_path / "feed", transport=httpx.MockTransport(respond),
-                               supported_tags=[Tag("py3", "none", "manylinux_2_17_x86_64")]) as feed:
+                               supported_tags=[Tag("py3", "none", "any")]) as feed:
             target = await feed.latest(channel)
             assert target.version == version
             assert target.artifact.sha256 == hashlib.sha256(candidate.read_bytes()).hexdigest()
@@ -544,11 +541,7 @@ def test_abnormal_lane_cleanup_does_not_depend_on_the_mutable_venv(tmp_path, mon
 
 @pytest.mark.parametrize("workers", [1, 2])
 def test_serial_dispatch_reports_one_lane_and_checks_original_hash_at_the_end(tmp_path, monkeypatch, workers):
-    import scripts.build_tui_wheels
-
     target = wheel(tmp_path, "0.3.6")
-    monkeypatch.setattr(scripts.build_tui_wheels, "wheel_files", lambda *args, **kwargs: (
-        {"nanobot/_build_commit.txt": b"a" * 40}, None, None))
     args = Namespace(wheel=target, baseline_wheel=None, output=tmp_path / "serial", commit="a" * 40,
                      workers=workers, dock=False, scenario=["upgrade"])
     calls = []

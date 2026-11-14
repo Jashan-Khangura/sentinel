@@ -27,7 +27,7 @@
         "policy": "Há versão fixada, arquivo de trava, origem fixa, restrição ou opções desconhecidas. Inspecione e siga o fluxo original, preservando extras e pacotes injetados. Não remova as restrições.",
         "extras": "Este ambiente pip não registra os extras originais. Inspecione o pacote e reutilize o comando pip original com --upgrade e a versão desejada, preservando extras e opções do índice. Não fornecemos um comando adivinhado.",
         "manager": "Não foi possível confirmar o gerenciador ou a estrutura do ambiente. Use a conta e as configurações originais para acessar o caminho acima; não use outro pip ou nanobot do PATH.",
-        "source": "Inspecione o repositório, preserve alterações locais e confirme a branch ou revisão. Siga o fluxo do repositório para atualizar código, dependências e builds WebUI/TUI. Não substitua uma instalação editável por PyPI.",
+        "source": "Inspecione o repositório, preserve alterações locais e confirme a branch ou revisão. Siga o fluxo do repositório para atualizar código, dependências e WebUI. Não substitua uma instalação editável por PyPI.",
         "container": "No projeto Compose ou painel original, escolha a tag ou digest, baixe ou construa a imagem e recrie apenas o serviço nanobot com os mesmos volumes, segredos e portas. Faça backup dos volumes; nunca os exclua.",
         "system": "Use o gerenciador de pacotes do sistema ou contate o administrador. Não use sudo pip nem contorne o gerenciamento do Python do sistema.",
         "review": "A instalação ou revisão mudou. Feche e verifique novamente antes de copiar um comando."

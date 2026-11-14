@@ -13,7 +13,7 @@ Use the graphical setup steps first when the WebUI exposes the setting. Expand *
 | Terminals, Python, or API keys are new to you | [Beginner walkthrough](./start-without-technical-background.md) | The browser can send `Hello!` and receive a reply |
 | You are comfortable running commands | [Install and Quick Start](./quick-start.md) | `nanobot status` is healthy and the WebUI or CLI can get one reply |
 | Sentinel will not start | [Troubleshooting: Installation Problems](./troubleshooting.md#installation-problems) | Sentinel starts, or you know what to fix next |
-| The browser or chat app opens, but Sentinel does not reply | [Troubleshooting: Provider and Model Problems](./troubleshooting.md#provider-and-model-problems), [WebUI Problems](./troubleshooting.md#webui-problems), or [Chat App Problems](./troubleshooting.md#chat-app-problems) | You have a working reply or a specific next step |
+| The browser or Discord opens, but Sentinel does not reply | [Troubleshooting: Provider and Model Problems](./troubleshooting.md#provider-and-model-problems), [WebUI Problems](./troubleshooting.md#webui-problems), or [Chat App Problems](./troubleshooting.md#chat-app-problems) | You have a working reply or a specific next step |
 
 The recommended first-run path is:
 
@@ -22,7 +22,7 @@ The recommended first-run path is:
 3. Configure a provider and model in **Settings → Models**.
 4. Send `Hello!` before configuring anything else.
 
-Most people do not need to edit JSON for the first run. The WebUI handles the initial provider, model, and local browser settings. SSH, headless, existing-config, and older-release installs retain `nanobot onboard --wizard` as a terminal fallback. After the WebUI opens, use **Settings** for models and built-in capabilities, **Channels** for chat apps, and **Apps** for Agent Plugins, CLI Apps, and MCP integrations.
+Most people do not need to edit JSON for the first run. The WebUI handles the initial provider, model, and local browser settings. SSH, headless, existing-config, and older-release installs retain `nanobot onboard --wizard` as a terminal fallback. After the WebUI opens, use **Settings** for models and built-in capabilities, **Channels** for Discord, and **Apps** for Agent Plugins, CLI Apps, and MCP integrations.
 
 ## After the First Reply
 
@@ -37,7 +37,7 @@ Pick the row that matches what you want to accomplish next:
 | Goal | Guide |
 |---|---|
 | Learn the browser workbench | [WebUI](./webui.md) |
-| Connect Telegram, Discord, Slack, Feishu, WeChat, Email, or another chat app | [Chat Apps](./chat-apps.md) |
+| Connect Discord | [Discord setup](./guides/discord-ai-agent.md) |
 | Choose a hosted, OAuth, company, or local model | [Provider Cookbook](./provider-cookbook.md) |
 | Add model fallbacks | [Configure Model Fallback](./guides/configure-model-fallback.md) |
 | Enable web search | [Configure Web Search](./guides/configure-web-search.md) |
@@ -72,7 +72,7 @@ Use reference pages to look up an exact option after you know what you are tryin
 |---|---|
 | Every configuration field and default | [Configuration](./configuration.md) |
 | Provider and model behavior | [Providers and Models](./providers.md) |
-| Chat channel prerequisites and manual JSON | [Chat Apps](./chat-apps.md) |
+| Discord channel prerequisites and manual JSON | [Discord setup](./guides/discord-ai-agent.md) |
 | WebSocket authentication and wire protocol | [WebSocket](./websocket.md) |
 | Python SDK classes, events, sessions, and hooks | [Python SDK](./python-sdk.md) |
 | Runtime self-inspection and tuning | [My Tool](./my-tool.md) |

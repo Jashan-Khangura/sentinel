@@ -141,30 +141,17 @@ describe("channelSetup", () => {
 
   it("loads setup copy from the channel-owned locale", () => {
     const setup = channelSetup(feature({
-      name: "dingtalk",
-      display_name: "DingTalk",
+      name: "discord",
+      display_name: "Discord",
       webui: "webui/index.ts",
     }), "zh-CN");
 
-    expect(setup.docsLabel).toBe("打开钉钉配置指南");
-    expect(setup.officialLabel).toBe("打开钉钉开发者后台");
+    expect(setup.docsLabel).toBe("打开 Discord 配置指南");
+    expect(setup.officialLabel).toBe("打开 Discord 开发者后台");
     expect(setup.fields).toContainEqual(expect.objectContaining({
-      key: "channels.dingtalk.allowFrom",
+      key: "channels.discord.allowFrom",
       label: "允许用户",
     }));
-  });
-
-  it("loads custom setup section labels from the channel-owned locale", () => {
-    const setup = channelSetup(feature({
-      name: "email",
-      display_name: "Email",
-      webui: "webui/index.ts",
-    }));
-
-    expect(setup.sectionLabels).toEqual({
-      receiving: "Receiving mail",
-      sending: "Sending mail",
-    });
   });
 });
 

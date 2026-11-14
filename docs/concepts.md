@@ -12,12 +12,12 @@ Sentinel has one small core loop and several ways to enter it:
 |---|---|
 | Agent | Takes an incoming message, chooses the conversation and model, uses enabled tools when needed, and prepares a reply |
 | Providers | LLM backends such as OpenRouter, Anthropic, OpenAI, Bedrock, Ollama, vLLM, and other OpenAI-compatible APIs |
-| Channels | User-facing transports such as CLI, WebUI/WebSocket, Telegram, Discord, Slack, Feishu, WeChat, Email, Mattermost, and others |
+| Channels | User-facing transports such as WebUI/WebSocket and Discord |
 | Tools | Capabilities the model may call, including files, shell, web search/fetch, MCP, cron, image generation, and subagents |
 | Memory | Workspace files and session history that keep useful context across turns |
 | Gateway | Long-running process that connects enabled channels and serves the health endpoint |
 
-To test Sentinel once, run `nanobot agent -m "Hello!"`; it prints a reply in your terminal. To keep Sentinel running, start `nanobot gateway`. It receives messages from enabled chat apps or the WebUI and sends replies back to the same conversation.
+To test Sentinel once, run `nanobot agent -m "Hello!"`; it prints a reply in your terminal. To keep Sentinel running, start `nanobot gateway`. It receives messages from Discord or the WebUI and sends replies back to the same conversation.
 
 ## Config vs Workspace
 
@@ -67,7 +67,7 @@ A normal turn follows this flow:
 3. Your selected AI service generates a response. If it needs an enabled tool, Sentinel runs that tool and returns the result to the model.
 4. Sentinel saves the reply in the conversation and shows or sends it through the same app or channel.
 
-That flow is the same whether the message starts in the CLI, WebUI, Telegram, Discord, or another channel.
+That flow is the same whether the message starts in the CLI, WebUI, or Discord.
 
 ## CLI, Gateway, API, and WebUI
 

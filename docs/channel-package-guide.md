@@ -231,13 +231,13 @@ Do not add a runtime module directly under `nanobot/channels/`, create a paralle
 
 ### Manifest and Runtime Boundary
 
-`manifest.py` exports a typed `ChannelPlugin` whose `runtime` target is an absolute import target, such as `nanobot.channels.telegram.runtime:TelegramChannel`; using `f"{__package__}.runtime:TelegramChannel"` keeps it package-owned without repeating the package path. Discovery imports the manifest before it knows whether the optional platform dependency is installed, so `manifest.py` must not import `runtime.py` or any platform SDK. Import runtime symbols from `runtime.py` explicitly; `__init__.py` remains an inert package marker.
+`manifest.py` exports a typed `ChannelPlugin` whose `runtime` target is an absolute import target, such as `nanobot.channels.discord.runtime:DiscordChannel`; using `f"{__package__}.runtime:DiscordChannel"` keeps it package-owned without repeating the package path. Discovery imports the manifest before it knows whether the optional platform dependency is installed, so `manifest.py` must not import `runtime.py` or any platform SDK. Import runtime symbols from `runtime.py` explicitly; `__init__.py` remains an inert package marker.
 
 The manifest owns the channel name, display name, setup contract, management adapter, optional connector target, dependency requirements, capabilities, default activation, and optional WebUI entry path. The management adapter alone decides whether a channel is single-instance or multi-instance.
 
 Interactive browser setup uses one small connector contract. Set `connector=f"{__package__}.connect:MyConnectStore"`; the target is loaded only when `/api/settings/channels/<name>/connect/{start,poll,cancel}` is called. The store exposes one async `handle(action, query)` method and keeps platform-specific parsing, sessions, and errors inside the channel package. The shared settings router only authenticates, dispatches, and applies a successful connection.
 
-Use the small constructors in [`nanobot/channels/_manifest.py`](../nanobot/channels/_manifest.py) for declarative field and requirement definitions. Use [`nanobot/channels/dingtalk/manifest.py`](../nanobot/channels/dingtalk/manifest.py) as a compact single-instance example and [`nanobot/channels/feishu/`](../nanobot/channels/feishu/) as a multi-instance example.
+Use the small constructors in [`nanobot/channels/_manifest.py`](../nanobot/channels/_manifest.py) for declarative field and requirement definitions. The built-in [`Discord manifest`](../nanobot/channels/discord/manifest.py) is an example of a channel package; choose a single-instance or multi-instance management adapter according to the extension's requirements.
 
 ### Package-owned WebUI
 
@@ -285,7 +285,7 @@ Create `webui/locales/<locale>.json` for every locale code declared in [`webui/s
 }
 ```
 
-Field messages are keyed by the config path after `channels.<channel>.`, with remaining punctuation converted to underscores. For example, `channels.signal.dm.allowFrom` maps to `setup.fields.dm_allowFrom`. Action and preset messages use the IDs declared in the TypeScript contribution.
+Field messages are keyed by the config path after `channels.<channel>.`, with remaining punctuation converted to underscores. For example, `channels.discord.allowFrom` maps to `setup.fields.allowFrom`. Action and preset messages use the IDs declared in the TypeScript contribution.
 
 Custom channel components should read dynamic copy with `channelTranslator(t, "<channel>")`; keep the English fallback adjacent to the call so an incomplete translation still renders useful text. Aliases reuse the owning channel's locale namespace rather than duplicating translations.
 
@@ -388,7 +388,7 @@ async def login(self, force: bool = False) -> bool:
     # 4. Save token on success
 ```
 
-Channels that don't need interactive login (e.g. Telegram with bot token, Discord with bot token) inherit the default `login()` which just returns `True`.
+Channels that don't need interactive login, such as Discord with a bot token, inherit the default `login()` which just returns `True`.
 
 Users trigger interactive login via:
 ```bash
@@ -816,6 +816,6 @@ $ nanobot plugins list
 
   Name       Type      Enabled
   discord    channel   no
-  telegram   channel   yes
+  discord    channel   no
   webhook    channel   yes
 ```

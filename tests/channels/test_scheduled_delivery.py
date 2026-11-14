@@ -26,7 +26,6 @@ from nanobot.channels.base import BaseChannel
 from nanobot.channels.manager import ChannelManager
 from nanobot.channels.outbox import DeliveryOutbox
 from nanobot.channels.registry import load_channel_plugin
-from nanobot.channels.whatsapp.runtime import WhatsAppChannel
 from nanobot.config.schema import Config
 from nanobot.cron.bound_runner import run_bound_cron_job
 from nanobot.cron.service import CronService
@@ -51,9 +50,9 @@ def make_manager(tmp_path, sessions=None):
     return manager
 
 
-def message(channel="whatsapp", content="result", generation=None):
+def message(channel="discord", content="result", generation=None):
     return OutboundMessage(channel, "synthetic", content,
-                           delivery=DeliveryRequest("run-1", "whatsapp:synthetic", generation))
+                           delivery=DeliveryRequest("run-1", f"{channel}:synthetic", generation))
 
 
 async def drain(manager):
@@ -85,7 +84,7 @@ async def test_scheduled_recovery_remains_busy_while_waiting_for_a_send_slot(tmp
     manager = make_manager(tmp_path)
     channel = MagicMock(spec=BaseChannel, send=AsyncMock(), stop=AsyncMock())
     channel.has_pending_delivery = False
-    manager.channels["whatsapp"] = channel
+    manager.channels["discord"] = channel
     manager._outbox.record(message())
     manager._outbound_slots = asyncio.Semaphore(0)
     queued = asyncio.Event()
@@ -115,7 +114,7 @@ async def test_scheduled_recovery_remains_busy_while_waiting_for_a_send_slot(tmp
 
 
 @pytest.mark.parametrize("legacy_message,one_shot,origin", [
-    (False, False, "whatsapp"), (True, False, "whatsapp"), (True, True, "whatsapp"),
+    (False, False, "discord"), (True, False, "discord"), (True, True, "discord"),
     (True, False, "websocket"),
 ])
 async def test_cron_offline_restart_and_reconnect_do_not_rerun_model(tmp_path, monkeypatch, legacy_message, one_shot, origin):
@@ -138,7 +137,7 @@ async def test_cron_offline_restart_and_reconnect_do_not_rerun_model(tmp_path, m
         if legacy_message and len(calls) == 1:
             arguments = {"content": "Diagnostic result"}
             if origin == "websocket":
-                arguments.update(channel="whatsapp", chat_id="synthetic")
+                arguments.update(channel="discord", chat_id="synthetic")
             return LLMResponse(content=None, tool_calls=[ToolCallRequest(
                 id="send", name="message", arguments=arguments,
             )], finish_reason="tool_calls")
@@ -149,14 +148,18 @@ async def test_cron_offline_restart_and_reconnect_do_not_rerun_model(tmp_path, m
                       model="offline-test-model", session_manager=sessions,
                       tools_config=manager.config.tools, cron_service=cron)
     cron.on_job = partial(run_bound_cron_job, agent=agent, cron=cron)
-    channel = WhatsAppChannel({}, bus)
+    channel = MagicMock(spec=BaseChannel)
+    channel._connected = False
+
+    async def send_when_connected(_message):
+        if not channel._connected:
+            raise ChannelNotReadyError("channel is not connected")
+
+    channel.send = AsyncMock(side_effect=send_when_connected)
     channel.send_progress = False
     channel.send_tool_hints = False
-    channel._client = MagicMock(send_message=AsyncMock())
-    channel._connected = False
-    monkeypatch.setattr(channel, "_build_jid", lambda value: value)
-    monkeypatch.setattr(channel, "stop", AsyncMock())
-    manager.channels["whatsapp"] = channel
+    channel.stop = AsyncMock()
+    manager.channels["discord"] = channel
     if origin == "websocket":
         manager.channels["websocket"] = MagicMock(spec=BaseChannel, send=AsyncMock(), stop=AsyncMock())
     manager._dispatch_task = asyncio.create_task(manager._dispatch_outbound())
@@ -165,18 +168,18 @@ async def test_cron_offline_restart_and_reconnect_do_not_rerun_model(tmp_path, m
         with request_context(RequestContext("websocket", "source", session_key="websocket:source",
                                             metadata={"webui": True, "_wants_stream": True})):
             await CronTool(cron).execute(action="add", name="Reminder", every_seconds=86400,
-                message="Use message to send Diagnostic result to whatsapp:synthetic")
+                message="Use message to send Diagnostic result to discord:synthetic")
         job = cron.list_jobs()[0]
         assert job.payload.session_key == "websocket:source"
         assert job.payload.origin_channel == "websocket"
     else:
         job = cron.add_job("Reminder", schedule,
                            "Use message to send Diagnostic result" if legacy_message else "Return Diagnostic result",
-                           deliver=True, channel="whatsapp", to="synthetic", delete_after_run=one_shot,
+                           deliver=True, channel="discord", to="synthetic", delete_after_run=one_shot,
                            channel_meta={"_wants_stream": True})
 
-    def whatsapp_rows():
-        return [row for row in rows(manager._outbox) if row["channel"] == "whatsapp"]
+    def discord_rows():
+        return [row for row in rows(manager._outbox) if row["channel"] == "discord"]
 
     try:
         assert await asyncio.wait_for(cron.run_job(job.id), 15)
@@ -185,30 +188,31 @@ async def test_cron_offline_restart_and_reconnect_do_not_rerun_model(tmp_path, m
             assert cron.list_jobs() == []
         else:
             assert cron.list_jobs()[0].state.last_status == "ok"
-        assert len(whatsapp_rows()) == 1
-        assert whatsapp_rows()[0]["status"] == "pending"
+        assert len(discord_rows()) == 1
+        assert discord_rows()[0]["status"] == "pending"
         if origin == "websocket":
-            saved = json.loads(whatsapp_rows()[0]["payload"])
+            saved = json.loads(discord_rows()[0]["payload"])
             assert saved["delivery"]["session_key"] == "websocket:source"
             assert saved["metadata"] == {}
-        channel._client.send_message.assert_not_called()
+        channel.send.assert_awaited_once()
         count = len(calls)
         assert count == (2 if legacy_message else 1)
         assert DELIVERY_RUN_META not in json.dumps(calls[0]["messages"])
         assert "Diagnostic result" not in calls[0]["messages"][0]["content"]
         await manager.stop_all()
         manager = make_manager(tmp_path, sessions)
-        manager.channels["whatsapp"] = channel
+        manager.channels["discord"] = channel
         channel._connected = True
         await manager._recover_scheduled()
         await drain(manager)
-        channel._client.send_message.assert_awaited_once_with("synthetic", "Diagnostic result")
-        assert whatsapp_rows()[0]["status"] == "sent"
-        assert whatsapp_rows()[0]["payload"] is None
+        assert channel.send.await_count == 2
+        assert channel.send.await_args.args[0].content == "Diagnostic result"
+        assert discord_rows()[0]["status"] == "sent"
+        assert discord_rows()[0]["payload"] is None
         again = make_manager(tmp_path, sessions)
-        again.channels["whatsapp"] = channel
+        again.channels["discord"] = channel
         await again._recover_scheduled()
-        assert channel._client.send_message.await_count == 1
+        assert channel.send.await_count == 2
         assert len(calls) == count
         old_jobs = CronService(cron.store_path).list_jobs()
         assert old_jobs == [] if one_shot else old_jobs[0].payload.message == job.payload.message
@@ -240,11 +244,11 @@ async def test_legacy_broadcast_has_independent_targets_and_no_foreign_thread_me
     manager = make_manager(tmp_path)
     tool = MessageTool(send_callback=manager.bus.publish_outbound, workspace=tmp_path)
     with request_context(RequestContext(
-        "telegram", "source", session_key="telegram:source", metadata={
+        "discord", "source", session_key="discord:source", metadata={
             DELIVERY_RUN_META: "run-1", "message_thread_id": 42, "message_id": "parent",
         },
     )):
-        for channel in ("slack", "whatsapp"):
+        for channel in ("discord", "websocket"):
             assert str(await tool.execute(content="result", channel=channel, chat_id="target")).startswith("Message queued")
     messages = [manager.bus.outbound.get_nowait() for _ in range(2)]
     assert all(msg.metadata == {} for msg in messages)
@@ -254,7 +258,7 @@ async def test_legacy_broadcast_has_independent_targets_and_no_foreign_thread_me
     await manager._send_scheduled(healthy, messages[0])
     await manager._send_scheduled(offline, messages[1])
     assert [row["status"] for row in rows(manager._outbox)] == ["sent", "pending"]
-    assert [msg.channel for msg in manager._outbox.ready()] == ["whatsapp"]
+    assert [msg.channel for msg in manager._outbox.ready()] == ["websocket"]
 
 
 async def test_queue_acceptance_survives_restart_but_inflight_is_unknown(tmp_path):
@@ -275,7 +279,7 @@ async def test_queue_bounds_expiry_and_untracked_events(tmp_path, monkeypatch):
     event = message()
     event.event = ProgressEvent(tool_hint=True)
     await manager.bus.publish_outbound(event)
-    await manager.bus.publish_outbound(OutboundMessage("slack", "synthetic", "ordinary reply"))
+    await manager.bus.publish_outbound(OutboundMessage("websocket", "synthetic", "ordinary reply"))
     assert not manager._outbox.path.exists()
     first = message()
     await manager.bus.publish_outbound(first)
@@ -296,7 +300,7 @@ async def test_pending_result_cannot_send_after_source_session_is_replaced(tmp_p
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     sessions = SessionManager(workspace, sessions_root=tmp_path / "sessions")
-    session = await sessions.state.get("whatsapp:synthetic")
+    session = await sessions.state.get("discord:synthetic")
     manager = make_manager(tmp_path, sessions)
     channel = MagicMock(spec=BaseChannel, send=AsyncMock())
     msg = message(generation=session.generation)
@@ -324,7 +328,7 @@ async def test_recovery_keeps_destination_order_and_does_not_block_other_chats(t
     await manager._send_scheduled(channel, second)
     await manager._send_scheduled(channel, other)
     assert [call.args[0].content for call in channel.send.await_args_list] == ["first", "other"]
-    manager.channels["whatsapp"] = channel
+    manager.channels["discord"] = channel
     await manager._recover_scheduled()
     await drain(manager)
     assert [call.args[0].content for call in channel.send.await_args_list] == ["first", "other", "first", "second"]
@@ -348,7 +352,7 @@ async def test_recovery_rechecks_attachment_workspace_boundary(tmp_path):
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     sessions = SessionManager(workspace, sessions_root=tmp_path / "sessions")
-    session = await sessions.state.get("whatsapp:synthetic")
+    session = await sessions.state.get("discord:synthetic")
     manager = make_manager(tmp_path, sessions)
     manager.config.agents.defaults.workspace = str(workspace)
     manager.config.tools.restrict_to_workspace = True
@@ -383,9 +387,7 @@ async def test_recovery_rechecks_attachment_workspace_boundary(tmp_path):
 
 
 @pytest.mark.parametrize("name", [
-    "whatsapp", "telegram", "discord", "slack", "matrix", "mattermost", "feishu",
-    "qq", "wecom", "weixin", "napcat", "msteams", "linear", "signal", "dingtalk",
-    "mochat", "email",
+    "discord",
 ])
 async def test_unavailable_adapter_does_not_report_success(name, monkeypatch):
     cls = load_channel_plugin(name).load_channel_class()

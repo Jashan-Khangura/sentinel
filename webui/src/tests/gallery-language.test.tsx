@@ -63,20 +63,6 @@ it("translates a visible inventory failure without retrying or losing search inp
   expect(fetch).toHaveBeenCalledTimes(1);
 });
 
-it("keeps the visible assistant identity when translating existing interaction feedback", async () => {
-  const source = "nanobot/channels/feishu/webui/FeishuAssistantsPanelView.tsx";
-  window.history.replaceState({}, "", `/gallery.html#${new URLSearchParams({ component: source })}`);
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => inventory }));
-  render(<Gallery />);
-  const preview = within(await screen.findByRole("region", { name: "Component preview" }));
-  await userEvent.click(preview.getByRole("switch", { name: "Support assistant assistant" }));
-  expect(await preview.findByText("Support assistant: off")).toBeVisible();
-
-  await chooseChinese();
-
-  expect(preview.getByText("Support assistant：已关闭")).toBeVisible();
-});
-
 it("quietly keeps Preview selection and translates update feedback without executing an update", async () => {
   const source = "webui/src/components/settings/overview/VersionCheckRowView.tsx";
   window.history.replaceState({}, "", `/gallery.html#${new URLSearchParams({ component: source })}`);

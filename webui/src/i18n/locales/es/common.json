@@ -27,7 +27,7 @@
         "policy": "Hay una versión fijada, archivo de bloqueo, origen fijo, restricción u opciones desconocidas. Inspecciona y sigue el proceso original, conservando extras y paquetes inyectados. No elimines las restricciones.",
         "extras": "Este entorno pip no registra los extras originales. Inspecciona el paquete y reutiliza el comando pip original con --upgrade y la versión deseada, manteniendo extras y opciones del índice. No se ofrece un comando supuesto.",
         "manager": "No se pudo confirmar el gestor o la estructura del entorno. Usa la cuenta y configuración originales para apuntar a la ruta indicada; no uses otro pip o nanobot del PATH.",
-        "source": "Inspecciona el repositorio, conserva los cambios locales y confirma la rama o revisión. Sigue el flujo del repositorio para actualizar código, dependencias y builds WebUI/TUI. No sustituyas una instalación editable por PyPI.",
+        "source": "Inspecciona el repositorio, conserva los cambios locales y confirma la rama o revisión. Sigue el flujo del repositorio para actualizar código, dependencias y WebUI. No sustituyas una instalación editable por PyPI.",
         "container": "En el proyecto Compose o panel original, elige la etiqueta o digest, descarga o construye la imagen y recrea solo el servicio nanobot con sus montajes, secretos y puertos existentes. Respalda los volúmenes; nunca los elimines.",
         "system": "Usa el gestor de paquetes del sistema o contacta al administrador. No uses sudo pip ni eludas la gestión del Python del sistema.",
         "review": "La instalación o revisión cambió. Cierra y vuelve a comprobar antes de copiar un comando."

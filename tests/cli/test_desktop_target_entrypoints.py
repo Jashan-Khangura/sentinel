@@ -7,7 +7,7 @@ from typer.testing import CliRunner
 from nanobot.cli import commands, desktop_target, entry
 
 
-@pytest.mark.parametrize("args", [[], ["webui"]])
+@pytest.mark.parametrize("args", [["webui"]])
 def test_retained_launcher_attaches_without_starting_python(monkeypatch, args):
     seen = []
 
@@ -26,13 +26,13 @@ def test_retained_launcher_attaches_without_starting_python(monkeypatch, args):
     assert seen == [args]
 
 
-@pytest.mark.parametrize("args", [[], ["webui"]])
+@pytest.mark.parametrize("args", [["webui"]])
 @pytest.mark.parametrize("launcher", ["modern", "retained"])
 def test_launcher_picker_ctrl_c_does_not_start_python(monkeypatch, args, launcher):
     class Target:
         def request(self, operation):
             assert operation == "status", "cancelled picker must not request attachment"
-            return desktop_target.DesktopReply("ready", frozenset({"webui", "tui"}))
+            return desktop_target.DesktopReply("ready", frozenset({"webui"}))
 
     monkeypatch.setattr(desktop_target, "_interactive_shell", lambda: True)
     monkeypatch.setattr(desktop_target, "discover_desktop_target", Target)

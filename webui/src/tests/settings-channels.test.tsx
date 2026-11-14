@@ -52,9 +52,7 @@ function channelSetupContract(
             defaultValue: "mention",
           }),
         ],
-        requirements: [
-          { alternatives: [["channels.discord.token"]] },
-        ],
+        requirements: [{ alternatives: [["channels.discord.token"]] }],
       };
     case "email":
       return {
@@ -92,14 +90,8 @@ function channelSetupContract(
         fields: [
           field("appId", "string", { required: true }),
           field("appSecret", "secret", { required: true }),
-          field("domain", "enum", {
-            choices: ["feishu", "lark"],
-            defaultValue: "feishu",
-          }),
-          field("groupPolicy", "enum", {
-            choices: ["mention", "open"],
-            defaultValue: "mention",
-          }),
+          field("domain", "enum", { choices: ["feishu", "lark"], defaultValue: "feishu" }),
+          field("groupPolicy", "enum", { choices: ["mention", "open"], defaultValue: "mention" }),
           field("allowFrom", "list"),
           field("topicIsolation", "bool"),
         ],
@@ -117,20 +109,12 @@ function channelSetupContract(
           field("password", "secret"),
           field("accessToken", "secret"),
           field("deviceId"),
-          field("groupPolicy", "enum", {
-            choices: ["allowlist", "mention", "open"],
-            defaultValue: "open",
-          }),
+          field("groupPolicy", "enum", { choices: ["allowlist", "mention", "open"], defaultValue: "open" }),
         ],
         requirements: [
           { alternatives: [["channels.matrix.homeserver"]] },
           { alternatives: [["channels.matrix.userId"]] },
-          {
-            alternatives: [
-              ["channels.matrix.password"],
-              ["channels.matrix.accessToken", "channels.matrix.deviceId"],
-            ],
-          },
+          { alternatives: [["channels.matrix.password"], ["channels.matrix.accessToken", "channels.matrix.deviceId"]] },
         ],
       };
     case "qq":
@@ -140,10 +124,7 @@ function channelSetupContract(
           field("appId", "string", { required: true }),
           field("secret", "secret", { required: true }),
           field("allowFrom", "list"),
-          field("msgFormat", "enum", {
-            choices: ["markdown", "plain"],
-            defaultValue: "plain",
-          }),
+          field("msgFormat", "enum", { choices: ["markdown", "plain"], defaultValue: "plain" }),
           field("ackMessage", "string", { defaultValue: "⏳ Processing..." }),
           field("showCompactionNotices", "bool", { choices: ["true", "false"] }),
           field("mediaDir", "string"),
@@ -156,44 +137,6 @@ function channelSetupContract(
         ],
       };
   }
-}
-
-function uninstalledConnectFeature(
-  name: "feishu" | "weixin" | "whatsapp",
-): NanobotFeatureInfo {
-  const displayNames = {
-    feishu: "Feishu",
-    weixin: "WeChat",
-    whatsapp: "WhatsApp",
-  };
-  return {
-    name,
-    display_name: displayNames[name],
-    webui: "webui/index.tsx",
-    type: "channel",
-    enabled: false,
-    configured: false,
-    installed: false,
-    requires_dependencies: true,
-    ready: false,
-    runtime_status: "stopped",
-    status: "not_enabled",
-    install_supported: true,
-    requires_restart: true,
-    ...(name === "feishu"
-      ? {
-          instances: [{
-            id: "default",
-            name: "nanobot",
-            enabled: false,
-            runtime_status: "stopped",
-            configured: false,
-            config_values: {},
-            configured_fields: [],
-          }],
-        }
-      : {}),
-  };
 }
 
 function catalogFeature(
@@ -213,6 +156,38 @@ function catalogFeature(
     status: enabled ? "enabled" : "not_enabled",
     install_supported: true,
     requires_restart: false,
+  };
+}
+
+function uninstalledConnectFeature(
+  name: "feishu" | "weixin" | "whatsapp",
+): NanobotFeatureInfo {
+  const displayNames = { feishu: "Feishu", weixin: "WeChat", whatsapp: "WhatsApp" };
+  return {
+    name,
+    display_name: displayNames[name],
+    webui: "webui/index.tsx",
+    type: "channel",
+    enabled: false,
+    configured: false,
+    installed: false,
+    requires_dependencies: true,
+    ready: false,
+    runtime_status: "stopped",
+    status: "not_enabled",
+    install_supported: true,
+    requires_restart: true,
+    ...(name === "feishu" ? {
+      instances: [{
+        id: "default",
+        name: "nanobot",
+        enabled: false,
+        runtime_status: "stopped",
+        configured: false,
+        config_values: {},
+        configured_fields: [],
+      }],
+    } : {}),
   };
 }
 
@@ -279,15 +254,6 @@ describe("Settings channels", () => {
   });
 
   it.each([
-    {
-      name: "telegram",
-      displayName: "Telegram",
-      identity: "nano_test0001bot",
-      checks: [
-        { id: "token_format", label: "Token format", status: "pass" },
-        { id: "get_me", label: "Bot identity", status: "pass" },
-      ],
-    },
     {
       name: "discord",
       displayName: "Discord",

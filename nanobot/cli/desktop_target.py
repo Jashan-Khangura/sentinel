@@ -32,7 +32,6 @@ class DesktopReply:
     state: str
     capabilities: frozenset[str]
     webui_url: str | None = None
-    tui: dict[str, object] | None = None
 
 
 @dataclass(frozen=True)
@@ -43,7 +42,7 @@ class DesktopTarget:
     transport: Literal["unix", "namedPipe"]
     address: str
 
-    def request(self, operation: Literal["status", "webui", "tui"]) -> DesktopReply:
+    def request(self, operation: Literal["status", "webui"]) -> DesktopReply:
         """Perform one bounded, side-effect-free Desktop rendezvous request."""
         payload = json.dumps(
             {
@@ -90,7 +89,7 @@ def dispatch_bare_desktop_target(args: list[str]) -> int | None:
     exit with that status.
     """
     if (
-        args not in ([], ["webui"])
+        args != ["webui"]
         or os.environ.get("_NANOBOT_COMPLETE")
         or not _interactive_shell()
     ):
@@ -123,18 +122,9 @@ def dispatch_bare_desktop_target(args: list[str]) -> int | None:
         _print_python_target()
         return None
 
-    # Revalidate after selection. A status probe is never treated as authority
-    # to reuse stale bootstrap data or silently choose another backend.
-    if not args:
-        from nanobot.cli.desktop_tui import launch_desktop_tui
-
-        try:
-            return launch_desktop_tui(target)
-        except DesktopTargetError:
-            _print_desktop_error("Desktop terminal attachment is unavailable or incompatible. Update Desktop and nanobot, then try again.")
-            return 3
-
     try:
+        # Revalidate after selection. A status probe is never treated as authority
+        # to reuse stale bootstrap data or silently choose another backend.
         reply = target.request("webui")
         url = _desktop_webui_url(reply)
     except DesktopTargetError:
@@ -346,12 +336,8 @@ def _parse_reply(raw: bytes, *, expected_instance_id: str) -> DesktopReply:
     if any(not isinstance(item, str) for item in capability_values):
         raise DesktopTargetError("Desktop reply is incompatible")
     capabilities = frozenset(cast(list[str], capability_values))
-    tui = fields.get("tui")
-    if tui is not None and not isinstance(tui, dict):
-        raise DesktopTargetError("Desktop terminal connection is incompatible")
     return DesktopReply(
         state=state_value, capabilities=capabilities, webui_url=webui_url,
-        tui=cast(dict[str, object] | None, tui),
     )
 
 

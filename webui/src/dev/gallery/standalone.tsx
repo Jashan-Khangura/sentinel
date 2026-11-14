@@ -7,11 +7,6 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { SidebarResizeHandle } from "@/components/SidebarResizeHandle";
 import { HostSwitcherView } from "@/components/remote/HostSwitcherView";
 import type { HostPicker } from "@/components/remote/host-navigation";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LinearAvatar } from "../../../../nanobot/channels/linear/webui/LinearAvatar";
-import { LinearHelpContent } from "../../../../nanobot/channels/linear/webui/LinearHelpContent";
-import { LinearSecretField } from "../../../../nanobot/channels/linear/webui/LinearSecretField";
 import { WebSocketIcon } from "../../../../nanobot/channels/websocket/webui/WebSocketIcon";
 import type { ChatSummary, ConnectionStatus } from "@/lib/types";
 import { Sample, StatePicker, type ComponentExample } from "./example";
@@ -101,30 +96,7 @@ function SidebarResizePreview() {
 }
 
 function ChannelMarksPreview() {
-  const { t } = useGalleryTranslation();
-  const [name, setName] = useState<"Nanobot" | "研发">("Nanobot");
-  return <><StatePicker label={t("previews.channelMarks.name")} value={name} options={["Nanobot", "研发"]} onChange={setName} />
-    <div className="flex items-start gap-8"><Sample label={t("previews.channelMarks.member")}><LinearAvatar name={name} /></Sample>
-      <Sample label={t("previews.channelMarks.workspace")}><LinearAvatar name={name} workspace /></Sample><Sample label="WebSocket"><WebSocketIcon /></Sample></div></>;
-}
-
-function SecretPreview() {
-  const { t } = useTranslation();
-  const { t: g } = useGalleryTranslation();
-  const [mode, setMode] = useState<"new" | "saved" | "disabled" | "error">("new");
-  const [configured, setConfigured] = useState(false);
-  return <><StatePicker label={g("previews.secret.state")} value={mode} options={["new", "saved", "disabled", "error"]}
-    onChange={(next) => { setMode(next); setConfigured(next === "saved"); }} />
-    <LinearSecretField field={{ key: "api_key", label: t("settings.byok.apiKey"), secret: true }} configured={configured} disabled={mode === "disabled"}
-      onSave={async () => { if (mode === "error") throw new Error(g("previews.secret.error")); setConfigured(true); }} />
-    <p className="mt-4 text-xs text-muted-foreground">{g("previews.secret.hint")}</p></>;
-}
-
-function ChannelHelpPreview() {
-  const { t } = useTranslation();
-  const { t: g } = useGalleryTranslation();
-  return <DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline">{g("previews.channelHelp.open")}</Button></DropdownMenuTrigger>
-    <DropdownMenuContent><LinearHelpContent /><DropdownMenuItem>{t("common.close")}</DropdownMenuItem></DropdownMenuContent></DropdownMenu>;
+  return <Sample label="WebSocket"><WebSocketIcon /></Sample>;
 }
 
 const components = "webui/src/components/";
@@ -144,13 +116,7 @@ export const standaloneExamples: ComponentExample[] = [
   { title: "previews.language.title", files: [`${components}LanguageSwitcher.tsx`], Preview: LanguageSwitcher,
     description: "previews.language.description", options: "previews.language.options",
     code: '<LanguageSwitcher />' },
-  { title: "previews.channelMarks.title", files: ["nanobot/channels/linear/webui/LinearAvatar.tsx", "nanobot/channels/websocket/webui/WebSocketIcon.tsx"], Preview: ChannelMarksPreview,
+  { title: "previews.channelMarks.title", files: ["nanobot/channels/websocket/webui/WebSocketIcon.tsx"], Preview: ChannelMarksPreview,
     description: "previews.channelMarks.description", options: "previews.channelMarks.options",
-    code: '<LinearAvatar name="Nanobot" />\n<LinearAvatar name="Nanobot" workspace />\n<WebSocketIcon />' },
-  { title: "previews.secret.title", files: ["nanobot/channels/linear/webui/LinearSecretField.tsx"], Preview: SecretPreview,
-    description: "previews.secret.description", options: "previews.secret.options",
-    code: '<LinearSecretField field={field} configured={configured} disabled={false} onSave={save} />' },
-  { title: "previews.channelHelp.title", files: ["nanobot/channels/linear/webui/LinearHelpContent.tsx"], Preview: ChannelHelpPreview,
-    description: "previews.channelHelp.description", options: "previews.channelHelp.options",
-    code: '<DropdownMenuContent><LinearHelpContent /></DropdownMenuContent>' },
+    code: "<WebSocketIcon />" },
 ];

@@ -21,7 +21,7 @@ Channel = Literal["stable", "preview"]
 Sha256 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 Commit = Annotated[str, Field(pattern=r"^[0-9a-f]{40}$")]
 
-# Minimums verified against BOTH Bun and the embedded OpenTUI library.
+# Platform tags keep installed release selection deterministic across supported systems.
 PLATFORMS = {
     "darwin-arm64": "macosx_13_0_arm64",
     "darwin-x64": "macosx_13_0_x86_64",
@@ -42,13 +42,10 @@ def release_version(value: str) -> str:
 
 
 def release_filenames(version: str) -> set[str]:
-    """The complete upload set, excluding the intermediate universal wheel."""
+    """The complete release upload set."""
     release_version(version)
     names = {f"nanobot_ai-{version}-py3-none-{platform}.whl" for platform in PLATFORMS.values()}
     names.add(f"nanobot_ai-{version}.tar.gz")
-    for target in PLATFORMS:
-        asset = f"nanobot-tui-{target}" + (".exe" if target == "win32-x64" else "")
-        names.update((f"{asset}.zip", f"{asset}.zip.sha256"))
     return names
 
 
@@ -68,7 +65,7 @@ class ReleaseManifest(ReleaseRecord):
     source_commit: Commit
     candidate_commit: Commit
     requires_python: str
-    artifacts: list[ReleaseArtifact] = Field(min_length=16, max_length=16)
+    artifacts: list[ReleaseArtifact] = Field(min_length=6, max_length=6)
 
     _version = field_validator("version")(release_version)
 
@@ -83,7 +80,7 @@ class ReleaseManifest(ReleaseRecord):
     @model_validator(mode="after")
     def complete_artifacts(self) -> Self:
         if {item.filename for item in self.artifacts} != release_filenames(self.version):
-            raise ValueError("Manifest must contain the complete, matching five-platform release")
+            raise ValueError("Manifest must contain the complete, matching Python release")
         return self
 
     def wheel_for(self, *, python_version: str, supported_tags: Iterable[Tag]) -> ReleaseArtifact:
@@ -98,7 +95,7 @@ class ReleaseManifest(ReleaseRecord):
         for tag in supported_tags:
             if tag in wheels:
                 return wheels[tag]
-        raise ValueError("No compatible release wheel; use the documented source/classic path")
+        raise ValueError("No compatible release wheel; use the documented source install path")
 
     def artifact_url(self, artifact: ReleaseArtifact) -> str:
         if artifact not in self.artifacts:

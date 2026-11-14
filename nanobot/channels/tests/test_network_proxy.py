@@ -1,30 +1,17 @@
 from __future__ import annotations
 
 import importlib
-import sys
-from types import SimpleNamespace
-from unittest.mock import AsyncMock
 
 import pytest
 
-from nanobot.bus.queue import MessageBus
 from nanobot.channels.contracts import ChannelValidationContext
 from nanobot.channels.manager import ChannelManager
 from nanobot.channels.registry import load_channel_plugin
-from nanobot.channels.whatsapp.runtime import WhatsAppChannel
 from nanobot.config.network import NetworkConfig
 from nanobot.config.schema import Config
 
 _CHANNEL_VALUES = {
-    "telegram": {"token": "123456:abcdefghijklmnopqrstuvwxyz"},
     "discord": {"token": "discord-token"},
-    "slack": {"appToken": "xapp-test", "botToken": "xoxb-test"},
-    "matrix": {
-        "homeserver": "https://matrix.example",
-        "userId": "@bot:matrix.example",
-        "password": "matrix-password",
-    },
-    "whatsapp": {"enabled": True},
 }
 
 
@@ -50,9 +37,7 @@ def test_setup_refuses_proxy_opt_in_without_shared_address(name, monkeypatch) ->
 @pytest.mark.parametrize(
     ("name", "request_method", "response"),
     [
-        ("telegram", "_get_me", {"ok": True, "result": {"id": 42}}),
         ("discord", "http_get", {"id": "42", "username": "bot"}),
-        ("slack", "http_post", {"ok": True, "user_id": "U42"}),
     ],
 )
 @pytest.mark.parametrize("use_proxy", [True, False, "false"])
@@ -113,31 +98,7 @@ def test_manager_constructs_proxy_capable_builtin_from_descriptor(
     assert channel._proxy == (config.network.proxy if use_proxy else None)
 
 
-@pytest.mark.asyncio
-async def test_manager_keeps_shared_proxy_instance_scoped(monkeypatch) -> None:
-    class ProxySettings:
-        def __init__(self, *, proxy_address: str) -> None:
-            self.proxy_address = proxy_address
-
-    monkeypatch.setitem(sys.modules, "neonize._binder", SimpleNamespace(ProxySettings=ProxySettings))
-    channels = []
-    for address in ("http://127.0.0.1:7890", "http://127.0.0.1:7891"):
-        manager = object.__new__(ChannelManager)
-        manager.config = Config(network=NetworkConfig(proxy=address))
-        manager.bus = MessageBus()
-        channel = manager._build_channel(WhatsAppChannel, {"useProxy": True})
-        assert channel.network is manager.config.network
-        channels.append(channel)
-
-    for channel, address in zip(channels, ("http://127.0.0.1:7890", "http://127.0.0.1:7891")):
-        client = SimpleNamespace(connect=AsyncMock())
-        await channel._connect_client(client)
-        assert client.connect.await_args.args[0].proxy_address == address
-        assert channel.config.model_dump(by_alias=True)["useProxy"] is True
-        assert "proxy" not in channel.config.model_dump(by_alias=True)
-
-
-@pytest.mark.parametrize(("name", "request_method"), [("discord", "http_get"), ("slack", "http_post")])
+@pytest.mark.parametrize(("name", "request_method"), [("discord", "http_get")])
 def test_identity_validation_does_not_expose_shared_proxy_in_errors(name, request_method, monkeypatch) -> None:
     module = importlib.import_module(f"nanobot.channels.{name}.validation")
     network = NetworkConfig(proxy="http://user:pass@127.0.0.1:7890")

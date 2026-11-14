@@ -25,7 +25,7 @@ When a conversation grows large, Sentinel summarizes the conversation covered by
 
 Compaction also runs after a configured period of inactivity, or when you send `/compact`. See [Auto Compact](./configuration.md#auto-compact) for idle timing and how to disable automatic idle compaction.
 
-Automatic compaction does not post lifecycle notices to built-in chat channels by default. This only silences chat messages: compaction still runs, and WebUI/TUI retain structured status and history. Manual `/compact` keeps its start and outcome feedback. Set `channels.showCompactionNotices: true` to enable automatic notices globally, or set `showCompactionNotices` in a channel's configuration to override that default. Omitted or `null` channel overrides inherit the global value; existing explicit QQ overrides are preserved.
+Automatic compaction does not post lifecycle notices to the built-in Discord channel by default. Compaction still runs, and the WebUI retains structured status and history. Manual `/compact` keeps its start and outcome feedback. Set `channels.showCompactionNotices: true` to enable automatic notices globally, or set `showCompactionNotices` in a channel's configuration to override that default.
 
 This file is updated as conversations are summarized. It uses one JSON record per line so Sentinel can track which summaries have already been processed; it is primarily an internal working history, not a permanent archive.
 
@@ -143,7 +143,7 @@ These commands exist for a reason: automatic memory is powerful, but users shoul
 
 ## Save and Check a Preference
 
-In your existing WebUI or TUI chat, send a specific preference, for example:
+In your existing WebUI chat, send a specific preference, for example:
 
 ```text
 For Acme release notes, use concise bullet points and British spelling.

@@ -238,7 +238,7 @@ See [Multi-chat multiplexing](#multi-chat-multiplexing) for the full flow.
 
 ### Chat-request correlation
 
-WebUI sends a `request_id` with every `new_chat`, `new_temporary_chat`, and `fork_chat`; the gateway echoes it on `attached` and expected `error` responses. IDs must match `[A-Za-z0-9._:-]{1,128}`; malformed IDs are rejected before creation. The shared WebSocket API also accepts requests without IDs for callers such as the TUI; those responses have no `request_id`.
+WebUI sends a `request_id` with every `new_chat`, `new_temporary_chat`, and `fork_chat`; the gateway echoes it on `attached` and expected `error` responses. IDs must match `[A-Za-z0-9._:-]{1,128}`; malformed IDs are rejected before creation. Requests without IDs are also accepted, and those responses have no `request_id`.
 
 Clients must correlate tagged responses by ID, not by arrival order or the temporary-chat flag. Ordinary `attach` replies cannot complete a creation request. IDs provide correlation, not deduplication: a sent request that times out has an unknown outcome and must not be automatically replayed. Expired unsent requests must be removed before reconnecting.
 
@@ -246,9 +246,9 @@ A timeout ends the client's pending request, allowing a new user-initiated reque
 
 Support and testing cover same-version WebUI/gateway combinations. Cross-version combinations may work, but a passing protocol check does not guarantee all features work; align versions first when troubleshooting. See [Versions and updating the right machine](guides/remote-instances.md#versions-and-updating-the-right-machine).
 
-### Binary attachments (WebUI and TUI)
+### Binary attachments (WebUI)
 
-The gateway advertises `webui.attachments.binary.v1`. WebUI protocol 1 and the terminal protocol are unchanged. Bundled clients and their gateway use HTTP on the same listener for attachment uploads. After an authorized handshake, `ready` includes an `upload` object with `path: "/api/attachments"` and an opaque `token`. This token is a short-lived capability tied to that live connection, not the one-time handshake token, API token, or client-selected `client_id`.
+The gateway advertises `webui.attachments.binary.v1`. The WebUI client and gateway use HTTP on the same listener for attachment uploads. After an authorized handshake, `ready` includes an `upload` object with `path: "/api/attachments"` and an opaque `token`. This token is a short-lived capability tied to that live connection, not the one-time handshake token, API token, or client-selected `client_id`.
 
 1. `POST` the raw file bytes to the advertised path with `Authorization: Bearer <upload token>`, the file's `Content-Type`, and an exact `Content-Length`. `X-Attachment-Name` may contain a percent-encoded display filename. Compressed request bodies and chunked transfer encoding are rejected.
 2. The response is `201 {"reference": "<opaque reference>"}`. Use it in a small WebSocket envelope, for example:
@@ -261,7 +261,7 @@ The gateway advertises `webui.attachments.binary.v1`. WebUI protocol 1 and the t
 
 The upload path accepts the existing image, document, and video MIME whitelist. Existing file/count/total limits still apply independently of `maxMessageBytes`. Uploads time out after five minutes, or after 30 seconds without receiving more data. Uploads are not resumable, so a retry sends the whole file.
 
-Update WebUI and TUI together with the gateway. Existing messages and attachments remain available without a history migration. Clients must use HTTP uploads; `media.data_url` message uploads are no longer accepted. Local previews and the separate audio transcription protocol are unchanged.
+Update WebUI and gateway together. Existing messages and attachments remain available without a history migration. Clients must use HTTP uploads; `media.data_url` message uploads are no longer accepted. Local previews and the separate audio transcription protocol are unchanged.
 
 Reverse proxies must forward `POST /api/attachments` (including its authorization header) to the gateway and permit the configured file sizes. Same-origin browser uploads include origin cookies for edge authentication; cross-origin uploads do not send cookies. Do not enable public CORS for this capability endpoint.
 

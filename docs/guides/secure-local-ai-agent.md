@@ -46,7 +46,7 @@ Start with workspace restriction:
 
 - Use environment variables for provider keys, bot tokens, and mailbox passwords.
 - Use [separate instances and workspaces](../multiple-instances.md) for data that must not share memory. Project selection inside one instance does not isolate memory. Use separate OS accounts or containers for mutually untrusted users.
-- Prefer [pairing](../configuration.md#pairing) for DM-capable chat apps. Slack and Mattermost DMs default to open access: set `dm.policy` to `"allowlist"` to require approval. Configure group access separately; mention-only controls when the bot responds, not who is trusted.
+- Prefer [pairing](../configuration.md#pairing) for Discord access. Keep group access narrow and use mention-only behavior where appropriate.
 - Bind WebUI and WebSocket listeners to localhost unless remote access is intentional. Share [WebUI access](../webui.md#sharing-access) only with trusted administrators; it has no per-user roles or private topic ownership.
 
 ## Security notes
@@ -55,7 +55,7 @@ Start with workspace restriction:
 - `tools.exec.enable: false` removes shell execution entirely.
 - HTTP web fetch and HTTP MCP use SSRF protections by default. Shell commands and stdio MCP processes are outside this guard. Neither shell sandbox blocks network access; use host or container egress controls for an offline deployment.
 - Adding broad `tools.ssrfWhitelist` ranges increases exposure.
-- On channels using the common sender allowlist, `allowFrom: ["*"]` bypasses pairing and allows every sender. Slack and Mattermost use the DM and group policies described above.
+- On channels using the common sender allowlist, `allowFrom: ["*"]` bypasses pairing and allows every sender.
 
 ## Troubleshooting
 

@@ -448,7 +448,7 @@ async def test_attach_exposes_the_session_canonical_model_preset(bus, tmp_path) 
 
     await channel._dispatch_envelope(
         connection,
-        "tui-client",
+        "webui-client",
         {"type": "attach", "chat_id": "pinned-model"},
     )
 
@@ -1893,7 +1893,7 @@ async def test_new_chat_without_message_does_not_create_session(
 
     await channel._dispatch_envelope(
         conn,
-        "tui-client",
+        "webui-client",
         {
             "type": "new_chat",
             "workspace_scope": {
@@ -1931,7 +1931,7 @@ async def test_failed_first_message_does_not_persist_draft_session(
 
     await channel._dispatch_envelope(
         conn,
-        "tui-client",
+        "webui-client",
         {
             "type": "new_chat",
             "workspace_scope": {
@@ -1946,7 +1946,7 @@ async def test_failed_first_message_does_not_persist_draft_session(
     with pytest.raises(RuntimeError, match="queue unavailable"):
         await channel._dispatch_envelope(
             conn,
-            "tui-client",
+            "webui-client",
             {
                 "type": "message",
                 "chat_id": chat_id,

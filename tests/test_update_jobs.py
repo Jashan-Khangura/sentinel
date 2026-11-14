@@ -158,7 +158,6 @@ def wheel(directory, name, version, *, requires=(), platform="any", broken=False
         if broken:
             files["nanobot/__init__.py"] = b"raise RuntimeError('broken release fixture')\n"
         files["nanobot/web/dist/index.html"] = f"verified UI {version}".encode()
-        files["nanobot/tui/bin/fixture"] = b"fixture, not a native execution claim"
         if restart:
             files["nanobot/update_restart.py"] = _RESTART_PROBE.encode()
             if restart_contract is not None:

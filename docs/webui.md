@@ -2,7 +2,7 @@
 
 <!-- Meta description: Run Sentinel from a browser WebUI with persistent and temporary chats, visible tool activity, workspace controls, Apps, skill discovery, settings, and Automations. -->
 
-The WebUI shares its gateway and saved sessions with the native terminal client and is included with `nanobot-ai`.
+The WebUI is included with `nanobot-ai` and shares its gateway and saved sessions with Discord.
 
 For a visual tour, see the [README feature gallery](../README.md#-webui). This guide follows the current source tree; some features are newer than the published release.
 
@@ -14,7 +14,7 @@ nanobot webui
 
 On a new installation, the launcher asks for confirmation to create the config and workspace, enables the local WebUI, and opens a signed-in browser. Configure a provider and model in **Settings → Models** before sending your first message; see [Configure Your Model](./quick-start.md#2-configure-your-model). The default address is `http://127.0.0.1:8765`, accessible only from the same machine.
 
-Official-installer environments start a persistent gateway by default. Other installations keep it attached to the launchers: closing the last WebUI or TUI launcher stops an on-demand gateway. Use `nanobot webui --detach` to keep it running after the terminal closes, or start it explicitly:
+Official-installer environments start a persistent gateway by default. Other installations keep it attached to the launcher: closing the WebUI stops an on-demand gateway. Use `nanobot webui --detach` to keep it running after the terminal closes, or start it explicitly:
 
 ```bash
 nanobot gateway --background
@@ -62,7 +62,7 @@ The message rail on wide screens and prompt-summary search in the header jump to
 
 The WebUI administers one Sentinel instance. Signed-in users share saved topics and administrative controls; there are no per-user roles or private topic ownership boundaries. The [remote installation restriction](#lan-access) limits package installation, not other administrative access.
 
-Share WebUI access only with people you trust to administer the same agent. To give someone chat access without the administration interface, connect a [chat platform](./chat-apps.md) and configure its access policy. Channel approval still does not create a separate agent or memory store. For separate clients or users whose data must not mix, use [separate instances](./multiple-instances.md).
+Share WebUI access only with people you trust to administer the same agent. To give someone chat access without the administration interface, connect [Discord](./chat-apps.md) and configure its access policy. Channel approval still does not create a separate agent or memory store. For separate clients or users whose data must not mix, use [separate instances](./multiple-instances.md).
 
 ## What It Is For
 
@@ -75,7 +75,7 @@ Share WebUI access only with people you trust to administer the same agent. To g
 | Workspace | Pick the project workspace before asking for file or shell work |
 | Access | Choose the access mode for local capabilities allowed by your gateway configuration |
 | Composer | Send text, images, voice input, slash commands, and `@` mentions for topics, Apps, or MCP presets |
-| Channels | Connect and validate chat platforms, install their optional support, and manage saved channel setup |
+| Channels | Connect and validate Discord, install its optional support, and manage saved channel setup |
 | Apps | Install, test, update, and use local CLI App adapters and MCP presets |
 | Skills | Inspect and manage installed skills, or discover skills from supported marketplaces |
 | Automations | Review, search, run, pause, edit, and delete scheduled and local-trigger agent turns |
@@ -272,7 +272,7 @@ For recurring background checks that should stay quiet unless there is something
 
 The Automations view manages user-created jobs and can run scheduled jobs immediately. Protected system jobs are read-only.
 
-Search accepts plain text and field filters such as `name:backup`, `chat:WeChat`, `schedule:09:30`, `cron:"0 23 * * *"`, `trigger`, and `status:paused`.
+Search accepts plain text and field filters such as `name:backup`, `chat:Discord`, `schedule:09:30`, `cron:"0 23 * * *"`, `trigger`, and `status:paused`.
 
 An automation without a linked topic cannot be enabled or run from the WebUI, because Sentinel would not know where to deliver the scheduled turn. Recreate it from the target topic or channel so the automation has complete context.
 

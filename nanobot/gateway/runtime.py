@@ -527,7 +527,7 @@ class GatewayRuntime(ManagedProcessRuntime[GatewayStartOptions]):
 
 
 class GatewayClientLease:
-    """Reference-count an on-demand gateway shared by local interactive clients."""
+    """Reference-count an on-demand gateway shared by local UI clients."""
 
     def __init__(
         self,

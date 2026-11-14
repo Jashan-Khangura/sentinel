@@ -1,22 +1,26 @@
 """Prepare and verify an exact release candidate without publishing anything.
 
 Preparation creates a separate checkout. Verification writes a manifest only after
-all five wheels, the sdist and licensed TUI archives pass their structural checks.
-Native execution, CI approval and public-download checks remain separate gates.
+the platform wheels and source archive pass their structural checks. CI approval and
+public-download checks remain separate gates.
 """
 
 from __future__ import annotations
 
 import argparse
+import base64
+import csv
 import hashlib
+import io
 import json
 import os
 import re
 import shutil
-import stat
 import subprocess
 import tempfile
+import tarfile
 import tomllib
+import zipfile
 from email.parser import BytesParser
 from fnmatch import fnmatchcase
 from pathlib import Path
@@ -30,7 +34,6 @@ from nanobot.releases import (
     release_filenames,
     release_version,
 )
-from scripts.build_tui_wheels import build_wheel, release_bundle, source_files, wheel_files
 from scripts.release_install_guide import render_install_guide
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -151,6 +154,88 @@ def _candidate_identity(root: Path, source_commit: str) -> tuple[str, str, str]:
     return version, requires_python, candidate_commit
 
 
+def _source_files(payload: bytes) -> dict[str, bytes]:
+    files: dict[str, bytes] = {}
+    with tarfile.open(fileobj=io.BytesIO(payload), mode="r:gz") as archive:
+        for member in archive.getmembers():
+            path = Path(member.name)
+            if path.is_absolute() or ".." in path.parts:
+                raise ValueError("Source archive contains an unsafe path")
+            if member.isdir():
+                continue
+            if not member.isfile() or member.name in files or member.size > 2 * 1024**3:
+                raise ValueError("Source archive contains an invalid or duplicate file")
+            stream = archive.extractfile(member)
+            if stream is None:
+                raise ValueError("Source archive contains an unreadable file")
+            files[member.name] = stream.read(member.size + 1)
+            if len(files[member.name]) != member.size:
+                raise ValueError("Source archive file size does not match its header")
+    return files
+
+
+def _wheel_files(path: Path) -> dict[str, bytes]:
+    files: dict[str, bytes] = {}
+    with zipfile.ZipFile(path) as archive:
+        for info in archive.infolist():
+            name = info.filename
+            entry_path = Path(name)
+            mode = info.external_attr >> 16
+            if (
+                entry_path.is_absolute()
+                or ".." in entry_path.parts
+                or name in files
+                or mode and (mode & 0o170000) == 0o120000
+            ):
+                raise ValueError("Wheel contains an unsafe or duplicate file")
+            if info.is_dir():
+                continue
+            if info.file_size > 2 * 1024**3:
+                raise ValueError("Wheel file exceeds the supported size")
+            files[name] = archive.read(info)
+    return files
+
+
+def _retag_wheel(source: Path, output: Path, *, version: str, platform: str) -> None:
+    dist_info = f"nanobot_ai-{version}.dist-info"
+    wheel_path = f"{dist_info}/WHEEL"
+    record_path = f"{dist_info}/RECORD"
+    with zipfile.ZipFile(source) as archive:
+        infos = archive.infolist()
+        names = {info.filename for info in infos}
+        if len(names) != len(infos) or wheel_path not in names or record_path not in names:
+            raise ValueError("Source wheel has invalid distribution metadata")
+        wheel_text = archive.read(wheel_path).decode("utf-8")
+        wheel_text, changed = re.subn(
+            r"(?m)^Tag: py3-none-any$",
+            f"Tag: py3-none-{platform}",
+            wheel_text,
+        )
+        if changed != 1:
+            raise ValueError("Source wheel must have one universal Python tag")
+        record_rows = list(csv.reader(io.StringIO(archive.read(record_path).decode("utf-8"))))
+        for row in record_rows:
+            if row and row[0] == wheel_path:
+                digest = base64.urlsafe_b64encode(
+                    hashlib.sha256(wheel_text.encode("utf-8")).digest()
+                ).decode("ascii").rstrip("=")
+                row[1] = f"sha256={digest}"
+                row[2] = str(len(wheel_text.encode("utf-8")))
+                break
+        else:
+            raise ValueError("Source wheel RECORD does not cover its WHEEL metadata")
+        record_text = io.StringIO(newline="")
+        csv.writer(record_text, lineterminator="\n").writerows(record_rows)
+        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as result:
+            for info in infos:
+                if info.filename == wheel_path:
+                    result.writestr(info, wheel_text.encode("utf-8"))
+                elif info.filename == record_path:
+                    result.writestr(info, record_text.getvalue().encode("utf-8"))
+                else:
+                    result.writestr(info, archive.read(info))
+
+
 def _source_payload(root: Path, source: dict[str, bytes], prefix: str) -> dict[str, bytes]:
     """Bind shipped application files to the clean candidate, not its commit label."""
     tracked = set(_git(root, "ls-files", "-z", trim=False).split("\0")) - {""}
@@ -188,7 +273,7 @@ def verify_candidate(root: Path, artifacts: Path, *, source_commit: str) -> Rele
         if (artifacts / name).is_symlink() or not (artifacts / name).is_file():
             raise ValueError(f"Release artifact must be a regular file: {name}")
     commit_bytes = (candidate_commit + "\n").encode()
-    source = source_files((artifacts / f"nanobot_ai-{version}.tar.gz").read_bytes())
+    source = _source_files((artifacts / f"nanobot_ai-{version}.tar.gz").read_bytes())
     prefix = f"nanobot_ai-{version}/"
     source_metadata = BytesParser().parsebytes(source[f"{prefix}PKG-INFO"])
     if (source_metadata["Name"], source_metadata["Version"], source_metadata["Requires-Python"]) != (
@@ -204,27 +289,21 @@ def verify_candidate(root: Path, artifacts: Path, *, source_commit: str) -> Rele
     payload = _source_payload(root, source, prefix)
     for target, platform in PLATFORMS.items():
         wheel = artifacts / f"nanobot_ai-{version}-py3-none-{platform}.whl"
-        files, modes, info = wheel_files(wheel, version, platform=platform)
+        files = _wheel_files(wheel)
+        info = f"nanobot_ai-{version}.dist-info"
         package_metadata = BytesParser().parsebytes(files[f"{info}/METADATA"])
         if package_metadata["Requires-Python"] != requires_python:
             raise ValueError("Wheel Python requirement differs from the candidate")
+        wheel_metadata = BytesParser().parsebytes(files[f"{info}/WHEEL"])
+        if wheel_metadata.get_all("Tag") != [f"py3-none-{platform}"]:
+            raise ValueError("Wheel tag metadata differs from its filename")
         if files.get("nanobot/_build_commit.txt") != commit_bytes:
             raise ValueError("Wheel build commit differs from the candidate")
         if not files.get("nanobot/web/dist/index.html"):
             raise ValueError("Wheel is missing its compiled WebUI")
-        application = {name: data for name, data in files.items()
-                       if name.startswith("nanobot/") and not name.startswith("nanobot/tui/bin/")}
+        application = {name: data for name, data in files.items() if name.startswith("nanobot/")}
         if application != payload:
             raise ValueError(f"Wheel application payload differs from the source distribution: {target}")
-        bundle = release_bundle(artifacts, target, root=root)
-        embedded = {name.removeprefix("nanobot/tui/bin/"): data for name, data in files.items()
-                    if name.startswith("nanobot/tui/bin/")}
-        if embedded != bundle:
-            raise ValueError("Wheel and fallback TUI archive differ")
-        asset = f"nanobot-tui-{target}" + (".exe" if target == "win32-x64" else "")
-        mode = modes[f"nanobot/tui/bin/{asset}"]
-        if not stat.S_ISREG(mode) or stat.S_IMODE(mode) != 0o755:
-            raise ValueError("Installed TUI must retain executable permissions")
     records: list[ReleaseArtifact] = []
     for name in sorted(expected):
         path = artifacts / name
@@ -274,17 +353,16 @@ def write_install_guide(root: Path, artifacts: Path, output: Path, *, source_com
 
 
 def assemble_candidate(root: Path, output: Path, *, wheel: Path, sdist: Path,
-                       tui_dir: Path, source_commit: str) -> ReleaseManifest:
+                       source_commit: str) -> ReleaseManifest:
     """Assemble in a fresh directory; failed output is never given a manifest."""
     version, _, _ = _candidate_identity(root, source_commit)
     if sdist.name != f"nanobot_ai-{version}.tar.gz":
         raise ValueError("Source distribution filename differs from the candidate")
     output.mkdir(parents=True, exist_ok=False)
-    for target in PLATFORMS:
-        build_wheel(wheel, tui_dir, output, target, root=root)
-    for name in sorted(release_filenames(version)):
-        if not name.endswith(".whl"):
-            shutil.copyfile(sdist if name == sdist.name else tui_dir / name, output / name)
+    for platform in PLATFORMS.values():
+        target = output / f"nanobot_ai-{version}-py3-none-{platform}.whl"
+        _retag_wheel(wheel, target, version=version, platform=platform)
+    shutil.copyfile(sdist, output / sdist.name)
     manifest = verify_candidate(root, output, source_commit=source_commit)
     write_manifest(manifest, output / "release-manifest.json")
     return manifest
@@ -363,7 +441,6 @@ def main() -> None:
     assemble.add_argument("--source-commit", required=True)
     assemble.add_argument("--wheel", type=Path, required=True)
     assemble.add_argument("--sdist", type=Path, required=True)
-    assemble.add_argument("--tui-dir", type=Path, required=True)
     assemble.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.command == "prepare":
@@ -384,7 +461,7 @@ def main() -> None:
         print(f"Retained exact candidate (not published): {args.output}")
     else:
         manifest = assemble_candidate(args.root, args.output, wheel=args.wheel, sdist=args.sdist,
-                                      tui_dir=args.tui_dir, source_commit=args.source_commit)
+                                      source_commit=args.source_commit)
         print(manifest.model_dump_json(indent=2))
 
 

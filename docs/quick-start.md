@@ -12,7 +12,7 @@ These repository docs describe `main`, which can be newer than the released pack
 - Access to one supported AI provider, company endpoint, or local model server.
 - The credential, endpoint URL, and model ID required by that service. Local providers such as Ollama may not require a key.
 
-Official platform packages include the WebUI and matching native TUI for macOS 13+ (Apple Silicon and Intel), glibc 2.17+ Linux (ARM64 and x64), and Windows x64; no frontend build tools are needed. Other platforms can use the WebUI or `nanobot --classic`; see [terminal requirements](./cli-reference.md#agent-cli). Source installs need Git and use Bun, which Sentinel downloads when needed.
+Official packages include the WebUI; no frontend build tools are needed for a published install. Source installs need Git and use Bun to build the WebUI.
 
 ## 1. Install Sentinel
 
@@ -100,27 +100,21 @@ nanobot gateway status
 
 Use `nanobot gateway logs`, `restart`, and `stop` to manage that background gateway.
 
-## Terminal-Only Check
+## One-Shot CLI Check
 
-If you do not want the browser or need to isolate a WebUI problem, send one message directly:
+If you do not want to open the browser or need to isolate a WebUI problem, send one message directly:
 
 ```bash
 nanobot -m "Hello!"
 ```
 
-Then start an interactive terminal chat with:
-
-```bash
-nanobot
-```
-
-In interactive mode, `Enter` sends and `Shift+Enter` inserts a newline (`Ctrl+J` is the universal fallback). While Sentinel is working, `Enter` sends immediately, `Tab` waits until the current response is finished, and `Option+Up` on macOS (`Alt+Up` on Windows/Linux) edits the latest waiting message. Exit with `exit`, `/exit`, `:q`, or `Ctrl+D`.
+The CLI also supports operational commands and guided setup; it does not provide interactive terminal chat. See the [CLI reference](./cli-reference.md) for available commands.
 
 ## Continue with Sentinel
 
 After the first reply works, describe one next goal in the same chat. With the built-in `nanobot-document` skill, Sentinel can consult documentation bundled with your installation to explain features, guide configuration, and troubleshoot. Include where you are using Sentinel and what already works, for example:
 
-- "I am already using the WebUI. Help me connect Telegram and allow only my account."
+- "I am already using the WebUI. Help me connect Discord and allow only my account."
 - "Explain what is shared when I start a new topic or choose a different project."
 - "A second model preset returns an authentication error. Help me find which setting to check."
 
@@ -165,7 +159,7 @@ If pip reports `externally-managed-environment`, use the recommended installer, 
 
 **Current source**
 
-Clone the repository and install it in editable mode. Sentinel downloads the pinned Bun runtime to run the checkout's matching TUI; Node is not required.
+Clone the repository and install it in editable mode. The build downloads the pinned Bun runtime to build the checkout's WebUI; Node is not required.
 
 ```bash
 git clone https://github.com/HKUDS/nanobot.git
@@ -180,7 +174,7 @@ python -m pip install -e .
 nanobot webui
 ```
 
-The source path follows current `main` and can be newer than the published package. The editable install keeps Python pointed at the checkout; `nanobot` runs `tui/` with Bun, and `nanobot webui` prompts to rebuild stale frontend assets, or warns in non-interactive sessions; `--yes` builds automatically. All normal commands remain the same as a stable install. For development details, see [Development](./development.md).
+The source path follows current `main` and can be newer than the published package. The editable install keeps Python pointed at the checkout; `nanobot webui` prompts to rebuild stale frontend assets, or warns in non-interactive sessions; `--yes` builds automatically. For development details, see [Development](./development.md).
 
 If the shell cannot find `nanobot`, reuse the installer's printed command or run Python from the existing installation. For uv or pipx, locate that environment with the original manager; do not start a temporary tool environment to manage it. The official installer's default paths are:
 
@@ -261,6 +255,6 @@ nanobot agent -m "Hello!"
 | `401` or invalid API key | Verify the selected provider owns that key and remove accidental spaces |
 | Model not found | Use a model ID available from the provider selected in the active preset |
 | CLI works but WebUI does not open | Use port `8765`, not gateway health port `18790` |
-| WebUI works but a chat app does not | Check **Channels**, then run `nanobot channels status` |
+| WebUI works but Discord does not | Check **Channels**, then run `nanobot channels status` |
 
 Continue with the ordered [Troubleshooting guide](./troubleshooting.md) if the cause is still unclear.

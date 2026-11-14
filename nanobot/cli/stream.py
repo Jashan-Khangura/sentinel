@@ -238,10 +238,6 @@ class StreamRenderer:
             self._buf = ""
             self._start_spinner()
 
-    def stop_for_input(self) -> None:
-        """Stop spinner before user input to avoid prompt_toolkit conflicts."""
-        self._stop_spinner()
-
     def pause(self):
         """Context manager: pause spinner for external output. No-op once streaming has started."""
         if self._spinner:

@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import sys
 import types
-from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
@@ -11,7 +10,6 @@ from typer.testing import CliRunner
 from nanobot.cli.commands import app
 from nanobot.cli.process_identity import (
     _set_process_title,
-    named_executable,
     set_cli_process_identity,
 )
 
@@ -99,36 +97,3 @@ def test_legacy_console_entrypoint_routes_bare_command_to_agent(
     assert result.exit_code == 0
     assert identities == [["agent"]]
     assert launches == [([], "nanobot")]
-
-
-def test_named_executable_creates_stable_role_symlink(
-    tmp_path: Path,
-) -> None:
-    if os.name == "nt":
-        pytest.skip("POSIX symlink naming is not used on Windows")
-    executable = tmp_path / "bun"
-    executable.write_text("runtime", encoding="utf-8")
-
-    first = Path(
-        named_executable(executable.as_posix(), name="nanobot-tui", directory=tmp_path / "run")
-    )
-    second = Path(
-        named_executable(executable.as_posix(), name="nanobot-tui", directory=tmp_path / "run")
-    )
-
-    assert first == second
-    assert first.name == "nanobot-tui"
-    assert first.is_symlink()
-    assert first.resolve() == executable
-
-
-def test_named_executable_uses_original_on_windows(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    monkeypatch.setattr("nanobot.cli.process_identity.os.name", "nt")
-
-    assert (
-        named_executable("bun.exe", name="nanobot-tui", directory=tmp_path / "run")
-        == "bun.exe"
-    )

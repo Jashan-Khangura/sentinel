@@ -1,7 +1,7 @@
 """Render the initial manual install handoff for a verified release candidate.
 
 This is not a channel resolver or an updater. The caller must verify the candidate
-bytes first; public availability, migration notes and native acceptance are release
+bytes first; public availability, migration notes and runtime acceptance are release
 gates, not properties inferred from a manifest.
 """
 
@@ -115,7 +115,7 @@ def render_install_guide(manifest: ReleaseManifest, *, manifest_sha256: str | No
         f"- Source commit: `{manifest.source_commit}`",
         f"- Packaged candidate: `{manifest.candidate_commit}`",
         f"- Python requirement: `{manifest.requires_python}`", "",
-        "The wheel contains the built WebUI and matching native TUI. Installing nanobot",
+        "The wheel contains the built WebUI. Installing nanobot",
         "itself needs no Bun, Node or Git. Python and third-party dependencies have their",
         "own requirements. Commands pin this one release; they do not subscribe to Preview.", "",
         "## Before installing", "",
@@ -169,7 +169,7 @@ def render_install_guide(manifest: ReleaseManifest, *, manifest_sha256: str | No
     lines += [
         "## Select the target platform", "",
         "Use the architecture of the target Python environment, not the browser. No musl",
-        "or Windows ARM64 wheel is provided. x64 native TUI builds require SSE4.2.",
+        "or Windows ARM64 wheel is provided.",
         "A platform label is not proof of a native test; consult the release's coverage.", "",
     ]
     for target, platform in PLATFORMS.items():

@@ -27,7 +27,7 @@
         "policy": "Có ghim phiên bản, tệp khóa, nguồn cố định, giới hạn hoặc tùy chọn chưa nhận diện. Kiểm tra và theo quy trình ban đầu, giữ extras và gói được thêm vào. Không tự bỏ giới hạn.",
         "extras": "Môi trường pip này không ghi lại extras ban đầu. Kiểm tra gói rồi dùng lại lệnh pip gốc với --upgrade và phiên bản mong muốn, giữ extras và tùy chọn nguồn. Không cung cấp lệnh cài đặt phỏng đoán.",
         "manager": "Không xác nhận được chương trình quản lý hoặc cấu trúc môi trường. Dùng tài khoản và thiết lập ban đầu để trỏ tới đường dẫn trên; không dùng pip hay nanobot khác trong PATH.",
-        "source": "Kiểm tra kho mã, giữ thay đổi cục bộ và xác nhận nhánh hoặc phiên bản. Theo quy trình của kho để cập nhật mã, phụ thuộc và build WebUI/TUI. Không thay bản cài editable bằng gói PyPI.",
+        "source": "Kiểm tra kho mã, giữ thay đổi cục bộ và xác nhận nhánh hoặc phiên bản. Theo quy trình của kho để cập nhật mã, phụ thuộc và WebUI. Không thay bản cài editable bằng gói PyPI.",
         "container": "Trong dự án Compose hoặc bảng quản trị gốc, chọn tag/digest, tải hoặc build ảnh rồi chỉ tạo lại dịch vụ nanobot với mount, bí mật và cổng cũ. Sao lưu volume dữ liệu; tuyệt đối không xóa chúng.",
         "system": "Dùng trình quản lý gói của hệ điều hành hoặc liên hệ quản trị viên. Không dùng sudo pip hay vượt qua giới hạn Python do hệ thống quản lý.",
         "review": "Bản cài đặt hoặc kết quả kiểm tra đã thay đổi. Đóng và kiểm tra lại trước khi sao chép lệnh."

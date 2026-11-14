@@ -122,7 +122,7 @@ The first-run address is local to your computer. It is not automatically availab
 
 ## 6. Add One Thing at a Time
 
-Choose one next goal and ask Sentinel in your current chat. For example: "I am already using the WebUI. Help me connect Telegram and allow only my account." When the built-in `nanobot-document` skill is available and enabled, Sentinel can use its bundled documentation to guide you. See [Continue with Sentinel](./quick-start.md#continue-with-sentinel) for how to request the skill directly.
+Choose one next goal and ask Sentinel in your current chat. For example: "I am already using the WebUI. Help me connect Discord and allow only my account." When the built-in `nanobot-document` skill is available and enabled, Sentinel can use its bundled documentation to guide you. See [Continue with Sentinel](./quick-start.md#continue-with-sentinel) for how to request the skill directly.
 
 You can also follow the steps yourself using the controls and guides below. Add one capability and test it before moving on:
 
@@ -130,12 +130,12 @@ You can also follow the steps yourself using the controls and guides below. Add 
 |---|---|
 | Change the AI model | Open **Settings → Models** |
 | Add a provider credential | Open **Settings → Models → Provider → Add provider** |
-| Connect Telegram, Discord, Slack, Feishu, WeChat, or another chat app | Open **Channels**, choose the platform, and follow its connection steps |
+| Connect Discord | Open **Channels** and follow the connection steps |
 | Add a tool integration | Open **Apps** and choose an App or MCP integration |
 | Schedule a reminder or recurring task | Ask Sentinel in the target chat, then manage it in **Automations** |
 | Work with project files | Follow [Your first file task](#your-first-file-task), then see [Workspace and Access](./webui.md#workspace-and-access) |
 
-Repository docs show the current development version. If your stable package does not yet show **Channels**, use the [Chat Apps guide](./chat-apps.md) or update to a release that includes it.
+Repository docs show the current development version. If your stable package does not yet show **Channels**, use the [Discord guide](./chat-apps.md) or update to a release that includes it.
 
 Some runtime changes ask you to restart Sentinel. Use the restart action shown by the WebUI or `nanobot gateway restart` for a background gateway. For an attached on-demand launcher, press `Ctrl+C` and run `nanobot webui` again.
 

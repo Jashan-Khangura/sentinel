@@ -380,7 +380,7 @@ async with Nanobot.from_config() as bot:
     print(bot.memory.read_history(session_key="sdk:notes"))
 ```
 
-Then use `/dream` in a running WebUI or TUI connected to the same configured agent workspace, wait for completion, and inspect `/dream-log`. Scheduled Dream also processes this archive while the matching gateway runs and Dream is enabled. `await bot.run("/dream")` only returns the command acknowledgement; it is not an awaited Dream-completion API for short-lived scripts.
+Then use `/dream` in a running WebUI connected to the same configured agent workspace, wait for completion, and inspect `/dream-log`. Scheduled Dream also processes this archive while the matching gateway runs and Dream is enabled. `await bot.run("/dream")` only returns the command acknowledgement; it is not an awaited Dream-completion API for short-lived scripts.
 
 For application-owned durable text, `bot.memory.write(text)` writes `memory/MEMORY.md` directly and `bot.memory.read()` reads it back. Writing replaces the whole file; it does not merge preferences or create a Dream audit entry. See [Memory](memory.md) for review and correction workflows.
 

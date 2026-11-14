@@ -726,7 +726,7 @@ def isolated_environment(root: Path) -> dict[str, str]:
                   XDG_CACHE_HOME=str(root / "cache"), XDG_DATA_HOME=str(root / "data"),
                   TMPDIR=str(root), TMP=str(root), TEMP=str(root),
                   PIP_CONFIG_FILE=os.devnull, PIP_NO_INPUT="1", PIP_DISABLE_PIP_VERSION_CHECK="1", PYTHONUTF8="1",
-                  NANOBOT_TUI_NO_DOWNLOAD="1", NO_COLOR="1", PATH=os.defpath)
+                  NO_COLOR="1", PATH=os.defpath)
     if os.name == "nt":
         system["PATH"] = str(Path(system["SYSTEMROOT"]) / "System32")
     return system
@@ -1007,18 +1007,14 @@ def run_serial(args, root: Path, target: Path, version: str, original_hash: str,
 def run(args) -> dict:
     from packaging.utils import parse_wheel_filename
 
-    # The build environment supplies dependencies for metadata construction only.
-    # Product phases run in the separately installed wheel, never this checkout.
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from scripts.build_tui_wheels import wheel_files
-
     target = args.wheel.resolve(strict=True)
     _, parsed_version, _, tags = parse_wheel_filename(target.name)
     version = str(parsed_version)
-    if len(tags) != 1 or any(tag.platform == "any" for tag in tags):
-        raise ValueError("Acceptance requires the final native wheel, not an intermediate universal wheel")
-    files, _, _ = wheel_files(target, version, platform=next(iter(tags)).platform)
-    if files["nanobot/_build_commit.txt"].decode().strip() != args.commit:
+    if len(tags) != 1 or next(iter(tags)).platform != "any":
+        raise ValueError("Acceptance requires the universal wheel")
+    with ZipFile(target) as archive:
+        build_commit = archive.read("nanobot/_build_commit.txt").decode().strip()
+    if build_commit != args.commit:
         raise ValueError("Target wheel does not contain the requested candidate commit")
     original_hash = digest(target)
     scenarios = list(args.scenario or SCENARIOS)

@@ -19,7 +19,7 @@ Use an installation with a configured model that has already returned a reply. I
 
 ## Minimal working example
 
-Your running WebUI or TUI already uses a gateway. In that chat, start a sustained goal:
+Your running WebUI already uses a gateway. In that chat, start a sustained goal:
 
 ```text
 /goal Review this workspace, identify missing tests, and propose the smallest next fix.
@@ -34,7 +34,7 @@ nanobot gateway --background
 nanobot gateway status
 ```
 
-Use the same `--config` and explicit `--workspace` selectors as your instance. In the TUI, `/detach` also keeps the gateway running while closing the client. A background gateway does not survive a machine shutdown by itself; see [Deployment](../deployment.md) for service management. Review [schedule restart behavior](../automations.md#delivery-and-reliability) before relying on a timed task.
+Use the same `--config` and explicit `--workspace` selectors as your instance. `nanobot webui --detach` keeps the gateway running after the browser launcher exits. A background gateway does not survive a machine shutdown by itself; see [Deployment](../deployment.md) for service management. Review [schedule restart behavior](../automations.md#delivery-and-reliability) before relying on a timed task.
 
 ## Production notes
 

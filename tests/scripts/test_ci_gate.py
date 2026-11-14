@@ -7,10 +7,10 @@ def results(*domains):
     return {
         "changes": {"result": "success", "outputs": {
             f"{domain}_required": str(domain in domains).lower()
-            for domain in ("python", "webui", "tui", "docker", "native")
+            for domain in ("python", "webui", "docker")
         }},
         **{job: {"result": "skipped"} for job in (
-            "test", "windows_process", "windows_installers", "webui_checks", "webui_browser", "webui", "tui", "docker", "native",
+            "test", "windows_process", "windows_installers", "webui_checks", "webui_browser", "webui", "docker",
         )},
     }
 
@@ -28,11 +28,13 @@ def test_selected_job_must_succeed(result):
     assert check_results(needs, "pull_request")
 
 
-def test_native_runs_on_high_risk_pr_but_not_main_push():
-    needs = results("native")
+def test_python_changes_require_windows_installers_on_pr_but_not_main_push():
+    needs = results("python")
+    needs["test"]["result"] = "success"
+    needs["windows_process"]["result"] = "success"
     assert check_results(needs, "pull_request")
     assert check_results(needs, "push") == []
-    needs["native"]["result"] = "success"
+    needs["windows_installers"]["result"] = "success"
     assert check_results(needs, "pull_request") == []
 
 
@@ -41,23 +43,22 @@ def test_failed_or_incomplete_selection_is_not_documentation_only():
     needs["changes"]["result"] = "failure"
     assert check_results(needs, "pull_request")
     needs["changes"]["result"] = "success"
-    del needs["changes"]["outputs"]["native_required"]
+    del needs["changes"]["outputs"]["docker_required"]
     assert check_results(needs, "pull_request")
 
 
 def test_unexpected_failure_is_not_ignored():
     needs = results()
-    needs["native"]["result"] = "cancelled"
+    needs["docker"]["result"] = "cancelled"
     assert check_results(needs, "push")
 
 
 def test_selected_windows_installers_are_required_independently_of_process_tests():
-    needs = results("python", "native")
-    for job in ("test", "windows_process", "native"):
+    needs = results("python")
+    for job in ("test", "windows_process"):
         needs[job]["result"] = "success"
     assert check_results(needs, "pull_request") == ["windows_installers: required, got skipped"]
     needs["windows_installers"]["result"] = "success"
     assert check_results(needs, "pull_request") == []
     needs["windows_installers"]["result"] = "skipped"
-    needs["native"]["result"] = "skipped"
     assert check_results(needs, "push") == []

@@ -1,7 +1,7 @@
 """Probe a wheel installed in a disposable venv, without a frontend toolchain.
 
 Run with that venv's ``python -I`` and exact expected version/commit. This checks
-installed identity, real loopback asset responses and native TUI protocol startup.
+installed identity and real loopback WebUI asset responses.
 Optionally start a loopback-only gateway with a disposable, unconfigured profile.
 Neither mode uses a model or claims interactive UI, migration or updater coverage.
 With --install-wheel, first exercise the public installer in a disposable home.
@@ -163,7 +163,7 @@ def gateway_probe(version: str, directory: Path) -> dict[str, object]:
 
 
 async def verify_installed_release(
-    version: str, commit: str, data_dir: Path, *, gateway: bool = False,
+    version: str, commit: str, *, gateway_data_dir: Path, gateway: bool = False,
 ) -> dict[str, object]:
     # Imports deliberately happen only after main has isolated HOME, PATH and cwd.
     from aiohttp import ClientTimeout, web
@@ -171,7 +171,6 @@ async def verify_installed_release(
 
     import nanobot
     from nanobot.build_info import COMMIT
-    from nanobot.cli.tui_launcher import resolve_tui_command
     from nanobot.webui.build import inspect_webui_bundle
     from nanobot.webui.local_client_assets import LocalClientAssets
 
@@ -185,8 +184,6 @@ async def verify_installed_release(
         raise ValueError("Installed package version/commit differs from the expected candidate")
     if any(shutil.which(tool) for tool in ("bun", "node", "npm", "git")):
         raise ValueError("Frontend development tools must not be on the probe PATH")
-    if os.environ.get("NANOBOT_TUI_NO_DOWNLOAD") != "1":
-        raise ValueError("The installed TUI probe must disable fallback downloads")
 
     bundle = inspect_webui_bundle()
     if not bundle.dist_available or bundle.needs_build or bundle.source_available:
@@ -214,25 +211,12 @@ async def verify_installed_release(
             if filename.endswith((".js", ".css")) and response.content_type == "text/html":
                 raise ValueError(f"WebUI asset unexpectedly served the HTML shell: {filename}")
 
-    command = resolve_tui_command(data_dir=data_dir)
-    executable = Path(command[0]).resolve()
-    if len(command) != 1 or not executable.is_relative_to(package.parent / "tui" / "bin"):
-        raise ValueError("TUI command must use the installed native bundle, not source or cache")
-    if not os.access(executable, os.X_OK):
-        raise ValueError("Installed TUI is not executable")
-    native = subprocess.run(
-        [str(executable), "--desktop-protocol"], check=True, capture_output=True,
-        text=True, encoding="utf-8", timeout=15,
-    )
-    if native.stdout.strip() != "1":
-        raise ValueError("Installed TUI returned an unsupported desktop protocol")
-    runtime = await asyncio.to_thread(gateway_probe, version, data_dir.parent / "gateway") if gateway else {}
+    runtime = await asyncio.to_thread(gateway_probe, version, gateway_data_dir) if gateway else {}
     return {
         "version": version, "candidate_commit": commit, "package": str(package),
         "platform": platform.system(), "machine": platform.machine(),
         "python": platform.python_version(), "webui_assets_served": len(files),
-        "frontend_build_tools_on_path": False, "tui_download_enabled": False,
-        "native_tui": str(executable), "native_protocol_probe": native.stdout.strip(),
+        "frontend_build_tools_on_path": False,
         "gateway_started": gateway, "interactive_ui_e2e": False, **runtime,
     }
 
@@ -311,14 +295,14 @@ def main() -> None:
             "PATH": str(empty_path), "HOME": str(root), "USERPROFILE": str(root),
             "XDG_CONFIG_HOME": str(root / "config"), "XDG_CACHE_HOME": str(root / "cache"),
             "XDG_DATA_HOME": str(root / "data"), "TMPDIR": str(root), "TMP": str(root),
-            "TEMP": str(root), "NANOBOT_TUI_NO_DOWNLOAD": "1", "NO_COLOR": "1",
+            "TEMP": str(root), "NO_COLOR": "1",
         })
         os.environ.clear()
         os.environ.update(env)
         os.chdir(root)
         try:
             result = asyncio.run(verify_installed_release(
-                args.version, args.commit, root / "tui", gateway=args.gateway,
+                args.version, args.commit, gateway=args.gateway, gateway_data_dir=root / "gateway",
             ))
         finally:
             os.chdir(original_cwd)

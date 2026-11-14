@@ -78,7 +78,7 @@ def _channel(session_manager: SessionManager | None = None) -> WebSocketChannel:
         workspace_path=Path.cwd(),
         default_restrict_to_workspace=False,
         runtime_model_name=None,
-        runtime_surface="tui",
+        runtime_surface="browser",
         runtime_capabilities_overrides=None,
     )
     return WebSocketChannel(config, bus, gateway=gateway)
@@ -107,7 +107,7 @@ async def _wait_for_retire_tasks(channel: WebSocketChannel) -> None:
 
 
 @pytest.mark.asyncio
-async def test_message_bus_delivers_to_ten_tuis_with_one_blocked_connection() -> None:
+async def test_message_bus_delivers_to_ten_clients_with_one_blocked_connection() -> None:
     channel = _channel()
     bus = MessageBus()
     config = Config.model_validate({"channels": {"websocket": {"enabled": False}}})
@@ -175,7 +175,7 @@ async def test_delivery_remains_busy_until_timed_out_transport_is_retired(monkey
 
 
 @pytest.mark.asyncio
-async def test_slow_tui_does_not_block_a_different_topic() -> None:
+async def test_slow_client_does_not_block_a_different_topic() -> None:
     channel = _channel()
     slow = _RecordingConnection(block_first_send=True)
     healthy = _RecordingConnection()
@@ -196,7 +196,7 @@ async def test_slow_tui_does_not_block_a_different_topic() -> None:
 
 
 @pytest.mark.asyncio
-async def test_slow_tui_does_not_block_same_topic_fanout() -> None:
+async def test_slow_client_does_not_block_same_topic_fanout() -> None:
     channel = _channel()
     slow = _RecordingConnection(block_first_send=True)
     healthy = _RecordingConnection()
@@ -278,7 +278,7 @@ async def test_connection_writer_preserves_order_without_concurrent_sends() -> N
 
 
 @pytest.mark.asyncio
-async def test_full_outbound_queue_disconnects_only_the_slow_tui(monkeypatch) -> None:
+async def test_full_outbound_queue_disconnects_only_the_slow_client(monkeypatch) -> None:
     monkeypatch.setattr(runtime, "_OUTBOUND_QUEUE_MAX_FRAMES", 2)
     monkeypatch.setattr(runtime, "_OUTBOUND_QUEUE_MAX_BYTES", 1024 * 1024)
     channel = _channel()

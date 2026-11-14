@@ -14,7 +14,7 @@ def test_legacy_proxy_migrates_once_across_features(tmp_path, address):
     original = {
         "providers": {"openai": {"proxy": address}, "openaiCodex": {"proxy": address}},
         "tools": {"web": {"proxy": address}},
-        "channels": {"telegram": {"proxy": address}, "slack": {"proxy": ""}},
+        "channels": {"discord": {"proxy": address}},
     }
     path.write_text(json.dumps(original), encoding="utf-8")
     config = load_config(path)
@@ -23,15 +23,14 @@ def test_legacy_proxy_migrates_once_across_features(tmp_path, address):
     assert config.providers.openai.use_proxy is True
     assert config.providers.openai_codex.use_proxy is True
     assert config.tools.web.use_proxy is True
-    assert config.channels.telegram["useProxy"] is True
-    assert "useProxy" not in config.channels.slack
+    assert config.channels.discord["useProxy"] is True
     config.providers.openai.use_proxy = False
     save_config(config, path)
     saved = json.loads(path.read_text(encoding="utf-8"))
     assert saved["network"]["proxy"] == address
     assert "proxy" not in saved["providers"]["openai"]
     assert "proxy" not in saved["tools"]["web"]
-    assert "proxy" not in saved["channels"]["telegram"]
+    assert "proxy" not in saved["channels"]["discord"]
     assert load_config(path).providers.openai.use_proxy is False
 
 
@@ -90,7 +89,7 @@ def test_environment_legacy_proxy_migrates_after_source_merge(tmp_path, monkeypa
     proxy = "http://localhost:7890"
     monkeypatch.setenv("NANOBOT_PROVIDERS", json.dumps({"openai": {"proxy": proxy}}))
     monkeypatch.setenv("NANOBOT_TOOLS", json.dumps({"web": {"proxy": proxy}}))
-    monkeypatch.setenv("NANOBOT_CHANNELS", json.dumps({"telegram": {"proxy": proxy}}))
+    monkeypatch.setenv("NANOBOT_CHANNELS", json.dumps({"discord": {"proxy": proxy}}))
     path = tmp_path / "config.json"
     if file_present:
         path.write_text(json.dumps({"providers": {"openai": {"apiKey": "test-key"}}}), encoding="utf-8")
@@ -98,7 +97,7 @@ def test_environment_legacy_proxy_migrates_after_source_merge(tmp_path, monkeypa
     assert config.network.proxy == proxy
     assert config.providers.openai.use_proxy is True
     assert config.tools.web.use_proxy is True
-    assert config.channels.telegram == {"useProxy": True}
+    assert config.channels.discord == {"useProxy": True}
     save_config(config, path)
     saved = json.loads(path.read_text(encoding="utf-8"))
     assert saved["network"]["proxy"] == proxy

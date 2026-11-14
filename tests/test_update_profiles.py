@@ -269,27 +269,27 @@ def test_gateway_refuses_shared_data_maintenance_before_initializing_writers(sta
     assert not (profile / "workspace").exists()
 
 
-def test_classic_cli_holds_data_lease_before_writers_and_through_exit(startup_profile, monkeypatch):
+def test_one_shot_cli_holds_data_lease_before_writers_and_through_exit(startup_profile, monkeypatch):
     from nanobot.cli import agent as cli_agent
 
     _, config = startup_profile
     monkeypatch.setattr(cli_agent, "_load_runtime_config", lambda *_args: config)
     reached = []
 
-    def run_classic(_config, **_kwargs):
+    def run_one_shot(_config, **_kwargs):
         with pytest.raises(InstallationBusyError):
             with data_access([config.workspace_path / "sessions"], updating=True):
                 pytest.fail("Classic CLI did not protect its shared data")
         reached.append(True)
-        raise RuntimeError("simulated classic runtime exit")
+        raise RuntimeError("simulated one-shot runtime exit")
 
-    monkeypatch.setattr(cli_agent, "_run_classic", run_classic)
+    monkeypatch.setattr(cli_agent, "_run_one_shot", run_one_shot)
     with data_access([config.workspace_path / "sessions"], updating=True):
         with pytest.raises(InstallationBusyError, match="data is in use"):
-            cli_agent.agent(message="hello", classic=True, theme="auto")
+            cli_agent.agent(message="hello")
     assert not reached
-    with pytest.raises(RuntimeError, match="simulated classic runtime exit"):
-        cli_agent.agent(message="hello", classic=True, theme="auto")
+    with pytest.raises(RuntimeError, match="simulated one-shot runtime exit"):
+        cli_agent.agent(message="hello")
     with data_access([config.workspace_path / "sessions"], updating=True):
         pass
     assert reached == [True]

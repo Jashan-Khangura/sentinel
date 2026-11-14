@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from nanobot.cli import entry
-from nanobot.cli.entry import _agent_invocation_args, _native_tui_candidate
+from nanobot.cli.entry import _agent_invocation_args
 from nanobot.installation_lock import InstallationBusyError, installation_access, installation_id
 
 
@@ -85,36 +85,6 @@ def test_root_alias_dispatches_the_shared_agent_command(monkeypatch) -> None:
         "args": ["-m", "hello"],
         "prog_name": "nanobot",
     }
-
-
-def test_desktop_handled_bare_invocation_does_not_start_python(monkeypatch) -> None:
-    from nanobot.cli import desktop_target
-
-    monkeypatch.setattr(entry.sys, "argv", ["nanobot"])
-    monkeypatch.setattr(entry, "set_cli_process_identity", lambda _args: None)
-    monkeypatch.setattr(entry, "configure_windows_console", lambda: None)
-    monkeypatch.setattr(desktop_target, "dispatch_bare_desktop_target", lambda _args: 0)
-    monkeypatch.setattr(
-        entry,
-        "_run_agent",
-        lambda *_args, **_kwargs: pytest.fail("Python agent must not start"),
-    )
-
-    entry.main()
-
-
-def test_native_agent_invocations_use_the_lightweight_entrypoint() -> None:
-    assert _native_tui_candidate(["agent"])
-    assert _native_tui_candidate(["agent", "--session", "websocket:chat"])
-    assert _native_tui_candidate(["agent", "--theme=light"])
-
-
-def test_classic_and_one_shot_agent_invocations_keep_the_full_cli_entrypoint() -> None:
-    assert not _native_tui_candidate(["agent", "--classic"])
-    assert not _native_tui_candidate(["agent", "-m", "hello"])
-    assert not _native_tui_candidate(["agent", "-mhello"])
-    assert not _native_tui_candidate(["agent", "--message=hello"])
-    assert not _native_tui_candidate(["status"])
 
 
 def test_entry_refuses_dispatch_during_update(tmp_path, monkeypatch, capsys):

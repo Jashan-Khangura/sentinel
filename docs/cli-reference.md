@@ -13,13 +13,11 @@ Use this page when you know what you want to run and need the command shape. For
 | Use guided setup | `nanobot onboard --wizard` | Best when you prefer prompts over hand-editing JSON |
 | Open the browser workbench | `nanobot webui` | Prepares local WebUI settings, starts the gateway, and opens the browser |
 | Check readiness without calling a model | `nanobot status` | Summarizes config/workspace and validates the active provider/model configuration |
-| Send one test message | `nanobot -m "Hello!"` | First proof that install, config, provider, model, and workspace all work |
-| Chat in the terminal | `nanobot` | Interactive local chat; `nanobot agent` remains an explicit alias |
-| Run the gateway directly | `nanobot gateway` | Service/ops command for WebUI, chat apps, cron, and heartbeat |
+| Send one test message | `nanobot -m "Hello!"` | One-shot terminal request; `nanobot agent -m ...` is the explicit form |
+| Run the gateway directly | `nanobot gateway` | Service/ops command for WebUI, Discord, cron, and heartbeat |
 | Deliver a local trigger | `nanobot trigger <id> "message"` | Created first with `/trigger <name>` in the target chat/session |
-| Check chat channel setup | `nanobot channels status` | Useful before starting `nanobot gateway` |
 | Manage optional features | `nanobot plugins list` | Shows channels and optional capabilities you can turn on |
-| Log in to QR/OAuth-style channels | `nanobot channels login <channel>` | Used by channels such as WhatsApp and WeChat |
+| Check Discord setup | `nanobot channels status` | Show whether the bundled Discord channel is configured and enabled |
 | Log in to OAuth model providers | `nanobot provider login <provider>` | Used by OpenAI Codex, xAI subscription, and GitHub Copilot providers |
 
 ## Global
@@ -38,17 +36,13 @@ python -m nanobot --version
 
 ### Coexisting with Sentinel Desktop
 
-The Python package and Sentinel Desktop keep separate runtimes, configuration, workspaces, and state. When a running Desktop release publishes its private terminal-access descriptor, an interactive bare `nanobot` or `nanobot webui` asks which installation to use after authenticating a ready Desktop target. Use `Up`/`Down` to highlight an installation and `Enter` to confirm. `Ctrl+C` cancels with exit code 130 without attaching to Desktop or starting a Python backend. If Desktop is absent, busy, unavailable, or cannot be authenticated, the command reports the current Python executable and continues normally. A virtual environment's executable is shown without resolving it to its base interpreter.
+The Python package and Sentinel Desktop keep separate runtimes, configuration, workspaces, and state. When a running Desktop release publishes its private WebUI descriptor, an interactive `nanobot webui` asks which installation to use after authenticating a ready Desktop target. Use `Up`/`Down` to highlight an installation and `Enter` to confirm. `Ctrl+C` cancels with exit code 130 without attaching to Desktop or starting a Python backend. If Desktop is absent, busy, unavailable, or cannot be authenticated, the command reports the current Python executable and continues normally. A virtual environment's executable is shown without resolving it to its base interpreter.
 
-Choosing Desktop for `nanobot webui` opens its already-running browser workbench and exits; closing the browser never stops the Desktop gateway. Choosing Desktop for bare `nanobot` opens the terminal UI against that same running backend when the Desktop host, gateway and terminal client support terminal protocol 1. Older versions fail explicitly with update guidance. Use explicit `nanobot agent` for the original Python terminal UI. After Desktop is selected, a disconnect or incompatible reply ends that invocation with an error; it never silently switches to Python or launches a replacement. On macOS, browser URLs are delivered through native Launch Services rather than command-line arguments. A failed native handoff does not fall back to `open` or a `BROWSER` command, keeping bootstrap credentials out of launcher arguments.
+Choosing Desktop for `nanobot webui` opens its already-running browser workbench and exits; closing the browser never stops the Desktop gateway. After Desktop is selected, a disconnect or incompatible reply ends that invocation with an error; it never silently switches to Python or launches a replacement. On macOS, browser URLs are delivered through native Launch Services rather than command-line arguments. A failed native handoff does not fall back to `open` or a `BROWSER` command, keeping bootstrap credentials out of launcher arguments.
 
 On Windows, the shared browser launcher uses a private HTML redirect rather than passing a credential-bearing URL to a browser command. A short-lived, windowless Python helper receives the URL over an anonymous pipe, opens the redirect through the system's HTTP association, and attempts file cleanup after two minutes. The calling CLI can exit immediately after the launch acknowledgement; this helper does not start, stop, or keep a gateway alive. It does not honor `BROWSER` overrides. Redirects are stored in the current user's Windows Local AppData known folder, under `NanobotBrowserHandoff-v1`, with an explicit current-user-only protected ACL. An ACL-enforcing local filesystem and a non-reparse storage path are required; unsafe existing storage or failed browser handoff fails without raw-URL fallback. Abnormal termination can leave a private redirect behind. Later invocations retry cleanup of verified redirect files older than ten minutes, excluding active files; cleanup is not a guarantee of physical erasure or secrecy from same-user programs or administrators. No Python/Desktop settings, credentials, or history are imported between installations.
 
-Any explicit subcommand or option—including `nanobot agent`, `nanobot webui --no-open`, config/workspace selectors, help, version, completion, and gateway lifecycle commands—keeps its existing Python meaning and never opens the Desktop picker. Target choices are not remembered, and Desktop settings are not copied into the Python installation.
-
-Desktop terminal credentials are short-lived WebSocket/API tokens obtained through the authenticated current-user rendezvous. The TUI receives them through a bounded anonymous pipe, not command arguments, environment variables or temporary files. Its environment contains only a trusted resolver command and public instance IDs. The resolver verifies the selected Desktop and gateway again for every credential refresh. The gateway identity is also checked before any WebSocket mutation. This mode does not acquire a gateway lifecycle lease: client exit leaves Desktop running, and disconnect never automatically reconnects or replays an uncertain task.
-
-Desktop-only distributions use the narrow `nanobot-desktop-tui` entrypoint inside their existing private runtime; it is not a replacement for the full Python CLI. They must ship this engine entrypoint and a matching terminal client together. The client cache can be kept inside Desktop's data root without reading or writing the separate Python installation's config. No additional system Python is needed.
+Other commands, including `nanobot agent`, config/workspace selectors, help, version, completion, and gateway lifecycle commands, keep their Python meaning. Target choices are not remembered, and Desktop settings are not copied into the Python installation.
 
 ## Common Patterns
 
@@ -57,7 +51,7 @@ Desktop-only distributions use the narrow `nanobot-desktop-tui` entrypoint insid
 ```bash
 nanobot update --check       # Check the latest stable PyPI release; do not install
 nanobot update               # Install it in an ordinary Python venv
-nanobot update --dev         # Update source and prepare its matching interfaces
+nanobot update --dev         # Update source and prepare its matching WebUI
 nanobot update --plan        # Save an exact review; do not install or restart
 ```
 
@@ -119,16 +113,12 @@ Status does not send a model request. On success, run the printed `nanobot agent
 | Command | Description |
 |---|---|
 | `nanobot -m "Hello!"` | Send one message and exit |
-| `nanobot` | Start interactive terminal chat |
-| `nanobot --session <id>` | Use a WebSocket session key; add `--classic` for another channel |
+| `nanobot agent -m "Hello!"` | Explicit one-shot agent command |
 | `nanobot --workspace <path>` | Override workspace |
 | `nanobot --config <path>` | Use a specific config file |
-| `nanobot --classic` | Use the classic Python prompt instead of the native terminal UI |
-| `nanobot --theme auto\|dark\|light` | Auto-detect the terminal appearance or force a TUI palette |
-| `nanobot --no-markdown` | Use the classic prompt and print plain text instead of Markdown |
-| `nanobot --logs` | Use the classic prompt and show runtime logs while chatting |
-
-Inside the native TUI, `/sessions` switches saved conversations, `/new-chat` starts another saved conversation, and `/context` explains the compacted summary and raw session suffix available to the next agent turn. `/branch` forks a saved conversation from a completed reply, and `/diff` opens the latest turn's file changes as a full-screen unified diff. `PageUp` loads older transcript pages when you reach the top. By default, each launch starts a new session using the launch directory as its workspace. `--session` selects a specific existing session, and `--workspace` overrides the launch directory. When the TUI exits, it prints a ready-to-run `nanobot agent --session ...` command for the current session.
+| `nanobot agent -m "Hello!" --session <id>` | Send a one-shot message in an existing session |
+| `nanobot agent -m "Hello!" --workspace <path>` | Select a workspace for the one-shot request |
+| `nanobot agent -m "Hello!" --config <path>` | Use a specific config file |
 
 ## Session Storage
 
@@ -142,19 +132,7 @@ The old WebUI history files remain unchanged as backups. Imported chats deleted 
 
 Before changing versions, stop all Sentinel instances using the same config directory and back up that entire directory and the workspace together. Copying only `sessions.sqlite3` while Sentinel is running can miss recent messages. To downgrade, restore a complete pre-upgrade backup compatible with the older release. Older releases cannot read newly saved WebUI history; do not combine the current session database with old WebUI history files.
 
-Interactive mode uses Sentinel's native TypeScript terminal UI. It talks to the same local gateway as the WebUI, so streaming, tool progress, and WebSocket sessions share one protocol instead of maintaining a second agent loop. If no gateway is running, either client starts it on demand. The TUI paints immediately while the local gateway starts, then obtains fresh bootstrap credentials and connects in the background. Exiting one TUI or WebUI launcher releases only that client; the last interactive launcher stops the on-demand gateway. A small gateway watchdog also reclaims an on-demand process if its last client crashes. `/detach` promotes the shared gateway to persistent background mode before closing the TUI, so active agent work continues without a connected client. An explicit `nanobot gateway --background` starts or promotes the gateway the same way before opening a client. `nanobot gateway restart` restarts a detached gateway without changing that lifetime; restart an attached foreground gateway in its owning terminal. `nanobot gateway stop` ends either mode.
-
-The default `--theme auto` mode paints first with the terminal's default background, probes the real foreground and background colors asynchronously, and follows supported live appearance changes. Use `--theme light` or `--theme dark` when a terminal or multiplexer does not report its colors reliably. The model preset and workspace access labels above the composer can be clicked to open their selectors; arrow keys, `Enter`, and `Esc` provide the same controls without a mouse. Access changes still pass through the gateway's local-trust and active-turn policy checks.
-
-`Enter` sends the current message. While Sentinel is working, `Enter` sends immediately, `Tab` waits until the current response is finished, and `Option+Up` on macOS (`Alt+Up` on Windows/Linux) returns the latest waiting message to the composer. Press `Shift+Enter` to add a newline; `Ctrl+J` is the universal fallback when a terminal cannot distinguish modified Enter keys. `Alt+Enter` and `Ctrl+Enter` are also accepted when distinguishable. Use `Up`/`Down` at the composer edge to recall prompts from the current saved session. Large pastes appear as a compact placeholder in the composer but are sent unchanged. Type `/` to discover Sentinel commands and terminal navigation in one palette, or type `@` to complete installed apps, configured MCP servers, and saved sessions. Use the arrow keys to choose an item and `Tab` to complete it. `/sessions` opens a searchable conversation picker, `/new-chat` preserves the current conversation and starts another one, and `/branch` forks from a completed reply. `/diff` opens a read-only unified diff for the newest turn; use `Left`/`Right` to switch edits and `Esc` to close it. The core `/new` command retains its cross-channel behavior and resets the current chat. `Ctrl+C` copies a selection, stops a running turn, clears a non-empty composer, or exits when idle. Use `PageUp`/`PageDown` to scroll, `Ctrl+Home`/`Ctrl+End` to jump to the transcript edges, and `Ctrl+O` to expand or collapse long tool traces. When you leave the bottom, the TUI shows a scrollbar and a `Ctrl+End` hint until you return. The footer reports provider token/cache usage when available. Selections copy through OSC 52 when the terminal supports it. The transcript reflows when the terminal is resized, and exiting restores the previous screen.
-
-Platform wheels bundle the matching native terminal executable for macOS 13+ (Apple Silicon and Intel), glibc 2.17+ Linux (x64 and ARM64), and Windows x64. The x64 runtime requires SSE4.2. Its licenses, third-party notices, source offer, relinking instructions, and corresponding TUI source are installed alongside it in `nanobot/tui/bin/`. The launcher uses this bundled executable without downloading from GitHub or requiring Bun.
-
-Source-distribution builds do not contain a native executable; where supported, their launcher can still fetch the version-matched GitHub release archive. `NANOBOT_TUI_NO_DOWNLOAD=1` disables that fallback, not the bundled TUI. Use `--classic` to explicitly select the Python prompt. Windows ARM64 and musl-based Linux (such as Alpine) do not have a supported native TUI wheel; use the classic prompt or WebUI. In particular, Windows ARM64 cannot run OpenTUI because Bun disables the required FFI there. A local editable source install requires Bun and runs its own `tui/` source while the original checkout remains available; it never silently falls back to a release binary.
-
-Non-interactive input/output, `--logs`, and `--no-markdown` automatically retain the classic prompt so existing scripts and diagnostic workflows do not acquire terminal control sequences or silently ignore their options.
-
-Interactive mode exits with `exit`, `quit`, `/exit`, `/quit`, `:q`, or `Ctrl+D`. Use `/detach` instead to close the TUI without stopping the shared gateway or its active agent work. The restored terminal prints a copyable stop command with the same `--config` and explicit `--workspace` selectors.
+The CLI agent command is one-shot. It does not start an interactive terminal conversation; use the WebUI or Discord for ongoing chats.
 
 ## WebUI
 
@@ -267,26 +245,15 @@ Shows the config path, workspace path, active model, and provider summary withou
 
 | Command | Description |
 |---|---|
-| `nanobot channels status` | Show configured channel status |
-| `nanobot channels status --config <path>` | Show channel status for a specific config |
-| `nanobot channels login <channel>` | Run interactive login for supported channels |
-| `nanobot channels login <channel> --force` | Re-authenticate even if credentials already exist |
-| `nanobot channels login <channel> --config <path>` | Use a specific config file |
+| `nanobot channels status` | Show whether Discord is configured and enabled |
+| `nanobot channels status --config <path>` | Show Discord status for a specific config |
 | `nanobot plugins list --config <path>` | Show plugin/channel enabled state for a specific config |
 
-Examples:
-
-```bash
-nanobot channels login whatsapp
-nanobot channels login weixin
-nanobot channels status
-```
-
-See [`chat-apps.md`](./chat-apps.md) for channel-specific setup.
+See [`chat-apps.md`](./chat-apps.md) for Discord setup.
 
 ## Optional Features
 
-Use these commands when you want Sentinel to add or remove a built-in capability without hand-editing JSON. Enabling may install the support package first. Disabling is for channels such as Telegram, Matrix, or Slack; it keeps your saved settings and turns the channel off.
+Use these commands when you want Sentinel to add or remove a built-in capability without hand-editing JSON. Enabling may install the support package first. Disabling Discord keeps its saved settings and turns the channel off.
 
 The `plugins` command name is retained for compatibility, but these entries are Sentinel runtime support packages, not the user-invokable tools shown in WebUI Apps. They cannot be attached to a chat turn with `@`.
 
@@ -296,7 +263,7 @@ The `plugins` command name is retained for compatibility, but these entries are 
 | `bedrock` | AWS Bedrock model provider support |
 | `langfuse` | Langfuse tracing support for OpenAI-compatible providers and the Codex OAuth provider |
 | `olostep` | Olostep web search provider support |
-| A channel name such as `telegram` or `slack` | The connector package and saved channel enablement |
+| `discord` | The Discord connector package and saved channel enablement |
 
 | Command | Description |
 |---|---|

@@ -1631,15 +1631,6 @@ def test_agent_help_shows_workspace_and_config_options():
     assert "-w" in stripped_output
     assert "--config" in stripped_output
     assert "-c" in stripped_output
-    assert "--theme" in stripped_output
-
-
-def test_agent_rejects_unknown_tui_theme(mock_agent_runtime):
-    result = runner.invoke(app, ["agent", "-m", "hello", "--theme", "sepia"])
-
-    assert result.exit_code != 0
-    assert "must be auto, dark, or light" in result.output
-    mock_agent_runtime["from_config"].assert_not_called()
 
 
 def test_agent_uses_default_config_when_no_workspace_or_config_flags(mock_agent_runtime):
@@ -1723,7 +1714,7 @@ def test_one_shot_agent_assembles_goal_without_background_queue(monkeypatch, tmp
     monkeypatch.setattr("nanobot.config.home._home_path", tmp_path / "home")
     monkeypatch.setattr("nanobot.config.loader._current_config_path", tmp_path / "instance" / "config.json")
 
-    result = runner.invoke(app, ["agent", "--classic", "-m", "/goal Do the synthetic task."])
+    result = runner.invoke(app, ["agent", "-m", "/goal Do the synthetic task."])
     assert result.exit_code == 0, result.output
     assert provider.chat_stream_with_retry.await_count == 3
     calls = provider.chat_stream_with_retry.await_args_list

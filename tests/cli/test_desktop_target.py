@@ -199,7 +199,7 @@ def test_non_bare_or_noninteractive_invocations_do_not_discover(monkeypatch) -> 
     assert dispatch_bare_desktop_target(["agent"]) is None
 
     monkeypatch.setattr(desktop_target, "_interactive_shell", lambda: False)
-    assert dispatch_bare_desktop_target([]) is None
+    assert dispatch_bare_desktop_target(["webui"]) is None
     assert dispatch_bare_desktop_target(["webui"]) is None
 
 
@@ -207,7 +207,7 @@ def test_absent_desktop_selects_current_python(monkeypatch, capsys) -> None:
     monkeypatch.setattr(desktop_target, "_interactive_shell", lambda: True)
     monkeypatch.setattr(desktop_target, "discover_desktop_target", lambda: None)
 
-    assert dispatch_bare_desktop_target([]) is None
+    assert dispatch_bare_desktop_target(["webui"]) is None
     assert "Using current Python environment:" in capsys.readouterr().out
 
 
@@ -224,11 +224,11 @@ def test_target_picker_accepts_real_navigation_keys(keys, expected):
         with create_app_session(input=pipe_input, output=DummyOutput()):
             pipe_input.send_text(keys)
             assert desktop_target._choose_target(
-                DesktopReply("ready", frozenset({"webui", "tui"}))
+                DesktopReply("ready", frozenset({"webui"}))
             ) == expected
 
 
-@pytest.mark.parametrize("args", [[], ["webui"]])
+@pytest.mark.parametrize("args", [["webui"]])
 @pytest.mark.parametrize("cancel", ["interrupt", "eof"])
 def test_target_picker_cancellation_exits_without_attachment(monkeypatch, capsys, args, cancel):
     calls: list[str] = []
@@ -237,14 +237,10 @@ def test_target_picker_cancellation_exits_without_attachment(monkeypatch, capsys
         def request(self, operation: str) -> DesktopReply:
             calls.append(operation)
             assert operation == "status", "cancellation must not request attachment credentials"
-            return DesktopReply("ready", frozenset({"webui", "tui"}))
+            return DesktopReply("ready", frozenset({"webui"}))
 
     monkeypatch.setattr(desktop_target, "_interactive_shell", lambda: True)
     monkeypatch.setattr(desktop_target, "discover_desktop_target", Target)
-    monkeypatch.setattr(
-        "nanobot.cli.desktop_tui.launch_desktop_tui",
-        lambda *_: pytest.fail("cancellation started the TUI"),
-    )
     monkeypatch.setattr(
         "nanobot.cli.webui_support._launch_browser",
         lambda *_: pytest.fail("cancellation opened a browser"),
@@ -309,25 +305,6 @@ def test_desktop_webui_selection_revalidates_and_opens_browser(monkeypatch, caps
     assert "bootstrapSecret" not in output
 
 
-def test_desktop_tui_selection_fails_without_fallback(monkeypatch, capsys) -> None:
-    calls: list[str] = []
-
-    class Target:
-        def request(self, operation: str) -> DesktopReply:
-            calls.append(operation)
-            return DesktopReply("ready", frozenset({"webui"}))
-
-    monkeypatch.setattr(desktop_target, "_interactive_shell", lambda: True)
-    monkeypatch.setattr(desktop_target, "discover_desktop_target", Target)
-    monkeypatch.setattr(desktop_target, "_choose_target", lambda _status: "desktop")
-
-    assert dispatch_bare_desktop_target([]) == 3
-    assert calls == ["status", "tui"]
-    error = capsys.readouterr().err
-    assert "unavailable or incompatible" in error
-    assert "No backend was started" in error
-
-
 def test_disconnect_after_desktop_selection_never_falls_back(monkeypatch, capsys) -> None:
     calls = 0
 
@@ -348,7 +325,7 @@ def test_disconnect_after_desktop_selection_never_falls_back(monkeypatch, capsys
     assert "No backend was started" in capsys.readouterr().err
 
 
-@pytest.mark.parametrize("args", [[], ["webui"]])
+@pytest.mark.parametrize("args", [["webui"]])
 @pytest.mark.parametrize("state", ["busy", "unavailable", "offline", "untrusted"])
 def test_unready_desktop_preserves_python_before_selection(monkeypatch, capsys, args, state):
     class Target:
