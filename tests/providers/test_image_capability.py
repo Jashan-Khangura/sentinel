@@ -66,7 +66,7 @@ async def test_image_fallback_skips_text_only_candidates_without_counting_capabi
 
     chain = FallbackProvider(primary, [
         ModelPresetConfig(model="text-only", supports_images=False),
-        ModelPresetConfig(model="vision"),
+        ModelPresetConfig(model="vision", supports_images=True),
     ], factory)
     messages = [{"role": "user", "content": [_IMAGE]}]
     before = deepcopy(messages)
@@ -98,7 +98,11 @@ async def test_declared_vision_does_not_hide_actual_upstream_rejection(stream):
     upstream = LLMResponse("unsupported image format", finish_reason="error", error_status_code=400)
     primary = ImageProvider(True, upstream)
     created = []
-    chain = FallbackProvider(primary, [ModelPresetConfig(model="vision")], lambda preset: created.append(preset))
+    chain = FallbackProvider(
+        primary,
+        [ModelPresetConfig(model="vision", supports_images=True)],
+        lambda preset: created.append(preset),
+    )
     messages = [{"role": "user", "content": [_IMAGE]}]
     before = deepcopy(messages)
     call = chain.chat_stream_with_retry if stream else chain.chat_with_retry
@@ -112,17 +116,27 @@ async def test_declared_vision_does_not_hide_actual_upstream_rejection(stream):
 
 def test_factory_resolves_independent_capabilities_and_refresh_signature():
     config = Config.model_validate({
-        "agents": {"defaults": {"modelPreset": "text", "fallbackModels": ["vision", {"provider": "custom", "model": "inline"}]}},
+        "agents": {"defaults": {"modelPreset": "text", "fallbackModels": [
+            "vision", {
+                "provider": "custom",
+                "model": "inline",
+                "supportsImages": True,
+                "inputCostPerMillionTokensUsd": 0.5,
+                "outputCostPerMillionTokensUsd": 1.0,
+            },
+        ]}},
         "providers": {"custom": {"apiBase": "https://provider.example/v1"}},
         "modelPresets": {
             "text": {"model": "text", "provider": "custom", "supportsImages": False},
-            "vision": {"model": "vision", "provider": "custom"},
+            "vision": {"model": "vision", "provider": "custom", "supportsImages": True},
         },
     })
     provider = make_provider(config)
     assert isinstance(provider, FallbackProvider)
     assert provider._primary.supports_images is False
     assert [preset.supports_images for preset in provider._fallback_presets] == [True, True]
+    assert provider._fallback_presets[1].input_cost_per_million_tokens_usd == 0.5
+    assert provider._fallback_presets[1].output_cost_per_million_tokens_usd == 1.0
     signature = provider_signature(config)
     config.model_presets["vision"].supports_images = False
     assert provider_signature(config) != signature

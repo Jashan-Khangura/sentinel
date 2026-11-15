@@ -1512,9 +1512,9 @@ OpenAI Codex, xAI Grok subscriptions, and Azure OpenAI use Responses; Anthropic 
 
 **Advanced options** opens in a separate dialog; closing it returns to the preset editor. Changing a preset's model or provider resets its API selection to Auto unless the same update supplies a new declaration. Each fallback preset keeps its own API settings. Existing `agents.defaults.api` and inline fallback `api` values are preserved when converting to named presets.
 
-Use the **Image input** switch in each preset to match the model's image capability. It is enabled by default; turn it off for text-only models. Requests containing images follow the configured primary and fallback order, using presets with **Image input** enabled. Text-only requests use the full configured order. If every candidate is text-only, Sentinel returns an image-input error before sending the request.
+Use the **Image input** switch in each preset to match the model's image capability. It is disabled by default; enable it only for models known to accept image input. Requests containing images follow the configured primary and fallback order, using presets with **Image input** enabled. Text-only requests use the full configured order. If every candidate is text-only, Sentinel returns an image-input error before sending the request.
 
-For manual configuration, set `supportsImages` on a named preset, the implicit `agents.defaults` preset, or an inline fallback. Each defaults independently to `true`; use `false` for a text-only model. Transient retries preserve the original messages and images, and API validation errors are returned directly.
+For manual configuration, set `supportsImages` on a named preset, the implicit `agents.defaults` preset, or an inline fallback. Each defaults independently to `false`; set it to `true` only for a model known to accept image input. Transient retries preserve the original messages and images, and API validation errors are returned directly.
 
 ### Model Fallbacks
 

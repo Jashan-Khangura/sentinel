@@ -194,7 +194,8 @@ async def test_attribution_does_not_change_provider_requests(with_tools, with_im
         requests.clear()
         provider = FallbackProvider(
             CapturingProvider("primary", fail=fallback),
-            [ModelPresetConfig(model="same-model")], lambda _: CapturingProvider("backup"),
+            [ModelPresetConfig(model="same-model", supports_images=True)],
+            lambda _: CapturingProvider("backup"),
             fallback_preset_names=["backup"],
         )
         result = await provider.chat_stream_with_retry(

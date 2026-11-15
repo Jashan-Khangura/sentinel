@@ -21,6 +21,23 @@ def test_resolve_preset_returns_defaults_when_no_preset() -> None:
     assert resolved.context_window_tokens == config.agents.defaults.context_window_tokens
     assert resolved.temperature == config.agents.defaults.temperature
     assert resolved.reasoning_effort == config.agents.defaults.reasoning_effort
+    assert resolved.supports_images is False
+    assert resolved.input_cost_per_million_tokens_usd is None
+    assert resolved.output_cost_per_million_tokens_usd is None
+
+
+def test_unmarked_named_and_inline_fallbacks_default_to_text_only() -> None:
+    config = Config.model_validate({
+        "agents": {"defaults": {"fallbackModels": [
+            {"model": "custom/fallback", "provider": "custom"},
+        ]}},
+        "modelPresets": {"unmarked": {"model": "custom/model"}},
+    })
+
+    inline = config.agents.defaults.fallback_models[0]
+    assert not isinstance(inline, str)
+    assert config.resolve_preset("unmarked").supports_images is False
+    assert inline.supports_images is False
 
 
 def test_model_preset_catalog_missing_env_reports_explicit_config_path(
@@ -441,4 +458,48 @@ def test_image_capability_round_trip_for_defaults_named_and_inline_presets(suppo
     inline = restored.agents.defaults.fallback_models[1]
     assert not isinstance(inline, str)
     assert inline.supports_images is supports_images
-    assert Config().resolve_preset().supports_images is True
+    assert Config().resolve_preset().supports_images is False
+
+
+def test_model_cost_overrides_resolve_and_round_trip():
+    config = Config.model_validate({
+        "agents": {"defaults": {
+            "inputCostPerMillionTokensUsd": 0.25,
+            "outputCostPerMillionTokensUsd": 1.5,
+            "fallbackModels": [{
+                "model": "custom/fallback",
+                "provider": "custom",
+                "inputCostPerMillionTokensUsd": 0.5,
+                "outputCostPerMillionTokensUsd": 2.0,
+            }],
+        }},
+        "modelPresets": {
+            "priced": {
+                "model": "custom/priced",
+                "inputCostPerMillionTokensUsd": 0.1,
+                "outputCostPerMillionTokensUsd": 0.8,
+            },
+        },
+    })
+
+    restored = Config.model_validate(config.model_dump(mode="json", by_alias=True))
+    default = restored.resolve_default_preset()
+    named = restored.resolve_preset("priced")
+    inline = restored.agents.defaults.fallback_models[0]
+
+    assert default.input_cost_per_million_tokens_usd == 0.25
+    assert default.output_cost_per_million_tokens_usd == 1.5
+    assert named.input_cost_per_million_tokens_usd == 0.1
+    assert named.output_cost_per_million_tokens_usd == 0.8
+    assert not isinstance(inline, str)
+    assert inline.input_cost_per_million_tokens_usd == 0.5
+    assert inline.output_cost_per_million_tokens_usd == 2.0
+
+
+@pytest.mark.parametrize("field", [
+    "inputCostPerMillionTokensUsd",
+    "outputCostPerMillionTokensUsd",
+])
+def test_model_cost_overrides_reject_negative_prices(field):
+    with pytest.raises(ValueError):
+        ModelPresetConfig.model_validate({"model": "custom/priced", field: -0.01})

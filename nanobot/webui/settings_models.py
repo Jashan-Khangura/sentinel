@@ -1358,7 +1358,7 @@ def create_model_configuration(
         temperature=temperature if temperature is not None else base.temperature,
         reasoning_effort=reasoning_effort,
         supports_images=parse_bool(
-            query_first_alias(query, "supports_images", "supportsImages") or "true", "supports_images",
+            query_first_alias(query, "supports_images", "supportsImages") or "false", "supports_images",
         ),
         api=_parse_preset_api(config, model, provider, query_first(query, "api")),
     )
@@ -1565,6 +1565,8 @@ def migrate_model_configurations(
             temperature=primary.temperature,
             reasoning_effort=primary.reasoning_effort,
             api=primary.api,
+            input_cost_per_million_tokens_usd=primary.input_cost_per_million_tokens_usd,
+            output_cost_per_million_tokens_usd=primary.output_cost_per_million_tokens_usd,
         )
         defaults.model_preset = name
         created.append(name)
@@ -1595,6 +1597,8 @@ def migrate_model_configurations(
             ),
             reasoning_effort=fallback.reasoning_effort,
             api=fallback.api,
+            input_cost_per_million_tokens_usd=fallback.input_cost_per_million_tokens_usd,
+            output_cost_per_million_tokens_usd=fallback.output_cost_per_million_tokens_usd,
             extra_headers=fallback.extra_headers,
             extra_query=fallback.extra_query,
             extra_body=fallback.extra_body,

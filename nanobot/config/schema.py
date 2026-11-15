@@ -134,12 +134,14 @@ class InlineFallbackConfig(RequestOverrides):
 
     model: str
     provider: str
-    supports_images: bool = True
+    supports_images: bool = False
     max_tokens: int | None = None
     context_window_tokens: int | None = None
     temperature: float | None = None
     reasoning_effort: str | None = None
     api: ModelAPIConfig | None = None
+    input_cost_per_million_tokens_usd: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    output_cost_per_million_tokens_usd: float | None = Field(default=None, ge=0, allow_inf_nan=False)
 
 
 FallbackCandidate = str | InlineFallbackConfig
@@ -150,12 +152,14 @@ class ModelPresetConfig(RequestOverrides):
 
     model: str
     provider: str = "auto"
-    supports_images: bool = True
+    supports_images: bool = False
     max_tokens: int = 8192
     context_window_tokens: int = 200_000
     temperature: float = 0.1
     reasoning_effort: str | None = None
     api: ModelAPIConfig | None = None
+    input_cost_per_million_tokens_usd: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    output_cost_per_million_tokens_usd: float | None = Field(default=None, ge=0, allow_inf_nan=False)
 
     def to_generation_settings(self) -> GenerationSettings:
         return GenerationSettings(
@@ -174,10 +178,12 @@ class AgentDefaults(Base):
     provider: str = (
         "auto"  # Provider name (e.g. "anthropic", "openrouter") or "auto" for auto-detection
     )
-    supports_images: bool = True
+    supports_images: bool = False
     max_tokens: int = 8192
     context_window_tokens: int = 200_000
     temperature: float = 0.1
+    input_cost_per_million_tokens_usd: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    output_cost_per_million_tokens_usd: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     fallback_models: list[FallbackCandidate] = Field(default_factory=list)
     max_tool_iterations: int = 200
     max_concurrent_subagents: int = Field(default=4, ge=1)
@@ -560,6 +566,8 @@ class Config(BaseSettings):
             max_tokens=d.max_tokens,
             context_window_tokens=d.context_window_tokens,
             temperature=d.temperature, reasoning_effort=d.reasoning_effort, api=d.api,
+            input_cost_per_million_tokens_usd=d.input_cost_per_million_tokens_usd,
+            output_cost_per_million_tokens_usd=d.output_cost_per_million_tokens_usd,
         )
 
     def resolve_preset(self, name: str | None = None) -> ModelPresetConfig:

@@ -273,7 +273,7 @@ export function useModelSettingsActions({
           form.temperature !== selectedPreset.temperature ? form.temperature : undefined,
         reasoningEffort:
           reasoningEffort !== selectedPreset.reasoning_effort ? reasoningEffort : undefined,
-        supportsImages: form.supportsImages !== (selectedPreset.supports_images ?? true)
+        supportsImages: form.supportsImages !== (selectedPreset.supports_images ?? false)
           ? form.supportsImages : undefined,
         api: modelAPISelection(form.api) !== modelAPISelection(selectedPreset.api)
           ? form.api : undefined,
@@ -339,7 +339,7 @@ export function useModelSettingsActions({
       modelPreset: "",
       provider,
       model: "",
-      supportsImages: true,
+      supportsImages: false,
       api: null,
       extraHeaders: "",
       extraQuery: "",

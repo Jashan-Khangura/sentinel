@@ -47,6 +47,8 @@ class ProviderModelSpec:
     input_modalities: tuple[str, ...] = ()
     output_modalities: tuple[str, ...] = ()
     default_reasoning_effort: str | None = None
+    input_cost_per_million_tokens_usd: float | None = None
+    output_cost_per_million_tokens_usd: float | None = None
 
 
 @dataclass(frozen=True)

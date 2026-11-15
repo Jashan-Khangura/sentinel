@@ -711,7 +711,7 @@ def test_migrate_model_configurations_preserves_legacy_chain(
     assert saved.agents.defaults.fallback_models == ["claude-sonnet-4"]
     assert saved.model_presets["gpt-4o"].temperature == 0.25
     assert saved.model_presets["gpt-4o"].supports_images is False
-    assert saved.model_presets["claude-sonnet-4"].supports_images is True
+    assert saved.model_presets["claude-sonnet-4"].supports_images is False
     assert saved.model_presets["claude-sonnet-4"].max_tokens == 4096
     assert saved.model_presets["claude-sonnet-4"].temperature == 0.25
 
@@ -2991,4 +2991,4 @@ def test_preset_image_capability_persists_and_preserves_unrelated_edits(tmp_path
     assert next(row for row in updated["model_presets"] if row["name"] == "Text")["supports_images"] is True
     assert json.loads(config_path.read_text(encoding="utf-8"))["modelPresets"]["Text"]["supportsImages"] is True
     defaulted = create_model_configuration({"name": ["Default vision"], "provider": ["openai"], "model": ["gpt-4.1"]})
-    assert next(row for row in defaulted["model_presets"] if row["name"] == "Default vision")["supports_images"] is True
+    assert next(row for row in defaulted["model_presets"] if row["name"] == "Default vision")["supports_images"] is False
