@@ -6,12 +6,14 @@ from contextlib import nullcontext, suppress
 from typing import Any
 
 from loguru import logger
+from prompt_toolkit.history import FileHistory
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.text import Text
 
 from nanobot import __logo__
 from nanobot.cli.stream import StreamRenderer, ThinkingSpinner
+from nanobot.utils.helpers import sanitize_surrogates as _sanitize_surrogates
 
 __all__ = [
     "_ReasoningBuffer",
@@ -20,6 +22,8 @@ __all__ = [
     "_print_agent_response",
     "_print_cli_progress_line",
     "_print_cli_reasoning",
+    "_sanitize_surrogates",
+    "SafeFileHistory",
 ]
 
 console = Console()
@@ -53,6 +57,13 @@ def _ensure_interactive_tty_mode() -> None:
         termios.tcsetattr(fd, termios.TCSANOW, attrs)
         termios.tcflush(fd, termios.TCIFLUSH)
         logger.debug("Restored foreground gateway TTY mode")
+
+
+class SafeFileHistory(FileHistory):
+    """Sanitize surrogate characters before writing CLI input history."""
+
+    def store_string(self, string: str) -> None:
+        super().store_string(_sanitize_surrogates(string))
 
 
 def _make_console() -> Console:

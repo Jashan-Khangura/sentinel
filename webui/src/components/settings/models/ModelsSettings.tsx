@@ -50,6 +50,7 @@ import { cn } from "@/lib/utils";
 import type { ModelAPIConfig, SettingsPayload } from "@/lib/types";
 import { ProviderParameterFields, type RequestParameterDraft } from "@/components/settings/models/ProviderParameterFields";
 import { providerJsonValue } from "@/components/settings/models/providerForm";
+import { RECOMMENDED_PROVIDER_NAMES } from "@/components/settings/models/recommendedProviders";
 
 export interface AgentSettingsDraft {
   model: string;
@@ -326,7 +327,7 @@ export function ModelsSettings({
   const configuredProviders = settings.providers.filter((provider) => provider.configured);
   const selectedProvider = settings.providers.find((provider) => provider.name === form.provider);
   const selectableProviders = uniqueProviders([
-    ...configuredProviders,
+    ...configuredProviders.filter((provider) => RECOMMENDED_PROVIDER_NAMES.has(provider.name)),
     ...(selectedProvider ? [selectedProvider] : []),
   ]);
   const showAutoProvider = selectedPreset?.provider === "auto" || form.provider === "auto";

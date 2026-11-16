@@ -18,6 +18,32 @@ async function chooseProviderToConfigure(label: string) {
   fireEvent.click(await screen.findByRole("option", { name: label }));
 }
 
+function withLegacyPresetProviders(payload: SettingsPayload, providers: string[]): SettingsPayload {
+  const [primaryPreset, ...otherPresets] = payload.model_presets;
+  const [primaryProvider] = providers;
+  if (!primaryPreset || !primaryProvider) return payload;
+  return {
+    ...payload,
+    agent: {
+      ...payload.agent,
+      provider: primaryProvider,
+      resolved_provider: primaryProvider,
+    },
+    model_presets: [
+      ...providers.map((provider, index) => ({
+        ...primaryPreset,
+        ...(index > 0 && {
+          name: `${primaryPreset.name}-${provider}`,
+          label: provider,
+        }),
+        provider,
+        resolved_provider: provider,
+      })),
+      ...otherPresets,
+    ],
+  };
+}
+
 describe("Settings providers", () => {
   installSettingsViewTestHooks();
 
@@ -47,6 +73,35 @@ describe("Settings providers", () => {
     await waitFor(() => expect(trigger).toHaveFocus());
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(requestMutationMock).not.toHaveBeenCalled();
+  });
+
+  it("limits new built-in choices while retaining configured providers", async () => {
+    const payload = settingsPayload();
+    payload.providers = [
+      { name: "openai", label: "OpenAI", configured: false },
+      { name: "anthropic", label: "Anthropic", configured: false },
+      { name: "gemini", label: "Gemini", configured: false },
+      { name: "deepseek", label: "DeepSeek", configured: false },
+      { name: "groq", label: "Groq", configured: false },
+      { name: "nvidia", label: "NVIDIA NIM", configured: false },
+      { name: "openrouter", label: "OpenRouter", configured: false },
+      { name: "ollama", label: "Ollama", configured: false, model_catalog: "local" },
+      { name: "moonshot", label: "Moonshot", configured: false },
+      { name: "bedrock", label: "AWS Bedrock", configured: true },
+    ];
+    renderProviderManager({ initialSection: "models", initialSettings: payload });
+
+    expect(screen.getByRole("button", { name: "AWS Bedrock" })).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Add provider" }));
+    const dialog = screen.getByRole("dialog", { name: "Add provider" });
+    expect(within(dialog).getAllByRole("option")).toHaveLength(8);
+    for (const provider of [
+      "OpenAI", "Anthropic", "Gemini", "DeepSeek", "Groq", "NVIDIA NIM", "OpenRouter", "Ollama",
+    ]) {
+      expect(within(dialog).getByRole("option", { name: provider })).toBeInTheDocument();
+    }
+    expect(within(dialog).queryByRole("option", { name: "Moonshot" })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole("option", { name: "AWS Bedrock" })).not.toBeInTheDocument();
   });
 
   it.each([false, true])("configures the current provider without losing the preset name or model (save: %s)", async (save) => {
@@ -91,7 +146,7 @@ describe("Settings providers", () => {
 
   it("preserves the preset draft when signing out of its current provider", async () => {
     const user = userEvent.setup();
-    const payload = settingsPayload();
+    const payload = withLegacyPresetProviders(settingsPayload(), ["openai_codex"]);
     const provider = {
       name: "openai_codex", label: "OpenAI Codex", configured: true,
       auth_type: "oauth" as const, api_key_required: false, oauth_login_supported: true,
@@ -143,7 +198,7 @@ describe("Settings providers", () => {
   it.each([false, true])("selects the newly added provider and preserves the preset draft (custom: %s)", async (custom) => {
     const user = userEvent.setup();
     const payload = settingsPayload();
-    const provider = { name: custom ? "company" : "moonshot", label: custom ? "Company" : "Moonshot", configured: false };
+    const provider = { name: custom ? "company" : "nvidia", label: custom ? "Company" : "NVIDIA NIM", configured: false };
     payload.providers = custom ? [] : [provider];
     requestMutationMock.mockResolvedValueOnce({
       ...payload, providers: [{ ...provider, configured: true, api_key_hint: "configured" }],
@@ -159,7 +214,7 @@ describe("Settings providers", () => {
     await user.click(screen.getByRole("option", { name: "Add provider" }));
     await user.click(custom
       ? screen.getByRole("button", { name: "Custom" })
-      : screen.getByRole("option", { name: "Moonshot" }));
+      : screen.getByRole("option", { name: "NVIDIA NIM" }));
     if (custom) {
       await user.type(screen.getByPlaceholderText("My model provider"), "Company");
       await user.type(screen.getByPlaceholderText("https://api.example.com/v1"), "https://gateway.example/v1");
@@ -180,6 +235,7 @@ describe("Settings providers", () => {
     const payload = settingsPayload();
     payload.providers = [
       { name: "deepseek", label: "DeepSeek", configured: true },
+      { name: "anthropic", label: "Anthropic", configured: false },
       { name: "volcengine", label: "VolcEngine", configured: false },
       { name: "volcengine_coding_plan", label: "VolcEngine Coding Plan", configured: false },
     ];
@@ -190,16 +246,17 @@ describe("Settings providers", () => {
     const search = within(dialog).getByRole("combobox", { name: "Search providers" });
     await waitFor(() => expect(search).toHaveFocus());
     expect(within(dialog).queryByRole("option", { name: "DeepSeek" })).not.toBeInTheDocument();
-    await user.type(search, "火山");
-    expect(within(dialog).getAllByRole("option")).toHaveLength(2);
+    await user.type(search, "Claude");
+    expect(within(dialog).getAllByRole("option")).toHaveLength(1);
+    expect(within(dialog).getByRole("option", { name: "Anthropic" })).toBeInTheDocument();
     await user.keyboard("{ArrowDown}{Enter}");
-    expect(screen.getByRole("dialog", { name: "VolcEngine Coding Plan" })).toBe(dialog);
+    expect(screen.getByRole("dialog", { name: "Anthropic" })).toBe(dialog);
     expect(screen.getAllByRole("dialog")).toHaveLength(1);
     expect(within(dialog).getByLabelText("API key", { selector: "input" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "VolcEngine Coding Plan" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Anthropic" })).not.toBeInTheDocument();
     await user.click(within(dialog).getByRole("button", { name: "Back to providers" }));
     expect(screen.getByRole("dialog", { name: "Add provider" })).toBe(dialog);
-    expect(screen.getByRole("combobox")).toHaveValue("火山");
+    expect(screen.getByRole("combobox")).toHaveValue("Claude");
     await user.keyboard("{Escape}");
     await waitFor(() => expect(screen.getByRole("dialog", { name: "Manage providers" })).toBeVisible());
     expect(screen.getByRole("button", { name: "Add provider" })).toHaveFocus();
@@ -240,33 +297,33 @@ describe("Settings providers", () => {
   it("adds a built-in provider only after saving and returns focus to its management row", async () => {
     const user = userEvent.setup();
     const payload = settingsPayload();
-    payload.providers = [{ name: "moonshot", label: "Moonshot", configured: false }];
+    payload.providers = [{ name: "nvidia", label: "NVIDIA NIM", configured: false }];
     requestMutationMock.mockResolvedValueOnce({
       ...payload, providers: [{ ...payload.providers[0], configured: true, api_key_hint: "configured" }],
     });
     renderProviderManager({ initialSection: "models", initialSettings: payload });
     const trigger = screen.getByRole("button", { name: "Add provider" });
     await user.click(trigger);
-    await user.click(screen.getByRole("option", { name: "Moonshot" }));
+    await user.click(screen.getByRole("option", { name: "NVIDIA NIM" }));
     await user.type(screen.getByPlaceholderText("Enter API key"), "test-key");
     await user.click(screen.getByRole("button", { name: "Add provider" }));
     await waitFor(() => expect(screen.getByRole("dialog", { name: "Manage providers" })).toBeVisible());
-    expect(screen.getByRole("button", { name: "Moonshot" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Moonshot" })).toHaveFocus();
+    expect(screen.getByRole("button", { name: "NVIDIA NIM" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "NVIDIA NIM" })).toHaveFocus();
     await user.click(screen.getByRole("button", { name: "Add provider" }));
-    expect(screen.queryByRole("option", { name: "Moonshot" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "NVIDIA NIM" })).not.toBeInTheDocument();
   });
 
   it.each([false, true])("retains the add-provider draft after a failed save (custom: %s)", async (custom) => {
     const user = userEvent.setup();
     const payload = settingsPayload();
-    payload.providers = [{ name: "moonshot", label: "Moonshot", configured: false }];
+    payload.providers = [{ name: "nvidia", label: "NVIDIA NIM", configured: false }];
     requestMutationMock.mockRejectedValueOnce(new Error("Provider could not be saved"));
     renderProviderManager({ initialSection: "models", initialSettings: payload });
     await user.click(screen.getByRole("button", { name: "Add provider" }));
     await user.click(custom
       ? screen.getByRole("button", { name: "Custom" })
-      : screen.getByRole("option", { name: "Moonshot" }));
+      : screen.getByRole("option", { name: "NVIDIA NIM" }));
     const dialog = screen.getByRole("dialog");
     if (custom) {
       await user.type(screen.getByPlaceholderText("My model provider"), "Company gateway");
@@ -282,11 +339,11 @@ describe("Settings providers", () => {
     expect(screen.getByRole("dialog", { name: "Add provider" })).toBe(dialog);
     await user.click(custom
       ? screen.getByRole("button", { name: "Custom" })
-      : screen.getByRole("option", { name: "Moonshot" }));
+      : screen.getByRole("option", { name: "NVIDIA NIM" }));
     expect(screen.getByPlaceholderText("Enter API key")).toHaveValue("");
     await user.click(screen.getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(screen.getByRole("dialog", { name: "Manage providers" })).toBeVisible());
-    expect(screen.queryByRole("button", { name: "Moonshot" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "NVIDIA NIM" })).not.toBeInTheDocument();
   });
 
   it("keeps provider labels and keyboard configuration accessible with decorative logos", async () => {
@@ -337,7 +394,7 @@ describe("Settings providers", () => {
       oauth_expires_at: null,
       oauth_login_supported: true,
     } satisfies SettingsPayload["providers"][number];
-    const payload: SettingsPayload = { ...base, providers: [xaiProvider] };
+    const payload = withLegacyPresetProviders({ ...base, providers: [xaiProvider] }, ["xai_grok"]);
     const signedIn: SettingsPayload = {
       ...payload,
       providers: [{ ...xaiProvider, configured: true, oauth_account: "user@example.com" }],
@@ -452,7 +509,7 @@ describe("Settings providers", () => {
         oauth_expires_at: null,
         oauth_login_supported: true,
       } satisfies SettingsPayload["providers"][number];
-      const payload: SettingsPayload = { ...base, providers: [xaiProvider] };
+      const payload = withLegacyPresetProviders({ ...base, providers: [xaiProvider] }, ["xai_grok"]);
       const authorization = {
         status: "authorization_required",
         provider: "xai_grok",
@@ -531,7 +588,7 @@ describe("Settings providers", () => {
       oauth_expires_at: null,
       oauth_login_supported: true,
     } satisfies SettingsPayload["providers"][number];
-    const payload: SettingsPayload = { ...base, providers: [codexProvider] };
+    const payload = withLegacyPresetProviders({ ...base, providers: [codexProvider] }, ["openai_codex"]);
     const signedIn: SettingsPayload = {
       ...payload,
       providers: [{ ...codexProvider, configured: true, oauth_account: "acct-codex" }],
@@ -609,7 +666,7 @@ describe("Settings providers", () => {
         oauth_expires_at: null,
         oauth_login_supported: true,
       } satisfies SettingsPayload["providers"][number];
-      const payload: SettingsPayload = { ...base, providers: [codexProvider] };
+      const payload = withLegacyPresetProviders({ ...base, providers: [codexProvider] }, ["openai_codex"]);
       const signedIn: SettingsPayload = {
         ...payload,
         providers: [{ ...codexProvider, configured: true, oauth_account: "acct-codex" }],
@@ -749,7 +806,10 @@ describe("Settings providers", () => {
         extra_body: null,
       },
     ];
-    let payload: SettingsPayload = { ...base, providers };
+    let payload: SettingsPayload = withLegacyPresetProviders(
+      { ...base, providers },
+      ["xai_grok", "openai_codex"],
+    );
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url === "/api/settings") return jsonResponse(payload);

@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import type { ProviderOperation } from "@/components/settings/models/useModelSettingsState";
 import { ProviderIcon } from "@/components/settings/shared/ProviderIcon";
 import { ProviderSearchList } from "@/components/settings/models/ProviderSearchList";
+import { RECOMMENDED_PROVIDER_NAMES } from "@/components/settings/models/recommendedProviders";
 export { ProviderIcon } from "@/components/settings/shared/ProviderIcon";
 import { CapabilityInstallNotice } from "@/components/settings/shared/SettingsControls";
 import { ToggleButton } from "@/components/ui/toggle-button";
@@ -592,11 +593,20 @@ export function ProvidersSettings({
   );
   const configuredProviders = settings.providers.filter((provider) => provider.configured);
   const unconfiguredProviders = useMemo(
-    () =>
-      settings.providers.filter(
-        (provider) => !provider.configured && provider.name !== "custom",
-      ),
-    [settings.providers],
+    () => {
+      const presetProviderNames = new Set<string>();
+      for (const preset of settings.model_presets) {
+        presetProviderNames.add(preset.provider);
+        if (preset.resolved_provider) presetProviderNames.add(preset.resolved_provider);
+      }
+      return settings.providers.filter(
+        (provider) =>
+          !provider.configured &&
+          provider.name !== "custom" &&
+          (RECOMMENDED_PROVIDER_NAMES.has(provider.name) || presetProviderNames.has(provider.name)),
+      );
+    },
+    [settings.model_presets, settings.providers],
   );
   const customProviderSaving = providerSaving === CUSTOM_PROVIDER_CREATION_KEY;
   const selectedProvider = view.kind === "provider"

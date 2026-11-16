@@ -828,6 +828,7 @@ function Shell({
 }) {
   const { t, i18n } = useTranslation();
   const remoteConnections = useRemoteConnections();
+  const localActive = remoteConnections?.localActive ?? true;
   const managingConnections = remoteConnections?.managing === true && !remoteConnections?.activeHostId;
   const { theme, preference: themePreference, toggle, setTheme } = useTheme();
   const managementMain = useRef<HTMLElement>(null);
