@@ -48,6 +48,27 @@ def test_model_preset_getter_none_when_not_set(tmp_path) -> None:
     assert loop.model_preset is None
 
 
+def test_elite_escalation_requires_one_elite_preset(tmp_path) -> None:
+    loop = _make_loop(tmp_path, {
+        "default": ModelPresetConfig(model="standard-model"),
+        "elite": ModelPresetConfig(model="elite-model", routing_tier="elite"),
+    })
+
+    resolve_elite = loop._elite_escalation_resolver(loop.runtime_resolver.runtime)
+
+    assert resolve_elite is not None
+    assert resolve_elite().model == "elite-model"
+
+    loop_with_multiple_elite = _make_loop(tmp_path, {
+        "default": ModelPresetConfig(model="standard-model"),
+        "elite": ModelPresetConfig(model="elite-model", routing_tier="elite"),
+        "elite-2": ModelPresetConfig(model="another-elite-model", routing_tier="elite"),
+    })
+    assert loop_with_multiple_elite._elite_escalation_resolver(
+        loop_with_multiple_elite.runtime_resolver.runtime,
+    ) is None
+
+
 def test_model_preset_setter_updates_state(tmp_path) -> None:
     presets = {
         "fast": ModelPresetConfig(

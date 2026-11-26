@@ -152,6 +152,11 @@ class ModelPresetConfig(RequestOverrides):
 
     model: str
     provider: str = "auto"
+    routing_tier: Literal["standard", "elite"] = Field(
+        default="standard",
+        validation_alias=AliasChoices("routing_tier", "routingTier"),
+        serialization_alias="routingTier",
+    )
     supports_images: bool = False
     max_tokens: int = 8192
     context_window_tokens: int = 200_000
@@ -182,6 +187,11 @@ class AgentDefaults(Base):
     max_tokens: int = 8192
     context_window_tokens: int = 200_000
     temperature: float = 0.1
+    routing_tier: Literal["standard", "elite"] = Field(
+        default="standard",
+        validation_alias=AliasChoices("routing_tier", "routingTier"),
+        serialization_alias="routingTier",
+    )
     input_cost_per_million_tokens_usd: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     output_cost_per_million_tokens_usd: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     fallback_models: list[FallbackCandidate] = Field(default_factory=list)
@@ -563,6 +573,7 @@ class Config(BaseSettings):
         d = self.agents.defaults
         return ModelPresetConfig(
             model=d.model, provider=d.provider, supports_images=d.supports_images,
+            routing_tier=d.routing_tier,
             max_tokens=d.max_tokens,
             context_window_tokens=d.context_window_tokens,
             temperature=d.temperature, reasoning_effort=d.reasoning_effort, api=d.api,

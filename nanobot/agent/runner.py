@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import time
 from collections.abc import Awaitable, Callable, Iterable
 from copy import deepcopy
@@ -89,6 +90,32 @@ class AgentCheckpoint(AgentCheckpointState):
 ContinuationCallback = Callable[[], Awaitable[str | None]]
 CheckpointCallback = Callable[[AgentCheckpoint], Awaitable[None]]
 InjectionCallback = Callable[[], Awaitable[Iterable[Any] | None]]
+EliteRuntimeResolver = Callable[[], LLMRuntime]
+
+_ELITE_ESCALATION_TOOL: dict[str, Any] = {
+    "type": "function",
+    "function": {
+        "name": "escalate_to_elite",
+        "description": (
+            "Request a one-time switch to the configured Elite model when the task "
+            "cannot be completed reliably with your current model. Do not use for "
+            "routine tasks or merely to improve an already adequate answer."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "reason": {
+                    "type": "string",
+                    "description": "Briefly explain why this task needs more capability.",
+                    "minLength": 1,
+                    "maxLength": 240,
+                },
+            },
+            "required": ["reason"],
+            "additionalProperties": False,
+        },
+    },
+}
 
 _DEFAULT_ERROR_MESSAGE = "Sorry, I encountered an error calling the AI model."
 _ARREARAGE_ERROR_MESSAGE = (
@@ -136,6 +163,7 @@ class AgentRunSpec:
     injection_callback: InjectionCallback | None = None
     terminal_injection_callback: InjectionCallback | None = None
     continuation_callback: ContinuationCallback | None = None
+    resolve_elite_runtime: EliteRuntimeResolver | None = None
     finalize_on_max_iterations: bool = True
     provider_state: ProviderConversationState | None = None
     llm_usage_source: LLMUsageSource | None = None
@@ -421,6 +449,7 @@ class AgentRunner:
         pending_length_segment: tuple[AgentHookContext, str] | None = None
         had_injections = False
         pending_stream_content: str | None = None
+        escalation_iteration: int | None = None
 
         async def checkpoint_compaction(state: ProviderConversationState) -> None:
             await self._emit_checkpoint(spec, {
@@ -481,6 +510,7 @@ class AgentRunner:
         while (
             iteration + 1 < spec.max_iterations
             or followup_requested
+            or iteration == escalation_iteration
             or await self._continuation_prompt(spec) is not None
         ):
             iteration += 1
@@ -638,18 +668,111 @@ class AgentRunner:
                         messages,
                     )
 
-                await execute_tool_calls(
-                    spec.tools,
-                    response.tool_calls,
-                    concurrent=spec.concurrent_tools,
-                    external_lookup_counts=external_lookup_counts,
-                    workspace_violation_counts=workspace_violation_counts,
-                    hook=hook,
-                    context=context,
-                    model_messages=messages_for_model,
-                    compacted_tool_results=request_state.compacted_tool_results,
-                    on_settled=settle_tool_results,
+                elite_runtime_resolver = spec.resolve_elite_runtime
+                escalation_calls = (
+                    [
+                        call for call in response.tool_calls
+                        if call.name == "escalate_to_elite"
+                    ]
+                    if elite_runtime_resolver is not None
+                    else []
                 )
+                if escalation_calls:
+                    reason = (
+                        self._escalation_reason(escalation_calls[0].arguments)
+                        if len(escalation_calls) == 1
+                        else None
+                    )
+                    valid_request = (
+                        len(response.tool_calls) == 1
+                        and len(escalation_calls) == 1
+                        and reason is not None
+                    )
+                    elite_runtime = (
+                        elite_runtime_resolver()
+                        if valid_request and elite_runtime_resolver is not None
+                        else None
+                    )
+                    accepted = elite_runtime is not None
+                    if accepted:
+                        result_text = (
+                            "Escalation accepted. Continue the user's task using your "
+                            "stronger reasoning; do not mention the routing mechanism."
+                        )
+                        event_detail = "elite_escalation_accepted"
+                    elif len(response.tool_calls) != 1:
+                        result_text = (
+                            "Escalation must be requested alone. No tools in that "
+                            "response were executed; retry with a separate request."
+                        )
+                        event_detail = "elite_escalation_mixed_with_tools"
+                    else:
+                        result_text = "Invalid escalation request; provide a brief reason."
+                        event_detail = "invalid_elite_escalation_request"
+
+                    if elite_runtime is not None:
+                        spec.runtime = elite_runtime
+                        spec.resolve_elite_runtime = None
+                        escalation_iteration = iteration
+                        governance_config = replace(
+                            governance_config,
+                            provider=elite_runtime.provider,
+                            model=elite_runtime.model,
+                            context_window_tokens=elite_runtime.context_window_tokens,
+                            max_tokens=elite_runtime.generation.max_tokens,
+                        )
+                        conversation_state = ProviderConversationStateController(
+                            provider=elite_runtime.provider,
+                            model=elite_runtime.model,
+                            messages=messages,
+                            session_id=spec.session_key,
+                            checkpoint_callback=checkpoint_compaction,
+                        )
+                        request_state.config = governance_config
+                        request_state.conversation = conversation_state
+                        request_state.messages = None
+                        request_state.tool_definitions = None
+                        request_state.provider_compaction_applied = False
+
+                    synthetic_results: list[ToolCallResult] = []
+                    for tool_call in response.tool_calls:
+                        call_context = replace(
+                            context,
+                            tool_calls=[tool_call],
+                            tool_results=[],
+                            tool_events=[],
+                        )
+                        await hook.on_tool_execution_event(call_context)
+                        event = {
+                            "name": tool_call.name,
+                            "status": "ok" if accepted else "error",
+                            "detail": event_detail,
+                        }
+                        result = (
+                            result_text
+                            if tool_call.name == "escalate_to_elite"
+                            else "Tool was not executed because this response also requested escalation."
+                        )
+                        synthetic_results.append(ToolCallResult(tool_call, result, event))
+                        await hook.on_tool_execution_event(replace(
+                            call_context,
+                            tool_results=[result],
+                            tool_events=[event],
+                        ))
+                    await settle_tool_results(synthetic_results)
+                else:
+                    await execute_tool_calls(
+                        spec.tools,
+                        response.tool_calls,
+                        concurrent=spec.concurrent_tools,
+                        external_lookup_counts=external_lookup_counts,
+                        workspace_violation_counts=workspace_violation_counts,
+                        hook=hook,
+                        context=context,
+                        model_messages=messages_for_model,
+                        compacted_tool_results=request_state.compacted_tool_results,
+                        on_settled=settle_tool_results,
+                    )
                 empty_content_retries = 0
                 length_recovery_parts.clear()
                 await hook.after_iteration(context)
@@ -1040,7 +1163,7 @@ class AgentRunner:
         messages, kwargs = await self._prepare_model_request(
             spec,
             messages,
-            tools=spec.tools.get_definitions(),
+            tools=self._tool_definitions(spec),
             request_state=request_state,
             transcript=transcript,
         )
@@ -1520,6 +1643,31 @@ class AgentRunner:
         if right is None:
             return left
         return left + right
+
+    @staticmethod
+    def _tool_definitions(spec: AgentRunSpec) -> list[dict[str, Any]]:
+        definitions = spec.tools.get_definitions()
+        if spec.resolve_elite_runtime is None:
+            return definitions
+        return [*definitions, deepcopy(_ELITE_ESCALATION_TOOL)]
+
+    @staticmethod
+    def _escalation_reason(arguments: Any) -> str | None:
+        if isinstance(arguments, str):
+            try:
+                arguments = json.loads(arguments)
+            except json.JSONDecodeError:
+                return None
+        if not isinstance(arguments, dict):
+            return None
+        parsed = cast(dict[str, Any], arguments)
+        if set(parsed) != {"reason"}:
+            return None
+        reason = parsed.get("reason")
+        if not isinstance(reason, str):
+            return None
+        reason = reason.strip()
+        return reason if 1 <= len(reason) <= 240 else None
 
     async def _emit_checkpoint(
         self,

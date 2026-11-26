@@ -46,6 +46,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { ModelAPIConfig, SettingsPayload } from "@/lib/types";
 import { ProviderParameterFields, type RequestParameterDraft } from "@/components/settings/models/ProviderParameterFields";
@@ -59,6 +60,7 @@ export interface AgentSettingsDraft {
   maxTokens: number;
   contextWindowTokens: number;
   temperature: number;
+  routingTier: "standard" | "elite";
   reasoningEffort: string;
   supportsImages: boolean;
   api: ModelAPIConfig | null;
@@ -104,6 +106,7 @@ export const DEFAULT_AGENT_SETTINGS_DRAFT: AgentSettingsDraft = {
   maxTokens: 8192,
   contextWindowTokens: 200_000,
   temperature: 0.1,
+  routingTier: "standard",
   reasoningEffort: "",
   supportsImages: false,
   api: null,
@@ -132,6 +135,7 @@ export function agentDraftFromPayload(
       activePreset?.context_window_tokens ?? payload.agent.context_window_tokens,
     ),
     temperature: activePreset?.temperature ?? payload.agent.temperature,
+    routingTier: activePreset?.routing_tier ?? payload.agent.routing_tier ?? "standard",
     reasoningEffort: activePreset?.reasoning_effort ?? "",
     supportsImages: (activePreset ? activePreset.supports_images : payload.agent.supports_images) ?? false,
     api: activePreset ? activePreset.api ?? null : payload.agent.api ?? null,
@@ -406,6 +410,7 @@ export function ModelsSettings({
       maxTokens: preset.max_tokens,
       contextWindowTokens: normalizeContextWindowTokens(preset.context_window_tokens),
       temperature: preset.temperature,
+      routingTier: preset.routing_tier ?? "standard",
       reasoningEffort: preset.reasoning_effort ?? "",
       supportsImages: preset.supports_images ?? false,
       api: preset.api ?? null,
@@ -560,6 +565,31 @@ export function ModelsSettings({
             setForm((prev) => ({ ...prev, supportsImages }));
           }}
         />
+      </SettingsRow>
+      <SettingsRow
+        title={tx("settings.models.routingTier", "Routing tier")}
+        description={tx(
+          "settings.models.routingTierHelp",
+          "Classify this preset as Standard or Elite.",
+        )}
+      >
+        <Select
+          value={form.routingTier}
+          onValueChange={(routingTier) => {
+            if (routingTier !== "standard" && routingTier !== "elite") return;
+            edits.complete();
+            setForm((prev) => ({ ...prev, routingTier }));
+          }}
+          disabled={saving || creatingSaving}
+        >
+          <SelectTrigger aria-label={tx("settings.models.routingTier", "Routing tier")}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="standard">{tx("settings.models.routingTierStandard", "Standard")}</SelectItem>
+            <SelectItem value="elite">{tx("settings.models.routingTierElite", "Elite")}</SelectItem>
+          </SelectContent>
+        </Select>
       </SettingsRow>
       <SettingsRow title={tx("settings.models.reasoningEffort", "Reasoning effort")}>
         <ReasoningEffortPicker

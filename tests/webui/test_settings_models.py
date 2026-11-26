@@ -47,6 +47,29 @@ def test_preset_request_overrides_redact_roundtrip_and_clear():
     assert config.model_presets[name].extra_query is None
 
 
+def test_preset_routing_tier_roundtrips_through_settings() -> None:
+    config = Config()
+    config.providers.openai.api_key = "fixture"
+    name = create_model_configuration(config, {
+        "name": ["elite"], "provider": ["openai"], "model": ["gpt-4o"],
+        "routing_tier": ["elite"],
+    }, oauth_status=_oauth_status)
+
+    payload = model_settings_payload(config, oauth_status=_oauth_status)
+    row = next(row for row in payload["model_presets"] if row["name"] == name)
+    assert row["routing_tier"] == "elite"
+
+    assert update_model_configuration(config, {
+        "name": [name], "routingTier": ["standard"],
+    }, oauth_status=_oauth_status)
+    assert config.model_presets[name].routing_tier == "standard"
+
+    with pytest.raises(WebUISettingsError, match="routing_tier must be standard or elite"):
+        update_model_configuration(config, {
+            "name": [name], "routing_tier": ["economy"],
+        }, oauth_status=_oauth_status)
+
+
 def test_preset_provider_switch_clears_secrets():
     config = Config()
     config.providers.openai.api_key = "fixture"

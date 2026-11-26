@@ -208,6 +208,7 @@ export function useModelSettingsActions({
           maxTokens: form.maxTokens,
           contextWindowTokens: form.contextWindowTokens,
           temperature: form.temperature,
+          routingTier: form.routingTier,
           reasoningEffort: form.reasoningEffort || null,
           supportsImages: form.supportsImages,
           api: form.api ?? undefined,
@@ -271,6 +272,10 @@ export function useModelSettingsActions({
             : undefined,
         temperature:
           form.temperature !== selectedPreset.temperature ? form.temperature : undefined,
+        routingTier:
+          form.routingTier !== (selectedPreset.routing_tier ?? "standard")
+            ? form.routingTier
+            : undefined,
         reasoningEffort:
           reasoningEffort !== selectedPreset.reasoning_effort ? reasoningEffort : undefined,
         supportsImages: form.supportsImages !== (selectedPreset.supports_images ?? false)
@@ -349,6 +354,7 @@ export function useModelSettingsActions({
         primaryPreset?.context_window_tokens ?? settings.agent.context_window_tokens,
       ),
       temperature: primaryPreset?.temperature ?? settings.agent.temperature,
+      routingTier: "standard",
       reasoningEffort: primaryPreset?.reasoning_effort ?? settings.agent.reasoning_effort ?? "",
     }));
     setModelPresetCreating(true);

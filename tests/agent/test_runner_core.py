@@ -273,6 +273,97 @@ async def test_runner_preserves_reasoning_fields_and_tool_results():
 
 
 @pytest.mark.asyncio
+async def test_runner_escalates_once_to_elite_and_drops_standard_provider_state():
+    from nanobot.agent.runner import AgentRunner
+    from nanobot.utils.llm_runtime import LLMRuntime
+
+    standard_provider = MagicMock(spec=LLMProvider)
+    elite_provider = MagicMock(spec=LLMProvider)
+    standard_provider.can_resume_conversation_state.return_value = True
+    standard_state = ProviderConversationState(
+        kind="test",
+        provider="standard",
+        model="standard-model",
+        version=1,
+        payload={"private": "standard-only"},
+    )
+    standard_requests: list[dict] = []
+    elite_requests: list[dict] = []
+    checkpoints: list[dict] = []
+
+    async def standard_chat(**kwargs):
+        standard_requests.append(kwargs)
+        return LLMResponse(
+            content=None,
+            tool_calls=[ToolCallRequest(
+                id="escalate_1",
+                name="escalate_to_elite",
+                arguments={"reason": "The task requires deeper analysis."},
+            )],
+            provider_state=standard_state,
+        )
+
+    async def elite_chat(**kwargs):
+        elite_requests.append(kwargs)
+        return LLMResponse(content="Elite answer")
+
+    async def checkpoint(payload):
+        checkpoints.append(payload)
+
+    standard_provider.chat_stream_with_retry = standard_chat
+    elite_provider.chat_stream_with_retry = elite_chat
+    tools = MagicMock()
+    tools.get_definitions.return_value = []
+    elite_runtime = LLMRuntime.capture(
+        elite_provider,
+        "elite-model",
+        context_window_tokens=32_000,
+    )
+    spec = make_run_spec(
+        standard_provider,
+        initial_messages=[
+            {"role": "system", "content": "system"},
+            {"role": "user", "content": "solve a difficult task"},
+        ],
+        tools=tools,
+        model="standard-model",
+        max_iterations=1,
+        max_tool_result_chars=_MAX_TOOL_RESULT_CHARS,
+        checkpoint_callback=checkpoint,
+    )
+    spec.resolve_elite_runtime = lambda: elite_runtime
+
+    result = await AgentRunner().run(spec)
+
+    assert result.final_content == "Elite answer"
+    assert result.provider_state is None
+    assert any(
+        checkpoint["phase"] == "tools_completed"
+        and checkpoint["model"] == "elite-model"
+        and checkpoint["provider_state"] is None
+        for checkpoint in checkpoints
+    )
+    assert standard_requests[0]["model"] == "standard-model"
+    assert [tool["function"]["name"] for tool in standard_requests[0]["tools"]] == [
+        "escalate_to_elite",
+    ]
+    assert elite_requests[0]["model"] == "elite-model"
+    assert elite_requests[0]["tools"] == []
+    assert any(
+        message.get("role") == "tool"
+        and message.get("tool_call_id") == "escalate_1"
+        and "Escalation accepted" in message.get("content", "")
+        for message in elite_requests[0]["messages"]
+    )
+    assert result.tools_used == ["escalate_to_elite"]
+    assert result.tool_events == [{
+        "name": "escalate_to_elite",
+        "status": "ok",
+        "detail": "elite_escalation_accepted",
+    }]
+
+
+@pytest.mark.asyncio
 async def test_runner_replays_provider_state_without_chat_projection_duplicates():
     from nanobot.agent.runner import AgentRunner
 

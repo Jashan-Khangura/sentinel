@@ -1110,6 +1110,7 @@ def model_settings_payload(
             "context_window_tokens": defaults.context_window_tokens,
             "temperature": defaults.temperature,
             "supports_images": defaults.supports_images,
+            "routing_tier": defaults.routing_tier,
             "reasoning_effort": defaults.reasoning_effort,
             "api": defaults.api.model_dump(mode="json") if defaults.api is not None else None,
             "reasoning_effort_values": reasoning_effort_values_for(
@@ -1139,6 +1140,7 @@ def model_settings_payload(
                 "context_window_tokens": preset.context_window_tokens,
                 "temperature": preset.temperature,
                 "supports_images": preset.supports_images,
+                "routing_tier": preset.routing_tier,
                 "reasoning_effort": preset.reasoning_effort,
                 "api": preset.api.model_dump(mode="json") if preset.api is not None else None,
                 **{
@@ -1342,6 +1344,13 @@ def create_model_configuration(
     )
     temperature = _parse_temperature(query_first(query, "temperature"))
     reasoning_effort = base.reasoning_effort
+    routing_tier = query_first_alias(query, "routing_tier", "routingTier")
+    if routing_tier is not None:
+        routing_tier = routing_tier.strip()
+        if routing_tier not in ("standard", "elite"):
+            raise WebUISettingsError("routing_tier must be standard or elite")
+    else:
+        routing_tier = base.routing_tier
     if "reasoning_effort" in query or "reasoningEffort" in query:
         reasoning_effort = (
             query_first_alias(query, "reasoning_effort", "reasoningEffort") or ""
@@ -1357,6 +1366,7 @@ def create_model_configuration(
         ),
         temperature=temperature if temperature is not None else base.temperature,
         reasoning_effort=reasoning_effort,
+        routing_tier=routing_tier,
         supports_images=parse_bool(
             query_first_alias(query, "supports_images", "supportsImages") or "false", "supports_images",
         ),
@@ -1441,6 +1451,16 @@ def update_model_configuration(
     if temperature is not None and preset.temperature != temperature:
         preset.temperature = temperature
         changed = True
+
+    if "routing_tier" in query or "routingTier" in query:
+        routing_tier = (
+            query_first_alias(query, "routing_tier", "routingTier") or ""
+        ).strip()
+        if routing_tier not in ("standard", "elite"):
+            raise WebUISettingsError("routing_tier must be standard or elite")
+        if preset.routing_tier != routing_tier:
+            preset.routing_tier = routing_tier
+            changed = True
 
     if "reasoning_effort" in query or "reasoningEffort" in query:
         reasoning_effort = (
@@ -1559,6 +1579,7 @@ def migrate_model_configurations(
         config.model_presets[name] = ModelPresetConfig(
             model=primary.model,
             provider=primary.provider,
+            routing_tier=primary.routing_tier,
             supports_images=primary.supports_images,
             max_tokens=primary.max_tokens,
             context_window_tokens=primary.context_window_tokens,

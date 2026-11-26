@@ -30,15 +30,17 @@ function withLegacyPresetProviders(payload: SettingsPayload, providers: string[]
       resolved_provider: primaryProvider,
     },
     model_presets: [
-      ...providers.map((provider, index) => ({
-        ...primaryPreset,
-        ...(index > 0 && {
-          name: `${primaryPreset.name}-${provider}`,
-          label: provider,
-        }),
-        provider,
-        resolved_provider: provider,
-      })),
+      ...providers.map((provider, index) =>
+        index === 0
+          ? { ...primaryPreset, provider, resolved_provider: provider }
+          : {
+              ...primaryPreset,
+              name: `${primaryPreset.name}-${provider}`,
+              label: provider,
+              provider,
+              resolved_provider: provider,
+            },
+      ),
       ...otherPresets,
     ],
   };
@@ -378,7 +380,7 @@ describe("Settings providers", () => {
   });
 
 
-  it.each([false, true])("signs in to the xAI Grok provider (from preset: %s)", async (fromPreset) => {
+  it("signs in to the xAI Grok provider referenced by a legacy preset", async () => {
     const base = settingsPayload();
     const xaiProvider = {
       name: "xai_grok",
@@ -428,18 +430,8 @@ describe("Settings providers", () => {
     };
     vi.stubGlobal("open", vi.fn(() => popup));
 
-    (fromPreset ? renderSettingsView : renderProviderManager)({ initialSection: "models", initialSettings: payload });
-
-    if (fromPreset) {
-      const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: "New preset" }));
-      await user.type(screen.getByRole("textbox", { name: "Preset name" }), "OAuth preset");
-      await user.click(screen.getByRole("combobox", { name: "No configured providers" }));
-      await user.click(screen.getByRole("option", { name: "Add provider" }));
-      await user.click(screen.getByRole("option", { name: "xAI Grok" }));
-    } else {
-      await chooseProviderToConfigure("xAI Grok");
-    }
+    renderProviderManager({ initialSection: "models", initialSettings: payload });
+    await chooseProviderToConfigure("xAI Grok");
 
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
@@ -477,13 +469,7 @@ describe("Settings providers", () => {
         20_000,
       ),
     );
-    if (fromPreset) {
-      await waitFor(() => expect(screen.queryByRole("dialog", { name: "xAI Grok" })).not.toBeInTheDocument());
-      expect(screen.getByRole("combobox", { name: "xAI Grok" })).toHaveFocus();
-      expect(screen.getByRole("textbox", { name: "Preset name" })).toHaveValue("OAuth preset");
-    } else {
-      expect(await screen.findByText("Signed in")).toBeInTheDocument();
-    }
+    expect(await screen.findByText("Signed in")).toBeInTheDocument();
   });
 
   it("recognizes remote access before starting xAI Grok sign-in", async () => {

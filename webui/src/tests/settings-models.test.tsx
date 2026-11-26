@@ -123,6 +123,25 @@ async function openPresetAdvancedOptions() {
 describe("Settings models", () => {
   installSettingsViewTestHooks();
 
+  it("saves the manually assigned routing tier with the preset", async () => {
+    const payload = settingsPayload();
+    payload.providers = [{ name: "openai", label: "OpenAI", configured: true }];
+    payload.model_presets[0].provider = "openai";
+    requestMutationMock.mockResolvedValue(payload);
+    renderSettingsView({ initialSection: "models", initialSettings: payload });
+
+    await togglePresetEditor();
+    fireEvent.click(screen.getByRole("combobox", { name: "Routing tier" }));
+    fireEvent.click(await screen.findByRole("option", { name: "Elite" }));
+    fireEvent.click(presetSaveButton());
+
+    await waitFor(() => expect(requestMutationMock).toHaveBeenCalledWith(
+      "settings.model_configuration.update",
+      { include_usage: false, name: "primary", routing_tier: "elite" },
+      20_000,
+    ));
+  });
+
   it("saves request overrides in a preset and restores inheritance when cleared", async () => {
     const payload = settingsPayload();
     payload.model_request_overrides_supported = true;

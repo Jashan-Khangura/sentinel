@@ -753,6 +753,7 @@ export interface SettingsPayload {
     max_tokens: number;
     context_window_tokens: number;
     temperature: number;
+    routing_tier?: "standard" | "elite";
     reasoning_effort: string | null;
     supports_images?: boolean;
     api?: ModelAPIConfig | null;
@@ -771,6 +772,7 @@ export interface SettingsPayload {
     max_tokens: number;
     context_window_tokens: number;
     temperature: number;
+    routing_tier: "standard" | "elite";
     reasoning_effort: string | null;
     reasoning_effort_values?: string[];
     supports_images?: boolean;
@@ -1405,6 +1407,7 @@ export interface ModelConfigurationCreate {
   name: string;
   provider: string;
   model: string;
+  routingTier?: "standard" | "elite";
   maxTokens?: number;
   contextWindowTokens?: number;
   temperature?: number;
@@ -1421,6 +1424,7 @@ export interface ModelConfigurationUpdate {
   newName?: string;
   provider?: string;
   model?: string;
+  routingTier?: "standard" | "elite";
   maxTokens?: number;
   contextWindowTokens?: number;
   temperature?: number;

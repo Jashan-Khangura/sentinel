@@ -1314,10 +1314,13 @@ export async function fetchSidebarState(
 function modelGenerationSettingsPayload(
   configuration: Pick<
     ModelConfigurationCreate,
-    "maxTokens" | "contextWindowTokens" | "temperature" | "reasoningEffort" | "supportsImages" | "api" | "extraHeaders" | "extraQuery" | "extraBody"
+    "routingTier" | "maxTokens" | "contextWindowTokens" | "temperature" | "reasoningEffort" | "supportsImages" | "api" | "extraHeaders" | "extraQuery" | "extraBody"
   >,
 ): Record<string, unknown> {
   const payload: Record<string, unknown> = {};
+  if (configuration.routingTier !== undefined) {
+    payload.routing_tier = configuration.routingTier;
+  }
   if (configuration.maxTokens !== undefined) {
     payload.max_tokens = configuration.maxTokens;
   }

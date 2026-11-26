@@ -1089,6 +1089,27 @@ class AgentLoop:
             session.provider_state = previous_state
             raise
 
+    def _elite_escalation_resolver(
+        self,
+        runtime: LLMRuntime,
+    ) -> Callable[[], LLMRuntime] | None:
+        presets = self.runtime_resolver.model_presets
+        active = presets.get(runtime.model_preset or "default")
+        if active is None or active.routing_tier != "standard":
+            return None
+        elite_names = [
+            name for name, preset in presets.items()
+            if preset.routing_tier == "elite"
+        ]
+        if len(elite_names) != 1:
+            if len(elite_names) > 1:
+                logger.warning(
+                    "Model escalation is disabled because multiple Elite presets are configured: {}",
+                    ", ".join(elite_names),
+                )
+            return None
+        return partial(self.runtime_resolver.resolve_preset, elite_names[0])
+
     async def _run_agent_loop(
         self,
         transcript_input: TranscriptInput,
@@ -1220,6 +1241,7 @@ class AgentLoop:
                 initial_messages=None,
                 tools=effective_tools,
                 runtime=runtime,
+                resolve_elite_runtime=self._elite_escalation_resolver(runtime),
                 max_iterations=self.max_iterations,
                 max_tool_result_chars=self.max_tool_result_chars,
                 transcript_input=transcript_input,

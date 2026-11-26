@@ -26,6 +26,19 @@ def test_resolve_preset_returns_defaults_when_no_preset() -> None:
     assert resolved.output_cost_per_million_tokens_usd is None
 
 
+def test_routing_tier_defaults_and_roundtrips_on_presets() -> None:
+    config = Config.model_validate({
+        "modelPresets": {
+            "standard": {"model": "openai/gpt-4.1"},
+            "elite": {"model": "anthropic/claude-opus", "routingTier": "elite"},
+        }
+    })
+
+    assert config.resolve_preset("standard").routing_tier == "standard"
+    assert config.resolve_preset("elite").routing_tier == "elite"
+    assert config.resolve_preset("elite").model_dump(by_alias=True)["routingTier"] == "elite"
+
+
 def test_unmarked_named_and_inline_fallbacks_default_to_text_only() -> None:
     config = Config.model_validate({
         "agents": {"defaults": {"fallbackModels": [

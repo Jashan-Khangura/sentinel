@@ -267,6 +267,7 @@ export function useSettingsController({
       form.maxTokens !== selectedPreset.max_tokens ||
       form.contextWindowTokens !== normalizeContextWindowTokens(selectedPreset.context_window_tokens) ||
       form.temperature !== selectedPreset.temperature ||
+      form.routingTier !== (selectedPreset.routing_tier ?? "standard") ||
       form.reasoningEffort !== (selectedPreset.reasoning_effort ?? "") ||
       form.supportsImages !== (selectedPreset.supports_images ?? false) ||
       modelAPISelection(form.api) !== modelAPISelection(selectedPreset.api) ||
